@@ -10,7 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -107,10 +107,18 @@ async def health():
 @app.post("/api/jobs", response_model=JobResponse)
 async def create_job(
     file: UploadFile = File(...),
+    report_no: Optional[str] = Form(None),
+    applicant_name: Optional[str] = Form(None),
+    applicant_address: Optional[str] = Form(None),
     password: str = Depends(verify_password)
 ):
     """
     上傳 CB PDF 並建立轉換任務
+
+    封面欄位（選填）：
+    - report_no: 報告編號
+    - applicant_name: 申請者名稱
+    - applicant_address: 申請者地址
     """
     # 驗證檔案
     if not file.filename.lower().endswith('.pdf'):
@@ -123,6 +131,11 @@ async def create_job(
         pdf_filename=file.filename,
         status=JobStatus.PENDING
     )
+
+    # 設定封面欄位
+    job.cover_report_no = report_no or ""
+    job.cover_applicant_name = applicant_name or ""
+    job.cover_applicant_address = applicant_address or ""
 
     # 上傳 PDF 到 Storage
     storage = get_storage()

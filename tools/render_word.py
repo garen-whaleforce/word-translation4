@@ -3177,6 +3177,47 @@ def fill_table_b25(doc: Document, table_b25_data: dict, special_tables: dict):
                     cell.text = cell.text.replace('1.7', correct_i_rated)
                     print(f"已修正 I rated: 1.7 -> {correct_i_rated}")
 
+
+def remove_template_example_tables(doc):
+    """
+    刪除模板末尾的多餘範例表格
+    這些表格包含 Jinja2 標記（如 {% for ... %}），是模板設計時的備用版本
+    """
+    tables_to_remove = []
+
+    for i, tbl in enumerate(doc.tables):
+        if not tbl.rows:
+            continue
+
+        # 檢查第一列的內容
+        first_row_text = ' '.join([c.text for c in tbl.rows[0].cells])
+
+        # 檢查是否包含未處理的 Jinja2 標記
+        if '{%' in first_row_text or '{{' in first_row_text:
+            tables_to_remove.append((i, tbl))
+            continue
+
+        # 檢查特定的範例表格標誌
+        # 1. 能量來源類別表頭（空的範例表格）
+        if '能量來源類別' in first_row_text and '身體部位' in first_row_text and len(tbl.rows) <= 2:
+            tables_to_remove.append((i, tbl))
+            continue
+
+        # 2. Clause Title Verdict 表頭（空的範例表格）
+        if 'Clause' in first_row_text and 'Title' in first_row_text and 'Verdict' in first_row_text and len(tbl.rows) <= 2:
+            tables_to_remove.append((i, tbl))
+            continue
+
+    # 從後往前刪除，避免索引問題
+    for i, tbl in reversed(tables_to_remove):
+        # 刪除表格的 XML 元素
+        tbl._element.getparent().remove(tbl._element)
+        print(f"已刪除多餘的範例表格（索引 {i}）")
+
+    if tables_to_remove:
+        print(f"共刪除 {len(tables_to_remove)} 個多餘的範例表格")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--json", default="output/cns_report_data.json")
@@ -3186,6 +3227,10 @@ def main():
     ap.add_argument("--pdf_clause_rows", default=None, help="PDF 主幹條款列 JSON 路徑")
     ap.add_argument("--table_412", default=None, help="4.1.2 零件表格 JSON 路徑")
     ap.add_argument("--cb_tables", default=None, help="CB 表格原始資料 JSON 路徑 (cb_tables_text.json)")
+    # 封面欄位（用戶填入）
+    ap.add_argument("--cover_report_no", default="", help="封面報告編號")
+    ap.add_argument("--cover_applicant_name", default="", help="封面申請者名稱")
+    ap.add_argument("--cover_applicant_address", default="", help="封面申請者地址")
     args = ap.parse_args()
 
     json_path = Path(args.json)
@@ -3199,6 +3244,17 @@ def main():
 
     data = load_json(json_path)
     ctx = normalize_context(data)
+
+    # 如果用戶有填入封面欄位，覆蓋 meta 資料
+    if args.cover_report_no:
+        ctx['meta']['cb_report_no'] = args.cover_report_no
+        print(f"封面報告編號: {args.cover_report_no}")
+    if args.cover_applicant_name:
+        ctx['meta']['applicant'] = args.cover_applicant_name
+        print(f"封面申請者名稱: {args.cover_applicant_name}")
+    if args.cover_applicant_address:
+        ctx['meta']['applicant_address'] = args.cover_applicant_address
+        print(f"封面申請者地址: {args.cover_applicant_address}")
 
     # 第一階段：docxtpl 渲染
     doc = DocxTemplate(str(tpl_path))
@@ -3301,6 +3357,9 @@ def main():
 
     # 條款表格重建後，再次翻譯所有表格中的通用英文短語
     translate_all_tables(docx)
+
+    # 刪除模板末尾的多餘範例表格（含 Jinja2 標記）
+    remove_template_example_tables(docx)
 
     # 保存
     docx.save(str(out_path))

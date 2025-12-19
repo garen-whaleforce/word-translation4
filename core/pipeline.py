@@ -155,12 +155,20 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
         template_path = PROJECT_ROOT / "templates" / "CNS_15598_1_109_template_clean.docx"
         docx_path = out_dir / "cns_report.docx"
 
+        # 準備封面欄位
+        cover_fields = {
+            'report_no': job.cover_report_no,
+            'applicant_name': job.cover_applicant_name,
+            'applicant_address': job.cover_applicant_address,
+        }
+
         _run_render_word(
             json_path=str(cns_json_path),
             template_path=str(template_path),
             pdf_clause_rows_path=str(clause_rows_path),
             special_tables_path=str(special_tables_path),
-            output_path=str(docx_path)
+            output_path=str(docx_path),
+            cover_fields=cover_fields
         )
 
         job.add_qa_result("render_word", "PASS", "Word 文件生成完成")
@@ -377,10 +385,12 @@ def _run_extract_cb_pdf(pdf_path: str, out_dir: str):
 
 
 def _run_render_word(json_path: str, template_path: str, pdf_clause_rows_path: str,
-                     special_tables_path: str, output_path: str):
+                     special_tables_path: str, output_path: str,
+                     cover_fields: dict = None):
     """執行 render_word"""
     import subprocess
-    result = subprocess.run([
+
+    cmd = [
         sys.executable,
         str(PROJECT_ROOT / "tools" / "render_word.py"),
         "--json", json_path,
@@ -388,7 +398,18 @@ def _run_render_word(json_path: str, template_path: str, pdf_clause_rows_path: s
         "--pdf_clause_rows", pdf_clause_rows_path,
         "--special_tables", special_tables_path,
         "--out", output_path
-    ], capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    ]
+
+    # 添加封面欄位參數
+    if cover_fields:
+        if cover_fields.get('report_no'):
+            cmd.extend(["--cover_report_no", cover_fields['report_no']])
+        if cover_fields.get('applicant_name'):
+            cmd.extend(["--cover_applicant_name", cover_fields['applicant_name']])
+        if cover_fields.get('applicant_address'):
+            cmd.extend(["--cover_applicant_address", cover_fields['applicant_address']])
+
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(PROJECT_ROOT))
 
     if result.returncode != 0:
         raise RuntimeError(f"render_word failed: {result.stderr}")

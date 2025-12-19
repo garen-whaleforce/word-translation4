@@ -56,6 +56,11 @@ class Job:
     # 錯誤訊息
     error_message: str = ""
 
+    # 封面欄位（用戶填入）
+    cover_report_no: str = ""
+    cover_applicant_name: str = ""
+    cover_applicant_address: str = ""
+
     def update_status(self, status: JobStatus):
         self.status = status
         self.updated_at = datetime.utcnow().isoformat()
@@ -84,6 +89,9 @@ class Job:
             "docx_key": self.docx_key,
             "docx_type": self.docx_type,
             "error_message": self.error_message,
+            "cover_report_no": self.cover_report_no,
+            "cover_applicant_name": self.cover_applicant_name,
+            "cover_applicant_address": self.cover_applicant_address,
         }
 
     def to_json(self) -> str:
@@ -104,6 +112,9 @@ class Job:
             docx_key=data.get("docx_key", ""),
             docx_type=data.get("docx_type", ""),
             error_message=data.get("error_message", ""),
+            cover_report_no=data.get("cover_report_no", ""),
+            cover_applicant_name=data.get("cover_applicant_name", ""),
+            cover_applicant_address=data.get("cover_applicant_address", ""),
         )
         for qa in data.get("qa_results", []):
             job.qa_results.append(QAResult(**qa))
