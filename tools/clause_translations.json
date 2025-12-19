@@ -1,0 +1,3532 @@
+{
+  "4": {
+    "title_cn": "一般要求",
+    "remark_cn": "一般要求",
+    "verdict_cn": "符合"
+  },
+  "4.1.1": {
+    "title_cn": "各項要求之適用, 以及材料、組件及次組件之允收",
+    "remark_cn": "(見附表 4.1.2)",
+    "verdict_cn": "符合"
+  },
+  "4.1.2": {
+    "title_cn": "組件之使用",
+    "remark_cn": "(見附表 4.1.2)\n符合 IEC 及/或國家標準認證之元件在其額定範圍內正確使用。\n未受 IEC 標準涵蓋之元件，已依設備中實際存在之條件進行測試。另見附件 G",
+    "verdict_cn": "符合"
+  },
+  "4.1.3": {
+    "title_cn": "設備之設計及結構",
+    "remark_cn": "已評估用於限制輸出以符合 ES1 及防止火勢蔓延、機械性與熱灼傷風險之防護措施。",
+    "verdict_cn": "符合"
+  },
+  "4.1.4": {
+    "title_cn": "室外用途的指定環境溫度(°C):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.1.5": {
+    "title_cn": "未明確規定之結構與組件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.1.8": {
+    "title_cn": "液體或液體填充組件(LFC)",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.1.15": {
+    "title_cn": "標示及說明",
+    "remark_cn": "(見附錄 F)",
+    "verdict_cn": "符合"
+  },
+  "4.4.3": {
+    "title_cn": "安全防護之強健性",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "4.4.3.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "4.4.3.2": {
+    "title_cn": "穩定力試驗",
+    "remark_cn": "(見條款 T.2、T.4)",
+    "verdict_cn": "符合"
+  },
+  "4.4.3.3": {
+    "title_cn": "落下試驗",
+    "remark_cn": "(見條款 T.7)",
+    "verdict_cn": "符合"
+  },
+  "4.4.3.4": {
+    "title_cn": "撞擊試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.4.3.5": {
+    "title_cn": "內部可觸及的安全防護試驗",
+    "remark_cn": "外殼若不損壞產品則無法開啟。",
+    "verdict_cn": "不適用"
+  },
+  "4.4.3.6": {
+    "title_cn": "玻璃撞擊試驗",
+    "remark_cn": "未使用此類玻璃。",
+    "verdict_cn": "不適用"
+  },
+  "4.4.3.7": {
+    "title_cn": "玻璃固定試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.4.3.8": {
+    "title_cn": "熱塑性材料試驗",
+    "remark_cn": "(參見附錄 T.8)",
+    "verdict_cn": "符合"
+  },
+  "4.4.3.9": {
+    "title_cn": "空氣構成之安全防護",
+    "remark_cn": "已予考量",
+    "verdict_cn": "符合"
+  },
+  "4.4.3.10": {
+    "title_cn": "符合性判斷準則",
+    "remark_cn": "所有防護裝置均維持有效",
+    "verdict_cn": "符合"
+  },
+  "4.4.4": {
+    "title_cn": "用絕緣液體置換安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.4.5": {
+    "title_cn": "安全互鎖",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.5": {
+    "title_cn": "爆炸",
+    "remark_cn": "爆炸",
+    "verdict_cn": "符合"
+  },
+  "4.5.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "4.5.2": {
+    "title_cn": "正常/異常工作狀態期間無爆炸",
+    "remark_cn": "(參見條文 B.2, B.3)",
+    "verdict_cn": "符合"
+  },
+  "4.6": {
+    "title_cn": "導體之緊固",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "4.7": {
+    "title_cn": "直接插接主電源插座之設備",
+    "remark_cn": "直接插接主電源插座之設備",
+    "verdict_cn": "符合"
+  },
+  "4.7.2": {
+    "title_cn": "主電源系統插頭應符合相關標準之規定",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "4.7.3": {
+    "title_cn": "轉矩(Nm):",
+    "remark_cn": "最大 0.026Nm",
+    "verdict_cn": "符合"
+  },
+  "4.8": {
+    "title_cn": "設備包含鋰電池或鈕扣型電池之電池組",
+    "remark_cn": "設備包含鋰電池或鈕扣型電池之電池組",
+    "verdict_cn": "不適用"
+  },
+  "4.8.1": {
+    "title_cn": "一般",
+    "remark_cn": "無使用鈕扣型電池",
+    "verdict_cn": "不適用"
+  },
+  "4.8.2": {
+    "title_cn": "指示型安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.8.3": {
+    "title_cn": "電池匣蓋結構",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.8.4.2": {
+    "title_cn": "應力釋放試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.8.4.3": {
+    "title_cn": "電池更換試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.8.4.4": {
+    "title_cn": "落下試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.8.4.5": {
+    "title_cn": "撞擊試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.8.4.6": {
+    "title_cn": "碾壓試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.8.5": {
+    "title_cn": "符合性判斷準則",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "4.9": {
+    "title_cn": "因導電物體掉入而導致起火或電擊之可能性",
+    "remark_cn": "因導電物體掉入而導致起火或電擊之可能性",
+    "verdict_cn": "符合"
+  },
+  "4.10": {
+    "title_cn": "組件規定",
+    "remark_cn": "組件規定",
+    "verdict_cn": "符合"
+  },
+  "4.10.1": {
+    "title_cn": "切離裝置",
+    "remark_cn": "(見附錄L)",
+    "verdict_cn": "符合"
+  },
+  "4.10.2": {
+    "title_cn": "開關及繼電器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5": {
+    "title_cn": "電氣導致之傷害",
+    "remark_cn": "電氣導致之傷害",
+    "verdict_cn": "符合"
+  },
+  "5.2": {
+    "title_cn": "電器能量源之分級及限制",
+    "remark_cn": "電器能量源之分級及限制",
+    "verdict_cn": "符合"
+  },
+  "5.2.2": {
+    "title_cn": "ES1、ES2和ES3限制",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.2.2.2": {
+    "title_cn": "穩態電壓和電流限制:",
+    "remark_cn": "(見附表 5.2)",
+    "verdict_cn": "符合"
+  },
+  "5.2.2.3": {
+    "title_cn": "電容性限制值",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.2.2.4": {
+    "title_cn": "單一脈衝限制值",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.2.2.5": {
+    "title_cn": "連續性脈衝之限制值",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.2.2.6": {
+    "title_cn": "振鈴訊號",
+    "remark_cn": "無振鈴信號",
+    "verdict_cn": "不適用"
+  },
+  "5.2.2.7": {
+    "title_cn": "音頻訊號",
+    "remark_cn": "無音頻信號",
+    "verdict_cn": "不適用"
+  },
+  "5.3": {
+    "title_cn": "針對電氣能量源之保護",
+    "remark_cn": "針對電氣能量源之保護",
+    "verdict_cn": "符合"
+  },
+  "5.3.1": {
+    "title_cn": "普通人員、受指導人員及技術人員可觸及零件的一般要求",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.3.1 a)": {
+    "title_cn": "可訪問ES1/ES2派生自ES2/ES3電路",
+    "remark_cn": "限制元件：U2在 T1 腳位 5至6之後，電壓為       \n46.8Vpk (ES1) (適用輸出 20.0Vdc, 3.0A) (參見附表 5.2)",
+    "verdict_cn": "符合"
+  },
+  "5.3.1 b)": {
+    "title_cn": "技術人員不無意接觸 ES3裸導體",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.3.2.1": {
+    "title_cn": "觸及之電能來源和保障措施",
+    "remark_cn": "本產品僅可接觸 ES1 電路",
+    "verdict_cn": "符合"
+  },
+  "5.3.2.2": {
+    "title_cn": "接觸要求",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.3.2.2 a)": {
+    "title_cn": "空氣間隙=電動強度測試電位(V):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.3.2.2 b)": {
+    "title_cn": "空氣間隙=距離(mm) :",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.3.2.3": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.3.2.4": {
+    "title_cn": "用作裸線連接之端子",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4": {
+    "title_cn": "絕緣材料及要求",
+    "remark_cn": "絕緣材料及要求",
+    "verdict_cn": "符合"
+  },
+  "5.4.1.2": {
+    "title_cn": "絕緣材料之性質",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.1.3": {
+    "title_cn": "材料是非吸濕的",
+    "remark_cn": "(見 5.4.8 款)",
+    "verdict_cn": "符合"
+  },
+  "5.4.1.4": {
+    "title_cn": "材料、組件及系統之最大操作溫度",
+    "remark_cn": "(見附表 5.4.1.4)",
+    "verdict_cn": "符合"
+  },
+  "5.4.1.5": {
+    "title_cn": "污染等級",
+    "remark_cn": "2",
+    "verdict_cn": "符合"
+  },
+  "5.4.1.5.2": {
+    "title_cn": "對於污染等級1之環境及絕緣化合物之試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.1.5.3": {
+    "title_cn": "熱循環試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.1.6": {
+    "title_cn": "變壓器內具不同尺度之絕緣",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.1.7": {
+    "title_cn": "在產生起始脈衝電路內之絕緣",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.1.8": {
+    "title_cn": "決定工作電壓",
+    "remark_cn": "(見附表 5.4.1.8)",
+    "verdict_cn": "符合"
+  },
+  "5.4.1.9": {
+    "title_cn": "絕緣表面",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.1.10": {
+    "title_cn": "被可導電金屬部件直接鑲嵌之熱塑性部件",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.1.10.2": {
+    "title_cn": "軟化(Vicat)試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.1.10.3": {
+    "title_cn": "球壓試驗",
+    "remark_cn": "(見附表 5.4.1.10.3)",
+    "verdict_cn": "符合"
+  },
+  "5.4.2": {
+    "title_cn": "空間距離",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.2.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.2.2": {
+    "title_cn": "程序1決定空間距離",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.2.3": {
+    "title_cn": "程序2決定空間距離",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.2.3.2.2": {
+    "title_cn": "交流電源系統暫態電壓",
+    "remark_cn": "2500 Vpeak",
+    "verdict_cn": ""
+  },
+  "5.4.2.3.2.3": {
+    "title_cn": "直流電源系統暫態電壓",
+    "remark_cn": "無連接至直流電源",
+    "verdict_cn": ""
+  },
+  "5.4.2.3.2.4": {
+    "title_cn": "外部電路暫態電壓",
+    "remark_cn": "無具暫態電壓之外部電路連接",
+    "verdict_cn": ""
+  },
+  "5.4.2.3.2.5": {
+    "title_cn": "以量測決定暫態電壓位準",
+    "remark_cn": "未採用此選項",
+    "verdict_cn": ""
+  },
+  "5.4.2.4": {
+    "title_cn": "使用耐電壓試驗決定合適之空間距離",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.2.5": {
+    "title_cn": "超過海拔2,000 m之乘數因子",
+    "remark_cn": "1.48",
+    "verdict_cn": "符合"
+  },
+  "5.4.2.6": {
+    "title_cn": "間隙測量:",
+    "remark_cn": "(見附表 5.4.2)",
+    "verdict_cn": "符合"
+  },
+  "5.4.3": {
+    "title_cn": "沿面距離",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.3.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.3.3": {
+    "title_cn": "材料群組",
+    "remark_cn": "IIIb",
+    "verdict_cn": ""
+  },
+  "5.4.3.4": {
+    "title_cn": "沿面距離測量:",
+    "remark_cn": "(見附表 5.4.3)",
+    "verdict_cn": "符合"
+  },
+  "5.4.4": {
+    "title_cn": "固體絕緣",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.4.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.4.2": {
+    "title_cn": "最小絕緣穿透距離",
+    "remark_cn": "(見附表 5.4.4.2)",
+    "verdict_cn": "符合"
+  },
+  "5.4.4.3": {
+    "title_cn": "絕緣化合物形成固體絕緣",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.4.4": {
+    "title_cn": "半導體器件中的固體絕緣",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.4.5": {
+    "title_cn": "絕緣化合物形成接合劑接合",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.4.6": {
+    "title_cn": "薄片材料",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.4.6.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.4.6.2": {
+    "title_cn": "可分離薄片材料",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.4.6.3": {
+    "title_cn": "不可分離薄片材料",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.4.6.4": {
+    "title_cn": "不可分離式薄片絕緣之標準試驗程序",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.4.6.5": {
+    "title_cn": "轉軸試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.4.7": {
+    "title_cn": "繞線組件中之固體絕緣",
+    "remark_cn": "使用認可之三層絕緣線",
+    "verdict_cn": "符合"
+  },
+  "5.4.4.9": {
+    "title_cn": "頻率超過30 kHz 之固體絕緣要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.5": {
+    "title_cn": "天線端子絕緣",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.5.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.5.2": {
+    "title_cn": "電壓浪湧試驗",
+    "remark_cn": "以充電至 10kV 的 1nF 電容器，依每分鐘最高 12 次之頻率進行 50 次雷擊測試。雷擊測試後量測電源輸入與輸出端子間之絕緣電阻，詳情見下文。",
+    "verdict_cn": "符合"
+  },
+  "5.4.5.3": {
+    "title_cn": "絕緣電阻(M):",
+    "remark_cn": "AC 插頭與輸出端子之間：>500 M",
+    "verdict_cn": "符合"
+  },
+  "5.4.6": {
+    "title_cn": "內部線材絕緣用作補充安全防護之一部分",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.7": {
+    "title_cn": "半導體組件及接合劑接合之試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.8": {
+    "title_cn": "濕度處理",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.4.9": {
+    "title_cn": "耐電壓試驗",
+    "remark_cn": "緊接於 5.4.1.4 溫度測試之後進行",
+    "verdict_cn": "符合"
+  },
+  "5.4.9.1": {
+    "title_cn": "固體絕緣型式試驗之試驗程序",
+    "remark_cn": "(見附表 5.4.9)",
+    "verdict_cn": "符合"
+  },
+  "5.4.9.2": {
+    "title_cn": "例行試驗之試驗程序",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.10": {
+    "title_cn": "防止來自外部電路暫態電壓",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.10.1": {
+    "title_cn": "與外部電路分離的部件和電路",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.10.2": {
+    "title_cn": "試驗法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.10.2.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.10.2.2": {
+    "title_cn": "脈衝試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.10.2.3": {
+    "title_cn": "穩態試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.10.3": {
+    "title_cn": "脈衝試驗絕緣故障的驗證:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.11": {
+    "title_cn": "外部電路對地間之隔離",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.11.1": {
+    "title_cn": "外部電路對地間分離的例外情況",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.11.2": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.11.3": {
+    "title_cn": "試驗方法與符合性性:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.12": {
+    "title_cn": "絕緣液體",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.12.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.12.2": {
+    "title_cn": "絕緣液體之絕緣耐電壓:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.12.3": {
+    "title_cn": "絕緣液體之相容性:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.4.12.4": {
+    "title_cn": "絕緣液體之容器:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.5": {
+    "title_cn": "安全防護之組件",
+    "remark_cn": "安全防護之組件",
+    "verdict_cn": "符合"
+  },
+  "5.5.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.5.2": {
+    "title_cn": "電容器和RC單元",
+    "remark_cn": "使用認可Y 電容，見附表 4.1.2。另見G.11.1 以確認符合性及其應用。",
+    "verdict_cn": "符合"
+  },
+  "5.5.2.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.5.2.2": {
+    "title_cn": "連接器切離後之電容器放電:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.5.3": {
+    "title_cn": "變壓器",
+    "remark_cn": "(見附錄 G.5.3)",
+    "verdict_cn": "符合"
+  },
+  "5.5.4": {
+    "title_cn": "光耦合器",
+    "remark_cn": "(參見 5.4 小節或 G.12 條款)",
+    "verdict_cn": "符合"
+  },
+  "5.5.5": {
+    "title_cn": "繼電器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.5.6": {
+    "title_cn": "電阻器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.5.7": {
+    "title_cn": "SPD",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.5.8": {
+    "title_cn": "在主電源與外部電路間含有同軸電纜之絕緣:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.5.9": {
+    "title_cn": "戶外設備中插座之安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6": {
+    "title_cn": "保護導體",
+    "remark_cn": "II 類產品",
+    "verdict_cn": "不適用"
+  },
+  "5.6.2": {
+    "title_cn": "保護導體之規定",
+    "remark_cn": "保護導體之規定",
+    "verdict_cn": "不適用"
+  },
+  "5.6.2.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.2.2": {
+    "title_cn": "絕緣顏色",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.3": {
+    "title_cn": "保護接地導體的要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.4": {
+    "title_cn": "保護搭接導體之規定",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.4.1": {
+    "title_cn": "保護搭接導體",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.4.2": {
+    "title_cn": "保護性電流額定值(A):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.5": {
+    "title_cn": "保護導體的端子",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.5.1": {
+    "title_cn": "連線保護接地導體的端子大小(mm):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.5.2": {
+    "title_cn": "腐蝕",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.6": {
+    "title_cn": "保護搭接系統之電阻",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.6.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.6.2": {
+    "title_cn": "試驗方法:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.6.3": {
+    "title_cn": "電阻或電壓降:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.7": {
+    "title_cn": "保護接地導體之可靠連接",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.6.8": {
+    "title_cn": "功能性接地",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.7": {
+    "title_cn": "預期之接觸電壓、接觸電流及保護導體電流",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.7.2": {
+    "title_cn": "測量設備和網路",
+    "remark_cn": "測量設備和網路",
+    "verdict_cn": "符合"
+  },
+  "5.7.2.1": {
+    "title_cn": "量測接觸電流",
+    "remark_cn": "(見附表 5.2)",
+    "verdict_cn": "符合"
+  },
+  "5.7.2.2": {
+    "title_cn": "量測電壓",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.7.3": {
+    "title_cn": "設備設定、電力連接及接地連接",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "5.7.4": {
+    "title_cn": "非接地可觸及部件",
+    "remark_cn": "(見附表 5.7.4)",
+    "verdict_cn": "符合"
+  },
+  "5.7.5": {
+    "title_cn": "接地之可觸及導電部件:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.7.6": {
+    "title_cn": "接觸電流超過ES2 限制之要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.7.7": {
+    "title_cn": "與外部電路相關之預期接觸電壓及電流",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.7.7.1": {
+    "title_cn": "自同軸電纜之接觸電流",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.7.7.2": {
+    "title_cn": "與成對導體電纜相關之預期接觸電壓及電流",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.7.8": {
+    "title_cn": "來自外部電路之接觸電流總和",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "5.8": {
+    "title_cn": "電池備用供電之反饋安全防護",
+    "remark_cn": "電池備用供電之反饋安全防護",
+    "verdict_cn": "不適用"
+  },
+  "6": {
+    "title_cn": "電氣導致之火燄",
+    "remark_cn": "電氣導致之火燄",
+    "verdict_cn": "符合"
+  },
+  "6.2": {
+    "title_cn": "電力能量源(PS)及潛在起火源(PIS)之分級",
+    "remark_cn": "電力能量源(PS)及潛在起火源(PIS)之分級",
+    "verdict_cn": "符合"
+  },
+  "6.2.2": {
+    "title_cn": "電力能量源電路分級",
+    "remark_cn": "(見附表 6.2.2)",
+    "verdict_cn": "符合"
+  },
+  "6.2.3": {
+    "title_cn": "潛在點火源之分類",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "6.2.3.1": {
+    "title_cn": "電弧PIS:",
+    "remark_cn": "(見附表 6.2.3.1)",
+    "verdict_cn": "符合"
+  },
+  "6.2.3.2": {
+    "title_cn": "電阻性PIS :",
+    "remark_cn": "(見附表 6.2.3.2)",
+    "verdict_cn": "符合"
+  },
+  "6.3": {
+    "title_cn": "在正常操作條件及異常操作條件下防火安全防護",
+    "remark_cn": "在正常操作條件及異常操作條件下防火安全防護",
+    "verdict_cn": "符合"
+  },
+  "6.3.1": {
+    "title_cn": "對於未知材料, 無點火和可達到的溫度值小於ISO 871定義的90%或小於300 C:",
+    "remark_cn": "(見附表 B.1.5 及 B.3)",
+    "verdict_cn": "符合"
+  },
+  "6.4": {
+    "title_cn": "在單一故障條件下防火安全防護",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "6.4.1": {
+    "title_cn": "保護方法",
+    "remark_cn": "使用火勢擴散之控制",
+    "verdict_cn": "符合"
+  },
+  "6.4.2": {
+    "title_cn": "PS1電路中單一故障條件下降低引燃之可能性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.3": {
+    "title_cn": "PS2電路及PS3電路中單一故障條件下降低引燃之可能性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.3.1": {
+    "title_cn": "補充安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.3.2": {
+    "title_cn": "試驗方法:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.4": {
+    "title_cn": "PS1電路中火勢擴散之控制",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.5": {
+    "title_cn": "PS2電路中火勢擴散之控制",
+    "remark_cn": "採用核可之防火外殼。",
+    "verdict_cn": "符合"
+  },
+  "6.4.5.2": {
+    "title_cn": "補充安全防護",
+    "remark_cn": "符合情形詳述如下：\n− 印刷電路板：最低等級 V-1\n除 PCB 與導線之外之元件如下：\n安裝於最低等級 V-1 之 PCB 上，及／或採用 V-2/VTM-2 或更佳等級之材料製成。\n− 隔離變壓器：符合 G.5.3 要求。\n導線絕緣：符合第 6.5 條。輸入導線符合 UL 758 標準，其試驗方法與試驗條件等同 IEC/EN 60695-11-21。\n所有其他元件：至少為 V-2 等級，但安裝於最低 V-1 等級材料上的零件，或質量小於 4g 的可燃性小零件，或符合相關 IEC 標準之元件除外。         \n使用經認可之 V-0 防火外殼。\n(詳情見附表 4.1.2 及附錄 G)",
+    "verdict_cn": "符合"
+  },
+  "6.4.6": {
+    "title_cn": "PS3電路中火勢擴散之控制",
+    "remark_cn": "符合性說明如下：  \n− 印刷電路板：最低 V-1 等級\n除 PCB 與導線之外之元件如下：\n安裝於最低等級 V-1 之 PCB 上，及／或採用 V-2/VTM-2 或更佳等級之材料製成。\n− 隔離變壓器：符合 G.5.3 要求。\n導線絕緣：符合第 6.5 條。輸入導線符合 UL 758 標準，其試驗方法與試驗條件等同於 IEC/EN 60695-11-21。\n所有其他元件：至少須達到 V-2 等級，安裝於至少 V-1 等級材料上的零件或質量小於 4g 的小型可燃材料零件，或符合相關 IEC 標準之元件除外。\n採用經認可之 V-0 級防火外殼。\n(詳見附表 4.1.2 及附錄 G)",
+    "verdict_cn": "符合"
+  },
+  "6.4.7": {
+    "title_cn": "PIS與可燃性材料之隔離",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.7.2": {
+    "title_cn": "以距離隔離",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.7.3": {
+    "title_cn": "以火焰阻隔物隔離",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.8": {
+    "title_cn": "防火機殼及火焰阻隔物",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "6.4.8.2": {
+    "title_cn": "防火機殼及火焰阻隔物材料特性",
+    "remark_cn": "採用 V-0 級防火外殼",
+    "verdict_cn": "符合"
+  },
+  "6.4.8.2.1": {
+    "title_cn": "火焰阻隔物之要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.8.2.2": {
+    "title_cn": "防火機殼之要求",
+    "remark_cn": "採用 V-0 級防火外殼",
+    "verdict_cn": "符合"
+  },
+  "6.4.8.3": {
+    "title_cn": "針對防火機殼及火焰阻隔物之結構性要求",
+    "remark_cn": "無開口與防火隔板",
+    "verdict_cn": "符合"
+  },
+  "6.4.8.3.1": {
+    "title_cn": "防火機殼及火焰阻隔物開孔",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.8.3.2": {
+    "title_cn": "火焰阻隔物尺度",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.8.3.3": {
+    "title_cn": "頂部開孔及頂部開孔性質",
+    "remark_cn": "無開口",
+    "verdict_cn": "不適用"
+  },
+  "6.4.8.3.4": {
+    "title_cn": "底部開孔及底部開孔性質",
+    "remark_cn": "無開口",
+    "verdict_cn": "不適用"
+  },
+  "6.4.8.3.5": {
+    "title_cn": "側邊開孔及側邊開孔性質",
+    "remark_cn": "無開口",
+    "verdict_cn": "不適用"
+  },
+  "6.4.8.3.6": {
+    "title_cn": "防火機殼之完整性, 應符合(a)、(b)或(c)之規定:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.4.8.4": {
+    "title_cn": "自防火機殼及防火阻隔物隔離PIS:",
+    "remark_cn": "外殼為 V-0 材料",
+    "verdict_cn": "符合"
+  },
+  "6.4.9": {
+    "title_cn": "絕緣液體之耐燃:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.5": {
+    "title_cn": "內部及外部配線",
+    "remark_cn": "內部及外部配線",
+    "verdict_cn": "符合"
+  },
+  "6.5.1": {
+    "title_cn": "一般規定",
+    "remark_cn": "額定為 VW-1 之輸入導線視為符合 IEC/TS 60695-11-21。",
+    "verdict_cn": "符合"
+  },
+  "6.5.2": {
+    "title_cn": "互連至建築物配線之要求:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.5.3": {
+    "title_cn": "插座之內部配線(mm2):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "6.6": {
+    "title_cn": "預防因連接額外設備而起火之安全防護",
+    "remark_cn": "預防因連接額外設備而起火之安全防護",
+    "verdict_cn": "符合"
+  },
+  "7": {
+    "title_cn": "危害物質導致之傷害",
+    "remark_cn": "危害物質導致之傷害",
+    "verdict_cn": "不適用"
+  },
+  "7.2": {
+    "title_cn": "減少暴露於危害物質",
+    "remark_cn": "減少暴露於危害物質",
+    "verdict_cn": "不適用"
+  },
+  "7.3": {
+    "title_cn": "臭氧顯露",
+    "remark_cn": "臭氧顯露",
+    "verdict_cn": "不適用"
+  },
+  "7.4": {
+    "title_cn": "人員安全防護或個人防護具(PPE)之使用",
+    "remark_cn": "人員安全防護或個人防護具(PPE)之使用",
+    "verdict_cn": "不適用"
+  },
+  "7.5": {
+    "title_cn": "指示型安全防護及說明書使用",
+    "remark_cn": "指示型安全防護及說明書使用",
+    "verdict_cn": "不適用"
+  },
+  "7.6": {
+    "title_cn": "電池及其保護電路",
+    "remark_cn": "電池及其保護電路",
+    "verdict_cn": "不適用"
+  },
+  "8": {
+    "title_cn": "機械導致之傷害",
+    "remark_cn": "機械導致之傷害",
+    "verdict_cn": "符合"
+  },
+  "8.2": {
+    "title_cn": "機械能量源分級",
+    "remark_cn": "機械能量源分級",
+    "verdict_cn": "符合"
+  },
+  "8.3": {
+    "title_cn": "針對機械能量源之保護",
+    "remark_cn": "針對機械能量源之保護",
+    "verdict_cn": "符合"
+  },
+  "8.4": {
+    "title_cn": "針對具銳利邊緣及切角部件之安全防護",
+    "remark_cn": "針對具銳利邊緣及切角部件之安全防護",
+    "verdict_cn": "符合"
+  },
+  "8.4.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "8.4.2": {
+    "title_cn": "銳邊或切角",
+    "remark_cn": "設備重量、邊緣與角部歸類為 MS1。",
+    "verdict_cn": "符合"
+  },
+  "8.5": {
+    "title_cn": "針對移動部件之安全防護",
+    "remark_cn": "針對移動部件之安全防護",
+    "verdict_cn": "不適用"
+  },
+  "8.5.1": {
+    "title_cn": "手指、珠寶、衣服、頭髮等可能捲入而接觸MS2 或MS3 部件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.2": {
+    "title_cn": "指示型安全防護:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4": {
+    "title_cn": "包含行動元件的特殊類別的設備",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.2": {
+    "title_cn": "設備包含MS3 部件之工作單元",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.2.1": {
+    "title_cn": "保護工作單元內之人員",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.2.2": {
+    "title_cn": "進入防護解除",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.2.2.1": {
+    "title_cn": "解除系統",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.2.2.2": {
+    "title_cn": "視覺指示器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.2.3": {
+    "title_cn": "緊急停止系統",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.2.4": {
+    "title_cn": "耐久性要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.3": {
+    "title_cn": "設備具有破壞介質之電機裝置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.3.1": {
+    "title_cn": "設備防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.3.2": {
+    "title_cn": "針對移動部件之指示型安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.3.3": {
+    "title_cn": "自電源切離",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.3.4": {
+    "title_cn": "切割類型與測試力(N):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.4.3.5": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.5": {
+    "title_cn": "高壓燈泡",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.5.5.3": {
+    "title_cn": "玻璃顆粒大小(mm):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.6": {
+    "title_cn": "設備穩定性",
+    "remark_cn": "設備穩定性",
+    "verdict_cn": "不適用"
+  },
+  "8.6.1": {
+    "title_cn": "一般",
+    "remark_cn": "MS1",
+    "verdict_cn": "不適用"
+  },
+  "8.6.2": {
+    "title_cn": "靜態穩定性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.6.2.2": {
+    "title_cn": "靜態穩定性試驗:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.6.2.3": {
+    "title_cn": "向下力試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.6.3": {
+    "title_cn": "搬移穩定性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.6.4": {
+    "title_cn": "玻璃滑落試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.6.5": {
+    "title_cn": "水平力試驗:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.7": {
+    "title_cn": "安裝在牆壁、天花板或其他結構上之設備",
+    "remark_cn": "安裝在牆壁、天花板或其他結構上之設備",
+    "verdict_cn": "不適用"
+  },
+  "8.7.1": {
+    "title_cn": "安裝類型:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.7.2": {
+    "title_cn": "試驗方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.8": {
+    "title_cn": "把手強度",
+    "remark_cn": "把手強度",
+    "verdict_cn": "不適用"
+  },
+  "8.8.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.8.2": {
+    "title_cn": "手柄強度試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.9": {
+    "title_cn": "滾輪或腳輪附屬物之要求",
+    "remark_cn": "滾輪或腳輪附屬物之要求",
+    "verdict_cn": "不適用"
+  },
+  "8.9.2": {
+    "title_cn": "拉力試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.10": {
+    "title_cn": "推車、腳座及類似承載器",
+    "remark_cn": "推車、腳座及類似承載器",
+    "verdict_cn": "不適用"
+  },
+  "8.10.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.10.2": {
+    "title_cn": "標示及說明:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.10.3": {
+    "title_cn": "推車、支架或承運裝置負載試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.10.4": {
+    "title_cn": "推車、支架或承運裝置撞擊試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.10.5": {
+    "title_cn": "機械穩定性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.10.6": {
+    "title_cn": "熱塑性材料溫度穩定性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.11": {
+    "title_cn": "機架安裝式設備之架設裝置(SRME)",
+    "remark_cn": "機架安裝式設備之架設裝置(SRME)",
+    "verdict_cn": "不適用"
+  },
+  "8.11.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.11.2": {
+    "title_cn": "滑軌要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.11.3": {
+    "title_cn": "機械強度試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.11.3.1": {
+    "title_cn": "向下力試驗, 施加力(N):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.11.3.2": {
+    "title_cn": "側向推力試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.11.3.3": {
+    "title_cn": "滑軌終端停止裝置之完整性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.11.4": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "8.12": {
+    "title_cn": "伸縮型或桿型天線",
+    "remark_cn": "伸縮型或桿型天線",
+    "verdict_cn": "不適用"
+  },
+  "9": {
+    "title_cn": "熱能燒燙傷害",
+    "remark_cn": "熱能燒燙傷害",
+    "verdict_cn": "符合"
+  },
+  "9.2": {
+    "title_cn": "熱能量源分級",
+    "remark_cn": "熱能量源分級",
+    "verdict_cn": "符合"
+  },
+  "9.3": {
+    "title_cn": "碰觸溫度限制值",
+    "remark_cn": "碰觸溫度限制值",
+    "verdict_cn": "符合"
+  },
+  "9.3.1": {
+    "title_cn": "可接觸元件的觸控溫度:",
+    "remark_cn": "(見附表 5.4.1.4)",
+    "verdict_cn": "符合"
+  },
+  "9.3.2": {
+    "title_cn": "試驗方法及符合性",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "9.4": {
+    "title_cn": "防止熱能量源之安全保護",
+    "remark_cn": "防止熱能量源之安全保護",
+    "verdict_cn": "符合"
+  },
+  "9.5": {
+    "title_cn": "安全防護之要求",
+    "remark_cn": "安全防護之要求",
+    "verdict_cn": "符合"
+  },
+  "9.5.1": {
+    "title_cn": "設備安全防護",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "9.5.2": {
+    "title_cn": "指示型安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "9.6": {
+    "title_cn": "無線電力傳輸器要求",
+    "remark_cn": "無線電力傳輸器要求",
+    "verdict_cn": "不適用"
+  },
+  "9.6.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "9.6.2": {
+    "title_cn": "異物的規範",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "9.6.3": {
+    "title_cn": "試驗方法及符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10": {
+    "title_cn": "輻射",
+    "remark_cn": "輻射",
+    "verdict_cn": "不適用"
+  },
+  "10.2": {
+    "title_cn": "輻射能量源分級",
+    "remark_cn": "輻射能量源分級",
+    "verdict_cn": "不適用"
+  },
+  "10.2.1": {
+    "title_cn": "一般分類",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.3": {
+    "title_cn": "雷射輻射之安全防護",
+    "remark_cn": "雷射輻射之安全防護",
+    "verdict_cn": "不適用"
+  },
+  "10.4": {
+    "title_cn": "來自燈泡及燈具系統之光學輻射之安全防護(包括LED 型式)",
+    "remark_cn": "來自燈泡及燈具系統之光學輻射之安全防護(包括LED 型式)",
+    "verdict_cn": "不適用"
+  },
+  "10.4.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.4.2": {
+    "title_cn": "機殼要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.4.3": {
+    "title_cn": "指示型安全防護:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.5": {
+    "title_cn": "X 輻射之安全防護",
+    "remark_cn": "X 輻射之安全防護",
+    "verdict_cn": "不適用"
+  },
+  "10.5.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": ""
+  },
+  "10.5.3": {
+    "title_cn": "最大輻射(pA/kg):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6": {
+    "title_cn": "音能之安全防護",
+    "remark_cn": "音能之安全防護",
+    "verdict_cn": "不適用"
+  },
+  "10.6.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.2": {
+    "title_cn": "分級",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.3": {
+    "title_cn": "聲音劑量基礎系統之要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.3.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.3.2": {
+    "title_cn": "聲音劑量基礎警告及自動降減",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.3.3": {
+    "title_cn": "顯露基礎警告及要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.4": {
+    "title_cn": "量測方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.5": {
+    "title_cn": "人員之防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.6": {
+    "title_cn": "收聽設備(耳機、耳機等)的要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.6.1": {
+    "title_cn": "收聽設備(耳機、耳機等)的要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.6.2": {
+    "title_cn": "有線數位輸入之收聽裝置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "10.6.6.3": {
+    "title_cn": "無線收聽裝置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B": {
+    "title_cn": "正常操作條件試驗、異常操作條件試驗及單一故障條件試驗",
+    "remark_cn": "正常操作條件試驗、異常操作條件試驗及單一故障條件試驗",
+    "verdict_cn": "符合"
+  },
+  "B.1": {
+    "title_cn": "一般",
+    "remark_cn": "一般",
+    "verdict_cn": "符合"
+  },
+  "B.1.5": {
+    "title_cn": "溫度量測條件",
+    "remark_cn": "(見表格B.1.5)",
+    "verdict_cn": "符合"
+  },
+  "B.2": {
+    "title_cn": "正常操作條件",
+    "remark_cn": "正常操作條件",
+    "verdict_cn": "符合"
+  },
+  "B.2.1": {
+    "title_cn": "一般要求:",
+    "remark_cn": "(見測試項目詳細資料及附錄測試表格)",
+    "verdict_cn": "符合"
+  },
+  "B.2.3": {
+    "title_cn": "電源電壓容許值",
+    "remark_cn": "標稱輸入：100-240V~；  \n已考慮 ±10% 之允差。",
+    "verdict_cn": "符合"
+  },
+  "B.2.5": {
+    "title_cn": "輸入試驗:",
+    "remark_cn": "(見附表格 B.2.5)",
+    "verdict_cn": "符合"
+  },
+  "B.3": {
+    "title_cn": "模擬之異常操作條件",
+    "remark_cn": "模擬之異常操作條件",
+    "verdict_cn": "符合"
+  },
+  "B.3.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "B.3.2": {
+    "title_cn": "散熱開孔之覆蓋",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.3.3": {
+    "title_cn": "直流主電源極性試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.3.4": {
+    "title_cn": "電壓選擇器之設定",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.3.5": {
+    "title_cn": "輸出端子之最大負載",
+    "remark_cn": "(見附表 B.3 與 B.4)",
+    "verdict_cn": "符合"
+  },
+  "B.3.6": {
+    "title_cn": "電池極性之倒置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.3.7": {
+    "title_cn": "音頻放大器異常操作條件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.3.8": {
+    "title_cn": "異常操作條件期間及之後之符合性",
+    "remark_cn": "(見附表 B.3 與 B.4)",
+    "verdict_cn": "符合"
+  },
+  "B.4": {
+    "title_cn": "模擬單一故障條件",
+    "remark_cn": "模擬單一故障條件",
+    "verdict_cn": "符合"
+  },
+  "B.4.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "B.4.2": {
+    "title_cn": "溫度控制裝置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.4.3": {
+    "title_cn": "電動機堵轉試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.4.4": {
+    "title_cn": "功能性絕緣",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "B.4.4.1": {
+    "title_cn": "功能性絕緣的空間距離短路",
+    "remark_cn": "(見附表 B.3 及 B.4)",
+    "verdict_cn": "符合"
+  },
+  "B.4.4.2": {
+    "title_cn": "功能性絕緣的沿面距離短路",
+    "remark_cn": "(見附表 B.3 及 B.4)",
+    "verdict_cn": "符合"
+  },
+  "B.4.4.3": {
+    "title_cn": "塗層印刷電路板上之功能性絕緣短路",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.4.5": {
+    "title_cn": "半導體及真空管中電極之短路及中斷",
+    "remark_cn": "(見附表 B.3 及 B.4)",
+    "verdict_cn": "符合"
+  },
+  "B.4.6": {
+    "title_cn": "被動組件之短路或斷開",
+    "remark_cn": "(見附錄表 B.3 與 B.4)",
+    "verdict_cn": "符合"
+  },
+  "B.4.7": {
+    "title_cn": "組件之連續操作",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "B.4.8": {
+    "title_cn": "單一故障條件期間及之後的符合性:",
+    "remark_cn": "(見附表 B.3 與 B.4)",
+    "verdict_cn": "符合"
+  },
+  "B.4.9": {
+    "title_cn": "單一故障條件下之電池充放電",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "C": {
+    "title_cn": "紫外線輻射",
+    "remark_cn": "紫外線輻射",
+    "verdict_cn": "不適用"
+  },
+  "C.1": {
+    "title_cn": "保護設備中的材料免受紫外線輻射",
+    "remark_cn": "保護設備中的材料免受紫外線輻射",
+    "verdict_cn": "不適用"
+  },
+  "C.1.2": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "C.1.3": {
+    "title_cn": "試驗方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "C.2": {
+    "title_cn": "紫外線照射試驗",
+    "remark_cn": "紫外線照射試驗",
+    "verdict_cn": "不適用"
+  },
+  "C.2.1": {
+    "title_cn": "試驗儀器:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "C.2.2": {
+    "title_cn": "試驗樣品之固定",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "C.2.3": {
+    "title_cn": "碳弧燈照射試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "C.2.4": {
+    "title_cn": "氙弧燈照射試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "D": {
+    "title_cn": "試驗產生器",
+    "remark_cn": "試驗產生器",
+    "verdict_cn": "符合"
+  },
+  "D.1": {
+    "title_cn": "脈衝試驗產生器",
+    "remark_cn": "脈衝試驗產生器",
+    "verdict_cn": "不適用"
+  },
+  "D.2": {
+    "title_cn": "天線介面試驗產生器",
+    "remark_cn": "天線介面試驗產生器",
+    "verdict_cn": "符合"
+  },
+  "D.3": {
+    "title_cn": "電子脈衝產生器",
+    "remark_cn": "電子脈衝產生器",
+    "verdict_cn": "不適用"
+  },
+  "E": {
+    "title_cn": "設備包含音頻擴大器之試驗條件",
+    "remark_cn": "設備包含音頻擴大器之試驗條件",
+    "verdict_cn": "不適用"
+  },
+  "E.1": {
+    "title_cn": "音頻訊號之電氣能量源分級",
+    "remark_cn": "音頻訊號之電氣能量源分級",
+    "verdict_cn": "不適用"
+  },
+  "E.2": {
+    "title_cn": "音頻放大器正常工作條件",
+    "remark_cn": "音頻放大器正常工作條件",
+    "verdict_cn": "不適用"
+  },
+  "E.3": {
+    "title_cn": "聲音擴大器異常操作條件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F": {
+    "title_cn": "設備標示、說明及指示型安全防護",
+    "remark_cn": "設備標示、說明及指示型安全防護",
+    "verdict_cn": "符合"
+  },
+  "F.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.2": {
+    "title_cn": "字元符號及圖示符號",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.2.1": {
+    "title_cn": "根據IEC60027-1字元符號",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.2.2": {
+    "title_cn": "根據IEC、ISO 或製造商特定設置的圖示符號",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.3": {
+    "title_cn": "設備標示",
+    "remark_cn": "設備標示",
+    "verdict_cn": "符合"
+  },
+  "F.3.1": {
+    "title_cn": "設備標示位置",
+    "remark_cn": "設備標記位於設備表面，很容易看到。",
+    "verdict_cn": "符合"
+  },
+  "F.3.2": {
+    "title_cn": "設備識別標示",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.3.2.1": {
+    "title_cn": "製造商識別………..………………………………:",
+    "remark_cn": "見標示標籤",
+    "verdict_cn": "符合"
+  },
+  "F.3.2.2": {
+    "title_cn": "機型識別………………..…………………………:",
+    "remark_cn": "見標示標籤",
+    "verdict_cn": "符合"
+  },
+  "F.3.3": {
+    "title_cn": "設備額定值",
+    "remark_cn": "見標示標籤",
+    "verdict_cn": "符合"
+  },
+  "F.3.3.1": {
+    "title_cn": "直接連接至主電源系統之設備",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.3.3.2": {
+    "title_cn": "未直接連接至主電源系統之設備",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.3.3": {
+    "title_cn": "電源電壓的性質…………………………………..:",
+    "remark_cn": "見標示標籤",
+    "verdict_cn": "符合"
+  },
+  "F.3.3.4": {
+    "title_cn": "額定電壓………………………………..…………:",
+    "remark_cn": "見標示標籤",
+    "verdict_cn": "符合"
+  },
+  "F.3.3.5": {
+    "title_cn": "額定頻率…………………………………..………:",
+    "remark_cn": "見標示標籤",
+    "verdict_cn": "符合"
+  },
+  "F.3.3.6": {
+    "title_cn": "額定電流或額定功率………………………....…..:",
+    "remark_cn": "見標示標籤",
+    "verdict_cn": "符合"
+  },
+  "F.3.3.7": {
+    "title_cn": "設備具多電源連接",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.4": {
+    "title_cn": "電壓設置裝置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.5": {
+    "title_cn": "端子及操作裝置",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.3.5.1": {
+    "title_cn": "電源裝置插座與插座插座之標示……………..…:",
+    "remark_cn": "未提供設備插座",
+    "verdict_cn": "不適用"
+  },
+  "F.3.5.2": {
+    "title_cn": "開關位置識別之標示……………………………..:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.5.3": {
+    "title_cn": "可替換式熔線識別及額定值標示…………..……:",
+    "remark_cn": "保險絲安裝於設備內部，非一般人或受指導人員可更換。\nF1保險絲附近標示 ”T3.15AL/250Vac”",
+    "verdict_cn": "符合"
+  },
+  "F.3.5.4": {
+    "title_cn": "可替換式電池識別標示………………….……….:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.5.5": {
+    "title_cn": "中性導體端子",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.5.6": {
+    "title_cn": "端子標示位置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.6": {
+    "title_cn": "與設備分類相關之設備標示",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.3.6.1": {
+    "title_cn": "I 類設備",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.6.1.1": {
+    "title_cn": "保護接地導體端子……………………...………..:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.6.1.2": {
+    "title_cn": "保護搭接導體端子………………………………..:",
+    "remark_cn": "非永久連接之設備",
+    "verdict_cn": "不適用"
+  },
+  "F.3.6.2": {
+    "title_cn": "設備類別標示………………………...…………...:",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "F.3.6.3": {
+    "title_cn": "功能性接地端子標示……………………………..:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "F.3.7": {
+    "title_cn": "設備IP 額定值標示………………………………:",
+    "remark_cn": "IPX0",
+    "verdict_cn": "符合"
+  },
+  "F.3.8": {
+    "title_cn": "外部電源輸出標示………………………………..:",
+    "remark_cn": "見標示標籤",
+    "verdict_cn": "符合"
+  },
+  "F.3.9": {
+    "title_cn": "標示之耐用性、可辨識性及永久性",
+    "remark_cn": "標示被認為具可識讀且易辨認。另見下列詳細資訊。銘牌已進行標示永久性測試。以浸泡於水中之布料擦拭銘牌 15 秒，接著再以浸泡於石油溶劑之布料擦拭 15 秒。試驗後銘牌無任何損壞，銘牌上的標示未有褪色情形。",
+    "verdict_cn": "符合"
+  },
+  "F.3.10": {
+    "title_cn": "標示耐久性試驗",
+    "remark_cn": "試驗後，標示仍保持可識讀，且銘牌無翹曲，亦無法以手將其剝除。",
+    "verdict_cn": "符合"
+  },
+  "F.4": {
+    "title_cn": "說明指示",
+    "remark_cn": "說明指示",
+    "verdict_cn": "符合"
+  },
+  "F.5": {
+    "title_cn": "指示型安全防護",
+    "remark_cn": "指示型安全防護",
+    "verdict_cn": "不適用"
+  },
+  "G": {
+    "title_cn": "組件",
+    "remark_cn": "組件",
+    "verdict_cn": "符合"
+  },
+  "G.1": {
+    "title_cn": "開關",
+    "remark_cn": "開關",
+    "verdict_cn": "不適用"
+  },
+  "G.1.1": {
+    "title_cn": "一般",
+    "remark_cn": "無開關",
+    "verdict_cn": "不適用"
+  },
+  "G.1.2": {
+    "title_cn": "額定值、耐用性、間距、最大負載",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.1.3": {
+    "title_cn": "試驗方法和符合性性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.2": {
+    "title_cn": "繼電器",
+    "remark_cn": "繼電器",
+    "verdict_cn": "不適用"
+  },
+  "G.2.1": {
+    "title_cn": "要求",
+    "remark_cn": "無繼電器",
+    "verdict_cn": "不適用"
+  },
+  "G.2.2": {
+    "title_cn": "過載試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.2.3": {
+    "title_cn": "控制供電至其他設備之連接器的繼電器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.2.4": {
+    "title_cn": "試驗方法及符合",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.3": {
+    "title_cn": "保護裝置",
+    "remark_cn": "保護裝置",
+    "verdict_cn": "符合"
+  },
+  "G.3.1": {
+    "title_cn": "熱斷路器",
+    "remark_cn": "無溫度熔斷器",
+    "verdict_cn": "不適用"
+  },
+  "G.3.1.2": {
+    "title_cn": "試驗方法及符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.3.2": {
+    "title_cn": "溫度熔線",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.3.2.1": {
+    "title_cn": "a) 根據IEC 60691溫度熔線當作個別組件試驗時",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.3.2.2": {
+    "title_cn": "試驗方法及符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.3.3": {
+    "title_cn": "PTC 熱敏電阻",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.3.4": {
+    "title_cn": "過電流保護裝置",
+    "remark_cn": "保險絲符合 IEC/EN 60127",
+    "verdict_cn": "符合"
+  },
+  "G.3.5": {
+    "title_cn": "未於G.3.1至G.3.4中提及之安全防護組件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.3.5.1": {
+    "title_cn": "無法重置的保護裝置提供適當額定和標示",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.3.5.2": {
+    "title_cn": "單一故障條件:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.4": {
+    "title_cn": "連接器",
+    "remark_cn": "連接器",
+    "verdict_cn": "符合"
+  },
+  "G.4.1": {
+    "title_cn": "空間距離與沿面距離",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "G.4.2": {
+    "title_cn": "主電源連接器:",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "G.4.3": {
+    "title_cn": "非用作主電源之連接器之設計應使插頭之形狀無法插入主電源插座或電器耦合器",
+    "remark_cn": "輸出連接器之外形設計，使其不太可能插入電源連接器或插座。",
+    "verdict_cn": "符合"
+  },
+  "G.5": {
+    "title_cn": "繞線式組件",
+    "remark_cn": "繞線式組件",
+    "verdict_cn": "符合"
+  },
+  "G.5.1": {
+    "title_cn": "繞線式組件中之繞線絕緣",
+    "remark_cn": "使用認可三層絕緣線",
+    "verdict_cn": "符合"
+  },
+  "G.5.1.2": {
+    "title_cn": "防止機械應力",
+    "remark_cn": "以絕緣膠帶防護",
+    "verdict_cn": "符合"
+  },
+  "G.5.2": {
+    "title_cn": "耐久性試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.2.1": {
+    "title_cn": "一般試驗要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.2.2": {
+    "title_cn": "高溫試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.2.3": {
+    "title_cn": "自主電源系統供電之繞線式組件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.2.4": {
+    "title_cn": "不得有絕緣崩潰",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3": {
+    "title_cn": "變壓器",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "G.5.3.1": {
+    "title_cn": "符合方法:",
+    "remark_cn": "見 G.5.3.2 及 G.5.3.3",
+    "verdict_cn": "符合"
+  },
+  "G.5.3.2": {
+    "title_cn": "絕緣",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "G.5.3.3": {
+    "title_cn": "變壓器過載試驗",
+    "remark_cn": "(見附表 B.3, B.4)",
+    "verdict_cn": "符合"
+  },
+  "G.5.3.3.1": {
+    "title_cn": "試驗條件",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "G.5.3.3.2": {
+    "title_cn": "繞組溫度",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "G.5.3.3.3": {
+    "title_cn": "繞組溫度-替代試驗方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3.4": {
+    "title_cn": "使用完全絕緣繞組線(FIW)之變壓器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3.4.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3.4.2": {
+    "title_cn": "僅具有基本絕緣的變壓器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3.4.3": {
+    "title_cn": "具有雙重絕緣或強化絕緣之變壓器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3.4.4": {
+    "title_cn": "FIW 纏繞在金屬或鐵心上之變壓器",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3.4.5": {
+    "title_cn": "熱循環試驗及符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3.4.6": {
+    "title_cn": "局部放電試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.3.4.7": {
+    "title_cn": "例行試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4": {
+    "title_cn": "電動機",
+    "remark_cn": "無馬達",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.2": {
+    "title_cn": "電動機過載試驗條件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.3": {
+    "title_cn": "運轉過載試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.4.2": {
+    "title_cn": "鎖定轉子過載試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.5": {
+    "title_cn": "直流電動機之運轉過載試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.5.2": {
+    "title_cn": "在裝置中試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.5.3": {
+    "title_cn": "替代方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.6": {
+    "title_cn": "直流電動機之鎖定轉子過載試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.6.2": {
+    "title_cn": "在裝置中試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.6.3": {
+    "title_cn": "替代方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.7": {
+    "title_cn": "具電容器之電動機",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.8": {
+    "title_cn": "三相電動機",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.5.4.9": {
+    "title_cn": "串激電動機",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.6": {
+    "title_cn": "線材絕緣",
+    "remark_cn": "線材絕緣",
+    "verdict_cn": "符合"
+  },
+  "G.6.1": {
+    "title_cn": "一般",
+    "remark_cn": "二次側繞線使用三層絕緣線",
+    "verdict_cn": "符合"
+  },
+  "G.6.2": {
+    "title_cn": "繞組漆包線絕緣",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7": {
+    "title_cn": "主電源系統電源線",
+    "remark_cn": "主電源系統電源線",
+    "verdict_cn": "不適用"
+  },
+  "G.7.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "未提供電源軟線",
+    "verdict_cn": "不適用"
+  },
+  "G.7.2": {
+    "title_cn": "截面積(mm2或AWG):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.3": {
+    "title_cn": "不可分離式電源線之電線固定座及抗拉力",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.3.2": {
+    "title_cn": "電線抗拉力",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.3.2.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.3.2.2": {
+    "title_cn": "抗拉力機制之失效",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.3.2.3": {
+    "title_cn": "電線披覆或護套之位置, 距離(mm)",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.3.2.4": {
+    "title_cn": "抗拉力機制與電線固定座材料",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.4": {
+    "title_cn": "電線入口",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.5": {
+    "title_cn": "不可分離式電線彎曲保護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.5.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.5.2": {
+    "title_cn": "試驗方法及符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.6": {
+    "title_cn": "電源配線空間",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.6.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.6.2": {
+    "title_cn": "絞線",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.6.2.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.7.6.2.2": {
+    "title_cn": "使用8 mm絞線進行試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.8": {
+    "title_cn": "變阻器",
+    "remark_cn": "變阻器",
+    "verdict_cn": "不適用"
+  },
+  "G.8.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.8.2": {
+    "title_cn": "對火焰之安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.8.2.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.8.2.2": {
+    "title_cn": "變阻器過載試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.8.2.3": {
+    "title_cn": "暫時過電壓試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.9": {
+    "title_cn": "積體電路(IC)電流限制器",
+    "remark_cn": "積體電路(IC)電流限制器",
+    "verdict_cn": "不適用"
+  },
+  "G.9.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.9.2": {
+    "title_cn": "試驗程序",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.9.3": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.10": {
+    "title_cn": "電阻",
+    "remark_cn": "電阻",
+    "verdict_cn": "不適用"
+  },
+  "G.10.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.10.2": {
+    "title_cn": "預處理",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.10.3": {
+    "title_cn": "電阻試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.10.4": {
+    "title_cn": "電壓突波試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.10.5": {
+    "title_cn": "脈衝試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.10.6": {
+    "title_cn": "過載試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.11": {
+    "title_cn": "電容器和RC單元",
+    "remark_cn": "電容器和RC單元",
+    "verdict_cn": "符合"
+  },
+  "G.11.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "依據 IEC/EN/UL 60384-14 使用 Y 電容。   \n詳細內容見表 4.1.2",
+    "verdict_cn": "符合"
+  },
+  "G.11.2": {
+    "title_cn": "電容器和RC單元的預處理",
+    "remark_cn": "(見附表 4.1.2)",
+    "verdict_cn": "符合"
+  },
+  "G.11.3": {
+    "title_cn": "選擇電容器的規則",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "G.12": {
+    "title_cn": "光耦合器",
+    "remark_cn": "光耦合器",
+    "verdict_cn": "符合"
+  },
+  "G.13": {
+    "title_cn": "印刷電路板",
+    "remark_cn": "印刷電路板",
+    "verdict_cn": "符合"
+  },
+  "G.13.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "使用認可印刷電路板",
+    "verdict_cn": "符合"
+  },
+  "G.13.2": {
+    "title_cn": "無塗裝之印刷電路板",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "G.13.3": {
+    "title_cn": "塗裝之印刷電路板",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.13.4": {
+    "title_cn": "在相同內層表面之導體間絕緣",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.13.5": {
+    "title_cn": "在不同表面上導體間之絕緣",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.13.6": {
+    "title_cn": "塗裝印刷電路板上之試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.13.6.1": {
+    "title_cn": "準備樣品及初步檢驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.13.6.2": {
+    "title_cn": "試驗方法及符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.14": {
+    "title_cn": "組件端子上之塗裝",
+    "remark_cn": "組件端子上之塗裝",
+    "verdict_cn": "不適用"
+  },
+  "G.14.1": {
+    "title_cn": "要求:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15": {
+    "title_cn": "加壓液體充填組件",
+    "remark_cn": "加壓液體充填組件",
+    "verdict_cn": "不適用"
+  },
+  "G.15.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15.2": {
+    "title_cn": "試驗方法和符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15.2.1": {
+    "title_cn": "靜液壓試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15.2.2": {
+    "title_cn": "抗潛變試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15.2.3": {
+    "title_cn": "導管及配件的相容性試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15.2.4": {
+    "title_cn": "振動試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15.2.5": {
+    "title_cn": "熱循環試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15.2.6": {
+    "title_cn": "施力試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.15.3": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.16": {
+    "title_cn": "包含電容器放電功能之IC (ICX)",
+    "remark_cn": "包含電容器放電功能之IC (ICX)",
+    "verdict_cn": "不適用"
+  },
+  "G.16.1": {
+    "title_cn": "不需進行故障試驗的條件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.16.2": {
+    "title_cn": "試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "G.16.3": {
+    "title_cn": "電容器放電試驗:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "H": {
+    "title_cn": "電話機振鈴信號準則",
+    "remark_cn": "電話機振鈴信號準則",
+    "verdict_cn": "不適用"
+  },
+  "H.1": {
+    "title_cn": "一般",
+    "remark_cn": "一般",
+    "verdict_cn": "不適用"
+  },
+  "H.2": {
+    "title_cn": "方法A",
+    "remark_cn": "方法A",
+    "verdict_cn": "不適用"
+  },
+  "H.3": {
+    "title_cn": "方法B",
+    "remark_cn": "方法B",
+    "verdict_cn": "不適用"
+  },
+  "H.3.1": {
+    "title_cn": "振鈴信號",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "H.3.1.1": {
+    "title_cn": "頻率(Hz) :",
+    "remark_cn": "",
+    "verdict_cn": ""
+  },
+  "H.3.1.2": {
+    "title_cn": "電壓(V) :",
+    "remark_cn": "",
+    "verdict_cn": ""
+  },
+  "H.3.1.3": {
+    "title_cn": "間歇震鈴;時間與電壓(V) :",
+    "remark_cn": "",
+    "verdict_cn": ""
+  },
+  "H.3.1.4": {
+    "title_cn": "單一故障電流(mA):",
+    "remark_cn": "",
+    "verdict_cn": ""
+  },
+  "H.3.2": {
+    "title_cn": "跳脫裝置和監視電壓",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "H.3.2.1": {
+    "title_cn": "使用跳閘裝置或監控電壓的條件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "H.3.2.2": {
+    "title_cn": "跳脫裝置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "H.3.2.3": {
+    "title_cn": "監視電壓(V):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "J": {
+    "title_cn": "無套絕緣套管之絕緣繞線",
+    "remark_cn": "無套絕緣套管之絕緣繞線",
+    "verdict_cn": "符合"
+  },
+  "J.1": {
+    "title_cn": "一般",
+    "remark_cn": "一般",
+    "verdict_cn": "符合"
+  },
+  "J.2/J.3": {
+    "title_cn": "試驗和製造",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "K": {
+    "title_cn": "安全互鎖",
+    "remark_cn": "安全互鎖",
+    "verdict_cn": "不適用"
+  },
+  "K.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "一般要求",
+    "verdict_cn": "不適用"
+  },
+  "K.2": {
+    "title_cn": "安全互鎖安全防護機制組件",
+    "remark_cn": "安全互鎖安全防護機制組件",
+    "verdict_cn": "不適用"
+  },
+  "K.3": {
+    "title_cn": "操作模式之不慎改變",
+    "remark_cn": "操作模式之不慎改變",
+    "verdict_cn": "不適用"
+  },
+  "K.4": {
+    "title_cn": "互鎖安全防護之解除",
+    "remark_cn": "互鎖安全防護之解除",
+    "verdict_cn": "不適用"
+  },
+  "K.5": {
+    "title_cn": "故障下之安全性",
+    "remark_cn": "故障下之安全性",
+    "verdict_cn": "不適用"
+  },
+  "K.5.1": {
+    "title_cn": "單一故障條件事件下",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "K.6": {
+    "title_cn": "機械操作式安全互鎖",
+    "remark_cn": "機械操作式安全互鎖",
+    "verdict_cn": "不適用"
+  },
+  "K.6.1": {
+    "title_cn": "耐久性要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "K.6.2": {
+    "title_cn": "試驗方法及符合性:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "K.7": {
+    "title_cn": "互鎖電路隔離",
+    "remark_cn": "互鎖電路隔離",
+    "verdict_cn": "不適用"
+  },
+  "K.7.1": {
+    "title_cn": "接觸間隙及互鎖電路要素之分隔距離",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "K.7.2": {
+    "title_cn": "過載試驗,電流(A):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "K.7.3": {
+    "title_cn": "耐久性試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "K.7.4": {
+    "title_cn": "耐電壓試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "L": {
+    "title_cn": "切離裝置",
+    "remark_cn": "切離裝置",
+    "verdict_cn": "符合"
+  },
+  "L.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "使用市電插頭作為切斷裝置",
+    "verdict_cn": "符合"
+  },
+  "L.2": {
+    "title_cn": "永久連接的設備",
+    "remark_cn": "非永久連接設備",
+    "verdict_cn": "不適用"
+  },
+  "L.3": {
+    "title_cn": "殘留能量之部件",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "L.4": {
+    "title_cn": "單相設備",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "L.5": {
+    "title_cn": "三相設備",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "L.6": {
+    "title_cn": "開關用作切離裝置",
+    "remark_cn": "無開關",
+    "verdict_cn": "不適用"
+  },
+  "L.7": {
+    "title_cn": "插頭用作切離裝置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "L.8": {
+    "title_cn": "多電源組",
+    "remark_cn": "僅適用 AC 市電",
+    "verdict_cn": "不適用"
+  },
+  "M": {
+    "title_cn": "設備包含電池及其保護電路",
+    "remark_cn": "設備包含電池及其保護電路",
+    "verdict_cn": "不適用"
+  },
+  "M.1": {
+    "title_cn": "一般要求",
+    "remark_cn": "一般要求",
+    "verdict_cn": "不適用"
+  },
+  "M.2": {
+    "title_cn": "電池及其電池的安全性",
+    "remark_cn": "電池及其電池的安全性",
+    "verdict_cn": "不適用"
+  },
+  "M.2.1": {
+    "title_cn": "電池組及其單電池符合相關的IEC標準:",
+    "remark_cn": "無電池",
+    "verdict_cn": "不適用"
+  },
+  "M.3": {
+    "title_cn": "提供於設備內之電池組保護電路",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.3.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.3.2": {
+    "title_cn": "試驗方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.3.3": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4": {
+    "title_cn": "設備含有可攜式二次鋰電池之額外安全防護",
+    "remark_cn": "設備含有可攜式二次鋰電池之額外安全防護",
+    "verdict_cn": "不適用"
+  },
+  "M.4.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.2": {
+    "title_cn": "充電安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.2.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.2.2": {
+    "title_cn": "符合性:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.3": {
+    "title_cn": "防火機殼:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.4": {
+    "title_cn": "設備含有二次鋰電池之落下試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.4.2": {
+    "title_cn": "落下試驗之準備及程序",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.4.3": {
+    "title_cn": "落下後之電池與參考(無落下)電池之24小時期間的電壓差(%):",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.4.4.": {
+    "title_cn": "檢查充電/放電功能",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.4.5": {
+    "title_cn": "充電/放電循環試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.4.4.6": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.5": {
+    "title_cn": "攜帶中因短路造成之燃燒風險",
+    "remark_cn": "攜帶中因短路造成之燃燒風險",
+    "verdict_cn": "不適用"
+  },
+  "M.5.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.5.2": {
+    "title_cn": "試驗方法及符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.6": {
+    "title_cn": "防止短路的安全措施",
+    "remark_cn": "防止短路的安全措施",
+    "verdict_cn": "不適用"
+  },
+  "M.6.1": {
+    "title_cn": "外部端子短路或內部安全防護故障",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.6.2": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.7": {
+    "title_cn": "鉛酸電池組及鎳鎘電池組之爆炸風險",
+    "remark_cn": "鉛酸電池組及鎳鎘電池組之爆炸風險",
+    "verdict_cn": "不適用"
+  },
+  "M.7.1": {
+    "title_cn": "防止爆炸性氣體濃度之排氣",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.7.2": {
+    "title_cn": "試驗方法及符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.7.3": {
+    "title_cn": "排氣試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.7.3.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.7.3.2": {
+    "title_cn": "排氣試驗－方案1",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.7.3.3": {
+    "title_cn": "排氣試驗－方案2",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.7.3.4": {
+    "title_cn": "排氣試驗－方案3",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.7.4": {
+    "title_cn": "標示:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.8": {
+    "title_cn": "含液態電解質電池組因外部火花源導致之內部點燃的保護",
+    "remark_cn": "含液態電解質電池組因外部火花源導致之內部點燃的保護",
+    "verdict_cn": "不適用"
+  },
+  "M.8.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.8.2": {
+    "title_cn": "試驗方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.8.2.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.8.2.2": {
+    "title_cn": "估算假設體積VZ(m3/s):",
+    "remark_cn": "",
+    "verdict_cn": ""
+  },
+  "M.8.2.3": {
+    "title_cn": "修正係數:",
+    "remark_cn": "",
+    "verdict_cn": ""
+  },
+  "M.8.2.4": {
+    "title_cn": "距離計算d (mm) :",
+    "remark_cn": "",
+    "verdict_cn": ""
+  },
+  "M.9": {
+    "title_cn": "預防電解液洩漏",
+    "remark_cn": "預防電解液洩漏",
+    "verdict_cn": "不適用"
+  },
+  "M.9.1": {
+    "title_cn": "電解液洩漏之保護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.9.2": {
+    "title_cn": "用於防止電解質溢出的托盤",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "M.10": {
+    "title_cn": "防止合理可預見的誤用的說明",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "N": {
+    "title_cn": "電化學電位表",
+    "remark_cn": "電化學電位表",
+    "verdict_cn": "不適用"
+  },
+  "O": {
+    "title_cn": "沿面距離及空間距離之量測",
+    "remark_cn": "沿面距離及空間距離之量測",
+    "verdict_cn": "符合"
+  },
+  "P": {
+    "title_cn": "防止導電物件之安全防護",
+    "remark_cn": "防止導電物件之安全防護",
+    "verdict_cn": "符合"
+  },
+  "P.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "P.2": {
+    "title_cn": "固體外物進入或進入之後果的安全防護",
+    "remark_cn": "固體外物進入或進入之後果的安全防護",
+    "verdict_cn": "符合"
+  },
+  "P.2.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "P.2.2": {
+    "title_cn": "外物進入之安全防護",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "P.2.3": {
+    "title_cn": "外物進入之後果的安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "P.2.3.1": {
+    "title_cn": "安全防護要求",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "P.2.3.2": {
+    "title_cn": "進入後果試驗:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "P.3": {
+    "title_cn": "對於內部液體噴濺之安全防",
+    "remark_cn": "對於內部液體噴濺之安全防",
+    "verdict_cn": "不適用"
+  },
+  "P.3.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "P.3.2": {
+    "title_cn": "決定噴濺後果",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "P.3.3": {
+    "title_cn": "噴濺安全防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "P.3.4": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "P.4": {
+    "title_cn": "金屬化塗層及黏著劑固定之部件",
+    "remark_cn": "金屬化塗層及黏著劑固定之部件",
+    "verdict_cn": "不適用"
+  },
+  "P.4.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "P.4.2": {
+    "title_cn": "試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Q": {
+    "title_cn": "與建築物配線互連",
+    "remark_cn": "與建築物配線互連",
+    "verdict_cn": "符合"
+  },
+  "Q.1": {
+    "title_cn": "電力限制型電源",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "Q.1.1": {
+    "title_cn": "要求",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "Q.1.2": {
+    "title_cn": "試驗方法及符合性:",
+    "remark_cn": "(見附表 Q.1)",
+    "verdict_cn": "符合"
+  },
+  "Q.2": {
+    "title_cn": "外部電路之試驗−成對導體纜線",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "R": {
+    "title_cn": "限制短路試驗",
+    "remark_cn": "限制短路試驗",
+    "verdict_cn": "不適用"
+  },
+  "R.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "R.2": {
+    "title_cn": "試驗設置",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "R.3": {
+    "title_cn": "試驗方法",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "R.4": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "S": {
+    "title_cn": "耐熱及耐燃試驗",
+    "remark_cn": "耐熱及耐燃試驗",
+    "verdict_cn": "不適用"
+  },
+  "S.1": {
+    "title_cn": "穩態功率不超過4,000 W之設備其防火機殼材料及防火阻隔物材料之耐燃試驗",
+    "remark_cn": "穩態功率不超過4,000 W之設備其防火機殼材料及防火阻隔物材料之耐燃試驗",
+    "verdict_cn": "不適用"
+  },
+  "S.2": {
+    "title_cn": "防火機殼及防火阻隔物完整性之耐燃試驗",
+    "remark_cn": "防火機殼及防火阻隔物完整性之耐燃試驗",
+    "verdict_cn": "不適用"
+  },
+  "S.3": {
+    "title_cn": "防火機殼底部之耐燃試驗",
+    "remark_cn": "防火機殼底部之耐燃試驗",
+    "verdict_cn": "不適用"
+  },
+  "S.3.1": {
+    "title_cn": "樣品之裝設",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "S.3.2": {
+    "title_cn": "試驗方法和符合性性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "S.4": {
+    "title_cn": "材料耐燃分級",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "S.5": {
+    "title_cn": "穩態功率超過4,000 W 之設備其防火機殼材料之耐燃試驗",
+    "remark_cn": "穩態功率超過4,000 W 之設備其防火機殼材料之耐燃試驗",
+    "verdict_cn": "不適用"
+  },
+  "Ť": {
+    "title_cn": "機械強度試驗",
+    "remark_cn": "機械強度試驗",
+    "verdict_cn": "符合"
+  },
+  "T.1": {
+    "title_cn": "一般",
+    "remark_cn": "一般",
+    "verdict_cn": "符合"
+  },
+  "T.2": {
+    "title_cn": "穩定力試驗, 10 N:",
+    "remark_cn": "(見附表 T.2)",
+    "verdict_cn": "符合"
+  },
+  "T.3": {
+    "title_cn": "穩定力試驗, 30 N:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "T.4": {
+    "title_cn": "穩定力試驗, 100 N:",
+    "remark_cn": "(見附表 T.4)",
+    "verdict_cn": "符合"
+  },
+  "T.5": {
+    "title_cn": "穩定力試驗, 250 N:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "T.6": {
+    "title_cn": "機殼撞擊試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "T.7": {
+    "title_cn": "落下試驗:",
+    "remark_cn": "(參見附表 T.7)",
+    "verdict_cn": "符合"
+  },
+  "T.8": {
+    "title_cn": "應力釋放試驗:",
+    "remark_cn": "(參見附表 T.8)",
+    "verdict_cn": "符合"
+  },
+  "T.9": {
+    "title_cn": "玻璃撞擊試驗:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "T.10": {
+    "title_cn": "玻璃破碎試驗",
+    "remark_cn": "玻璃破碎試驗",
+    "verdict_cn": "不適用"
+  },
+  "T.11": {
+    "title_cn": "伸縮型或桿型天線之試驗",
+    "remark_cn": "伸縮型或桿型天線之試驗",
+    "verdict_cn": "不適用"
+  },
+  "U": {
+    "title_cn": "陰極射線管(cathode-ray tubes, CRT)機械強度及防爆措施",
+    "remark_cn": "陰極射線管(cathode-ray tubes, CRT)機械強度及防爆措施",
+    "verdict_cn": "不適用"
+  },
+  "U.1": {
+    "title_cn": "一般",
+    "remark_cn": "一般",
+    "verdict_cn": "不適用"
+  },
+  "U.2": {
+    "title_cn": "具實質保護之CRT的試驗方法和符合性",
+    "remark_cn": "具實質保護之CRT的試驗方法和符合性",
+    "verdict_cn": "不適用"
+  },
+  "U.3": {
+    "title_cn": "保護屏幕",
+    "remark_cn": "保護屏幕",
+    "verdict_cn": "不適用"
+  },
+  "V": {
+    "title_cn": "可觸及部件之決定",
+    "remark_cn": "可觸及部件之決定",
+    "verdict_cn": "符合"
+  },
+  "V.1": {
+    "title_cn": "設備可觸及部件",
+    "remark_cn": "設備可觸及部件",
+    "verdict_cn": "符合"
+  },
+  "V.1.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "V.1.2": {
+    "title_cn": "以具關節之試驗探棒試驗之表面及開孔",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "V.1.3": {
+    "title_cn": "用直式無關節之試驗探棒試驗之開孔",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "V.1.4": {
+    "title_cn": "用鈍頭探棒測試插頭、插孔、連接器",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "V.1.5": {
+    "title_cn": "用楔形探棒測試槽狀開孔",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "V.1.6": {
+    "title_cn": "用直式試驗探棒測試預計由普通人員使用之端子",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "V.2": {
+    "title_cn": "可觸及部件準則",
+    "remark_cn": "",
+    "verdict_cn": "符合"
+  },
+  "X.": {
+    "title_cn": "連接至不超過峰值420 V (300 V RMS)之交流主電源之電路中決定絕緣空間距離之替代方法",
+    "remark_cn": "連接至不超過峰值420 V (300 V RMS)之交流主電源之電路中決定絕緣空間距離之替代方法",
+    "verdict_cn": "不適用"
+  },
+  "Y": {
+    "title_cn": "戶外機殼之結構要求",
+    "remark_cn": "戶外機殼之結構要求",
+    "verdict_cn": "不適用"
+  },
+  "Y.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.2": {
+    "title_cn": "抗紫外線輻射",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.3": {
+    "title_cn": "抗腐蝕",
+    "remark_cn": "抗腐蝕",
+    "verdict_cn": "不適用"
+  },
+  "Y.3.1": {
+    "title_cn": "戶外機殼金屬部件抵抗水載污染之效應:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.3.2": {
+    "title_cn": "試驗設備",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.3.3": {
+    "title_cn": "水飽和二氧化硫氣體",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.3.4": {
+    "title_cn": "試驗程序:",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.3.5": {
+    "title_cn": "符合性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.4": {
+    "title_cn": "密封墊片",
+    "remark_cn": "密封墊片",
+    "verdict_cn": "不適用"
+  },
+  "Y.4.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.4.2": {
+    "title_cn": "密封墊片試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.4.3": {
+    "title_cn": "拉伸強度和伸長試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.4.4": {
+    "title_cn": "壓縮試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.4.5": {
+    "title_cn": "抗油性",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.4.6": {
+    "title_cn": "固定方式",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.5": {
+    "title_cn": "戶外機殼內設備之保護",
+    "remark_cn": "戶外機殼內設備之保護",
+    "verdict_cn": "不適用"
+  },
+  "Y.5.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.5.2": {
+    "title_cn": "防止濕氣",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.5.3": {
+    "title_cn": "水霧試驗",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.5.4": {
+    "title_cn": "植物及害蟲之防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.5.5": {
+    "title_cn": "過量灰塵之防護",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.5.5.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.5.5.2": {
+    "title_cn": "IP5X設備",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.5.5.3": {
+    "title_cn": "IP6X設備",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.6": {
+    "title_cn": "機殼之機械強度",
+    "remark_cn": "機殼之機械強度",
+    "verdict_cn": "不適用"
+  },
+  "Y.6.1": {
+    "title_cn": "一般",
+    "remark_cn": "",
+    "verdict_cn": "不適用"
+  },
+  "Y.6.2": {
+    "title_cn": "撞擊試驗:",
+    "remark_cn": ".",
+    "verdict_cn": "不適用"
+  },
+  "X": {
+    "title_cn": "表格: 確定最小間隙距離的替代方法",
+    "remark_cn": "表格: 確定最小間隙距離的替代方法",
+    "verdict_cn": "表格: 確定最小間隙距離的替代方法"
+  },
+  "空間距離介於:": {
+    "title_cn": "空間距離介於:",
+    "remark_cn": "峰值工作電壓 (Vpeak)",
+    "verdict_cn": "要求空間距離 \n(mm)"
+  },
+  "--": {
+    "title_cn": "--",
+    "remark_cn": "--",
+    "verdict_cn": "--"
+  },
+  "備註:": {
+    "title_cn": "備註:",
+    "remark_cn": "備註:",
+    "verdict_cn": "備註:"
+  }
+}

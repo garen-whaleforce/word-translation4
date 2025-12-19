@@ -1,0 +1,44 @@
+# Docker Compose for local development
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SHARED_PASSWORD=dev123
+      - SERVICE_TYPE=api
+      - LOCAL_STORAGE_PATH=/app/storage
+    volumes:
+      - ./storage:/app/storage
+      - ./templates:/app/templates:ro
+    depends_on:
+      - redis
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SERVICE_TYPE=worker
+      - LOCAL_STORAGE_PATH=/app/storage
+    volumes:
+      - ./storage:/app/storage
+      - ./templates:/app/templates:ro
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:

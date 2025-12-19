@@ -1,0 +1,19 @@
+# Zeabur 部署配置
+# 文檔: https://zeabur.com/docs/deploy/config-file
+
+# API 服務
+api:
+  build:
+    dockerfile: Dockerfile
+  env:
+    SERVICE_TYPE: api
+    PORT: 8000
+  expose:
+    port: 8000
+
+# Worker 服務
+worker:
+  build:
+    dockerfile: Dockerfile
+  env:
+    SERVICE_TYPE: worker
