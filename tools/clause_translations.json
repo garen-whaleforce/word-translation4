@@ -1,8 +1,17 @@
 {
+  "(%)": {
+    "title_cn": "(%)"
+  },
+  "(V)": {
+    "title_cn": "(V)"
+  },
   "--": {
     "remark_cn": "--",
     "title_cn": "--",
     "verdict_cn": "--"
+  },
+  "1 s": {
+    "title_cn": "1 秒"
   },
   "10": {
     "remark_cn": "輻射",
@@ -124,7 +133,19 @@
     "title_cn": "無線收聽裝置",
     "verdict_cn": "不適用"
   },
+  "16A except 13A for United Kingdom (20A for US and Canada)": {
+    "title_cn": "16A，英國為 13A（美國及加拿大為 20A）"
+  },
+  "2000 Vpeak": {
+    "title_cn": "2000 Vpeak"
+  },
+  "2000V peak": {
+    "title_cn": "2000V 峰值"
+  },
   "20N 測試鉤力量試驗": "帶測試鉤的20N力試驗",
+  "2500 Vpeak": {
+    "title_cn": "2500 Vpeak"
+  },
   "30 秒積分曝露量 (MEL30)": "30 s整合顯露位準(MEL30)",
   "30N 測試探針力量試驗": "帶測試探頭的30N力試驗",
   "4": {
@@ -987,6 +1008,9 @@
     "title_cn": "電池備用供電之反饋安全防護",
     "verdict_cn": "不適用"
   },
+  "5000 Vpeak": {
+    "title_cn": "5000 Vpeak"
+  },
   "6": {
     "remark_cn": "電氣導致之火燄",
     "title_cn": "電氣導致之火燄",
@@ -1568,12 +1592,63 @@
     "verdict_cn": "不適用"
   },
   "95%, 40°C, 120 hours": "95%、40°C、120 小時",
+  ">5s": {
+    "title_cn": ">5 秒"
+  },
   "AC mains DC mains Not mains connected": "交流主電源 直流主電源 非主電源連接",
+  "AC plug used": {
+    "title_cn": "使用交流電插頭"
+  },
   "AGAINST THE EFFECTS OF IMPLOSION": "防止內爆效應",
+  "ASRE": {
+    "title_cn": "所有安全防護維持有效"
+  },
+  "All models mass": {
+    "title_cn": "所有型號質量"
+  },
   "All models mass <7Kg, classed as MS1": "所有型號重量 <7Kg，歸類為 MS1",
   "All source of transformer and insulation materials listed in table 4.1.2. were considered": "表 4.1.2 中列出的所有變壓器和絕緣材料的來源均已考慮",
+  "Alternative by electric strength test": {
+    "title_cn": "耐電壓試驗替代"
+  },
   "Alternative by electric strength test, tested voltage (V), K": "透過耐電壓試驗替代,測試電壓(V), KR",
   "Alternative test methods": "替代試驗方法",
+  "Apk": {
+    "title_cn": "Apk"
+  },
+  "Approved C14, C6 type appliance inlet used": {
+    "title_cn": "使用經認可之 C14、C6 型器具插座"
+  },
+  "Approved ICX": {
+    "title_cn": "經認可之 ICX"
+  },
+  "Approved appliance inlet provided": {
+    "title_cn": "已提供經認可之器具插座"
+  },
+  "Approved inlet": {
+    "title_cn": "經認可之插座"
+  },
+  "Approved opto-coupler comply with IEC 60747-5-5": {
+    "title_cn": "經認可之光耦合器符合 IEC 60747-5-5"
+  },
+  "Approved optocoupler used": {
+    "title_cn": "使用經認可之光耦合器"
+  },
+  "Approved triple insulated wires complied with Annex J of IEC 62368-1": {
+    "title_cn": "經認可之三重絕緣線符合 IEC 62368-1 附錄 J"
+  },
+  "Approved varistor used": {
+    "title_cn": "使用經認可之變阻器"
+  },
+  "Arms": {
+    "title_cn": "Arms"
+  },
+  "As above": {
+    "title_cn": "同上"
+  },
+  "As below": {
+    "title_cn": "同下"
+  },
   "B": {
     "remark_cn": "正常操作條件試驗、異常操作條件試驗及單一故障條件試驗",
     "title_cn": "正常操作條件試驗、異常操作條件試驗及單一故障條件試驗",
@@ -1719,6 +1794,12 @@
     "title_cn": "單一故障條件下之電池充放電",
     "verdict_cn": "不適用"
   },
+  "Bobbin and tape": {
+    "title_cn": "骨架與膠帶"
+  },
+  "Built-in equipment": {
+    "title_cn": "崁入式設備"
+  },
   "C": {
     "remark_cn": "紫外線輻射",
     "title_cn": "紫外線輻射",
@@ -1764,9 +1845,36 @@
     "title_cn": "氙弧燈照射試驗",
     "verdict_cn": "不適用"
   },
+  "CRT": {
+    "title_cn": "CRT"
+  },
+  "Checked by V.1.2 (Figure V.1)": {
+    "title_cn": "依 V.1.2 (圖 V.1) 檢查"
+  },
+  "Class A": {
+    "title_cn": "A 級"
+  },
+  "Class B": {
+    "title_cn": "B 級"
+  },
+  "Class I": {
+    "title_cn": "I 類"
+  },
   "Class I Class II Class III 未分類": "I類 II類 III類 未分類",
+  "Class II": {
+    "title_cn": "II 類"
+  },
   "Class II 帶功能接地標誌": "II 類, 帶有功能接地標記",
   "Class II 設備": "II 類產品",
+  "Class III": {
+    "title_cn": "III 類"
+  },
+  "Cord/cable used for test": {
+    "title_cn": "測試使用之電源線/電纜"
+  },
+  "Current limiting method": {
+    "title_cn": "電流限制方法"
+  },
   "D": {
     "remark_cn": "試驗產生器",
     "title_cn": "試驗產生器",
@@ -1788,6 +1896,21 @@
     "verdict_cn": "不適用"
   },
   "Delta": "三角形",
+  "Details": {
+    "title_cn": "詳細資訊"
+  },
+  "Direct plug-in equipment": {
+    "title_cn": "直插式設備"
+  },
+  "Disconnect device disconnects": {
+    "title_cn": "斷開裝置斷開"
+  },
+  "Dti": {
+    "title_cn": "絕緣厚度"
+  },
+  "Duration (weeks)": {
+    "title_cn": "持續時間（週）"
+  },
   "E": {
     "remark_cn": "設備包含音頻擴大器之試驗條件",
     "title_cn": "設備包含音頻擴大器之試驗條件",
@@ -1807,6 +1930,30 @@
     "remark_cn": "",
     "title_cn": "聲音擴大器異常操作條件",
     "verdict_cn": "不適用"
+  },
+  "EN": {
+    "title_cn": "EN"
+  },
+  "ES1": {
+    "title_cn": "ES1"
+  },
+  "ES2": {
+    "title_cn": "ES2"
+  },
+  "ES3": {
+    "title_cn": "ES3"
+  },
+  "ES分類": {
+    "title_cn": "ES 分類"
+  },
+  "Electronic protection": {
+    "title_cn": "電子保護"
+  },
+  "Enclosure: V-0": {
+    "title_cn": "外殼: V-0"
+  },
+  "Ext.dcr": {
+    "title_cn": "外徑"
   },
   "F": {
     "remark_cn": "設備標示、說明及指示型安全防護",
@@ -2001,9 +2148,18 @@
   "FIW 導線標稱直徑": "FIW 導線標稱直徑",
   "FIW 纏繞在金屬或鐵心上之變壓器": "FIW 纏繞在金屬或鐵芯上之變壓器",
   "Fire enclosure provided": "提供防火外殼",
+  "Fixed by bobbin and insulation tape": {
+    "title_cn": "以骨架與絕緣膠帶固定"
+  },
   "For EU, UK, AU, JP plug, see attached plug test report": "對於 EU、UK、AU、JP 插頭，請參見附加的插頭測試報告",
+  "For insulation tape wrapped around transformer": {
+    "title_cn": "變壓器上繞製之絕緣膠帶"
+  },
   "Force applied (N)": "施加的力(N)",
   "Frequency": "頻率",
+  "Frequency: 60Hz": {
+    "title_cn": "頻率: 60Hz"
+  },
   "G": {
     "remark_cn": "組件",
     "title_cn": "組件",
@@ -2654,6 +2810,9 @@
     "title_cn": "符合性",
     "verdict_cn": "不適用"
   },
+  "Green-and-yellow": {
+    "title_cn": "綠黃色"
+  },
   "H": {
     "remark_cn": "電話機振鈴信號準則",
     "title_cn": "電話機振鈴信號準則",
@@ -2719,10 +2878,49 @@
     "title_cn": "監視電壓(V):",
     "verdict_cn": "不適用"
   },
+  "HSCT": {
+    "title_cn": "最高規定充電溫度"
+  },
+  "Hand-held equipment": {
+    "title_cn": "手持式設備"
+  },
+  "Hz": {
+    "title_cn": "Hz"
+  },
   "IC 限流器輸出電流 (最大 5A)": "IC 限流器輸出電流 (最大 5A)",
+  "ICX": {
+    "title_cn": "ICX"
+  },
   "ICX 單獨測試": "ICX 單獨試驗",
   "ICX 與相關電路在設備中測試": "ICX 與相關電路在設備中試驗",
+  "IEC": {
+    "title_cn": "IEC"
+  },
+  "IN CIRCUITS CONNECTED TO AN AC MAINS NOT EXCEEDING 420 V PEAK": {
+    "title_cn": "連接至交流電源且不超過 420 V 峰值之電路"
+  },
   "INSULATION": "絕緣",
+  "IT": {
+    "title_cn": "IT"
+  },
+  "Indicator LED (optional): RS1 classification": {
+    "title_cn": "指示 LED（選配）: RS1 分類"
+  },
+  "Indoor used only": {
+    "title_cn": "僅限室內使用"
+  },
+  "Instructions are provided": {
+    "title_cn": "已提供說明書"
+  },
+  "Instructions in English and Germany are provided": {
+    "title_cn": "提供英文及德文說明書"
+  },
+  "Internal wires and internal components": {
+    "title_cn": "內部導線及內部元件"
+  },
+  "Internal wires connecting to AC inlet were hooked in before soldering": {
+    "title_cn": "連接至交流電插座之內部導線在焊接前已勾住"
+  },
   "J": {
     "remark_cn": "無套絕緣套管之絕緣繞線",
     "title_cn": "無套絕緣套管之絕緣繞線",
@@ -2742,6 +2940,9 @@
     "remark_cn": "安全互鎖",
     "title_cn": "安全互鎖",
     "verdict_cn": "不適用"
+  },
+  "K R": {
+    "title_cn": "K R"
   },
   "K.1": {
     "remark_cn": "一般要求",
@@ -2857,6 +3058,12 @@
     "remark_cn": "僅適用 AC 市電",
     "title_cn": "多電源組",
     "verdict_cn": "不適用"
+  },
+  "LED types": {
+    "title_cn": "LED 型式"
+  },
+  "LSCT": {
+    "title_cn": "最低指定充電溫度"
   },
   "Largest capacitance and smallest resistance for ICX tested by itself for 10000 cycles test": "ICX 自身試驗之最大電容與最小電阻（10000 次循環試驗）",
   "Lasers": "雷射",
@@ -3091,26 +3298,119 @@
     "title_cn": "用於防止電解質溢出的托盤",
     "verdict_cn": "不適用"
   },
+  "MSCC": {
+    "title_cn": "最大規定充電電流"
+  },
+  "MSCV": {
+    "title_cn": "最大規定充電電壓"
+  },
+  "Mains terminal ES": {
+    "title_cn": "電源端子 ES"
+  },
   "Manufacturers' defined drift": "製造商定義之漂移",
   "Max increase due to ageing U ......................... : sa": "因老化而產生的最大額定操作電壓變動值U sa",
+  "Max. acoustic output L , dB(A)": {
+    "title_cn": "最大聲輸出 LAeq,T, dB(A)"
+  },
   "Max. acoustic output L , dB(A) ............................ : Aeq,T": "最大聲輸出 LAeq,T, dB(A)",
+  "Measurement is in accordance": {
+    "title_cn": "量測依據"
+  },
+  "Min. 2 layers": {
+    "title_cn": "最少 2 層"
+  },
+  "Movable equipment": {
+    "title_cn": "移動式設備"
+  },
   "N": {
     "remark_cn": "電化學電位表",
     "title_cn": "電化學電位表",
     "verdict_cn": "不適用"
   },
+  "N.A.": {
+    "title_cn": "不適用"
+  },
   "No Fire enclosure opening": "無防火外殼開口",
+  "No UV radiation in the equipment": {
+    "title_cn": "設備中無紫外線輻射"
+  },
   "No connection to external circuits with transient voltage": "不與具有瞬態電壓的外部電路連接",
+  "No explosion occurs during single fault conditions": {
+    "title_cn": "單一故障條件下未發生爆炸"
+  },
   "No external circuits": "無外部電路",
   "No fire barrier": "無防火屏障",
+  "No insulating liquid": {
+    "title_cn": "無絕緣液體"
+  },
   "No insulation compound forming solid insulation other than optical isolator": "除光學隔離器外，沒有形成固體絕緣的絕緣化合物",
+  "No motor used": {
+    "title_cn": "未使用馬達"
+  },
+  "No opening": {
+    "title_cn": "無開口"
+  },
+  "No openings": {
+    "title_cn": "無開口"
+  },
   "No openings on enclosures as received and after mechanical test": "外殼上無開口，無論是收到時還是經過機械測試後",
+  "No openings on the fire enclosure": {
+    "title_cn": "防火外殼無開口"
+  },
+  "No repetitive pulses introduced": {
+    "title_cn": "無重複脈衝輸入"
+  },
+  "No single pulse introduced": {
+    "title_cn": "無單一脈衝輸入"
+  },
+  "No such IC used": {
+    "title_cn": "未使用此類 IC"
+  },
+  "No such components": {
+    "title_cn": "無此類元件"
+  },
+  "No such openings": {
+    "title_cn": "無此類開口"
+  },
+  "No such parts": {
+    "title_cn": "無此類零件"
+  },
+  "No such switch on the equipment": {
+    "title_cn": "設備上無此類開關"
+  },
+  "No such terminal": {
+    "title_cn": "無此類端子"
+  },
+  "No voltage setting device": {
+    "title_cn": "無電壓設定裝置"
+  },
+  "Normal operating condition": {
+    "title_cn": "正常操作條件"
+  },
+  "Not applicable": {
+    "title_cn": "不適用"
+  },
+  "Not intended for used only in restricted access area": {
+    "title_cn": "非僅供限制進入區域使用"
+  },
+  "Not intermittent or short-time operation equipment": {
+    "title_cn": "非間歇或短時運作設備"
+  },
+  "Not such switch": {
+    "title_cn": "無此類開關"
+  },
+  "Note": {
+    "title_cn": "備註"
+  },
   "Number of handles": "句柄數",
   "Number of particles counted": "粒子數量",
   "O": {
     "remark_cn": "沿面距離及空間距離之量測",
     "title_cn": "沿面距離及空間距離之量測",
     "verdict_cn": "符合"
+  },
+  "OC": {
+    "title_cn": "開路"
   },
   "Operating voltage": "工作電壓",
   "P": {
@@ -3193,8 +3493,14 @@
     "title_cn": "試驗",
     "verdict_cn": "不適用"
   },
+  "PCB": {
+    "title_cn": "PCB"
+  },
   "Personal music player": "個人音樂播放器",
   "Phase to Neutral": "相對中性",
+  "Portable equipment": {
+    "title_cn": "可攜式設備"
+  },
   "Primary windings and secondary windings are separated by Reinforced insulation": "一次側繞線和二次側繞線由加強絕緣分隔",
   "Protective bonding conductor size (mm2)": "保護搭接導體大小(mm2)",
   "Q": {
@@ -3247,11 +3553,32 @@
     "title_cn": "符合性",
     "verdict_cn": "不適用"
   },
+  "R1 open": {
+    "title_cn": "R1 開路"
+  },
+  "RS1 classification": {
+    "title_cn": "RS1 分類"
+  },
+  "Rated load impedance (Ω)": {
+    "title_cn": "額定負載阻抗 (Ω)"
+  },
+  "Relevant tests of IEC 60529 or Y.5.3": {
+    "title_cn": "IEC 60529 或 Y.5.3 之相關測試"
+  },
+  "Remark": {
+    "title_cn": "備註"
+  },
   "Risk group marking and location": "風險類別標示與位置",
+  "Routine test voltage, V": {
+    "title_cn": "例行試驗電壓, V"
+  },
   "S": {
     "remark_cn": "耐熱及耐燃試驗",
     "title_cn": "耐熱及耐燃試驗",
     "verdict_cn": "不適用"
+  },
+  "S (R1 open)": {
+    "title_cn": "S（R1 開路）"
   },
   "S.1": {
     "remark_cn": "穩態功率不超過4,000 W之設備其防火機殼材料及防火阻隔物材料之耐燃試驗",
@@ -3289,10 +3616,73 @@
     "verdict_cn": "不適用"
   },
   "SAFEGUARDS": "安全防護",
+  "SC": {
+    "title_cn": "短路"
+  },
   "SPD 跨越外部電路與接地間之隔離": "橋接在ES1或ES2外部電路與接地突波保護裝置(SPD)",
+  "SRME": {
+    "title_cn": "機架安裝式設備"
+  },
+  "See": {
+    "title_cn": "見"
+  },
+  "See Annex": {
+    "title_cn": "見附錄"
+  },
+  "See Annex B.4": {
+    "title_cn": "見附錄 B.4"
+  },
+  "See Annex C": {
+    "title_cn": "見附錄 C"
+  },
+  "See Annex M": {
+    "title_cn": "見附錄 M"
+  },
+  "See Annex T.2": {
+    "title_cn": "見附錄 T.2"
+  },
+  "See Table B.1.5": {
+    "title_cn": "見表格 B.1.5"
+  },
+  "See Table B.3, B.4": {
+    "title_cn": "見表格 B.3, B.4"
+  },
+  "See above": {
+    "title_cn": "見上方"
+  },
+  "See attached": {
+    "title_cn": "見附件"
+  },
   "See below": "見下方",
+  "See model list on pages 10-11 for details": {
+    "title_cn": "詳見第 10-11 頁型號列表"
+  },
+  "See table": {
+    "title_cn": "見表格"
+  },
+  "See table 4.1.2": {
+    "title_cn": "見表格 4.1.2"
+  },
+  "See table 5.5.2.2": {
+    "title_cn": "見表格 5.5.2.2"
+  },
+  "Single phase equipment": {
+    "title_cn": "單相設備"
+  },
+  "Single power source": {
+    "title_cn": "單一電源"
+  },
+  "Single supply connection": {
+    "title_cn": "單一電源連接"
+  },
   "Smallest capacitance and smallest resistance specified by ICX manufacturer for impulse test": "ICX 製造商為脈衝試驗指定的最小電容和最小電阻",
   "Solid square and rectangular (flatwise bending) winding wire, cross-sectional area (mm2)": "實心方形及矩形（平彎）繞組線，截面積 (mm²)",
+  "Stationary equipment": {
+    "title_cn": "放置式設備"
+  },
+  "T (C)": {
+    "title_cn": "溫度 (°C)"
+  },
   "T.1": {
     "remark_cn": "一般",
     "title_cn": "一般",
@@ -3348,13 +3738,46 @@
     "title_cn": "玻璃撞擊試驗:",
     "verdict_cn": "不適用"
   },
+  "TN": {
+    "title_cn": "TN"
+  },
   "TN TT IT - V L-L not AC mains": "TN TT IT - V L-L 非交流主電源",
+  "TT": {
+    "title_cn": "TT"
+  },
+  "Tamb (C)": {
+    "title_cn": "環境溫度 (°C)"
+  },
   "Tape used in T1": "在 T1 中使用的膠帶",
+  "Test applied between input terminal and output terminal required by the manufacturer": {
+    "title_cn": "依製造商要求於輸入端子與輸出端子之間進行測試"
+  },
   "Test temperature (C)": "試驗溫度 (°C)",
+  "The AC inlet used as": {
+    "title_cn": "交流電插座用於"
+  },
+  "The choice and application have taken into account as specified in this Clause 5 and Annex T": {
+    "title_cn": "選用及應用已依照第 5 節及附錄 T 之規定考量"
+  },
   "The choice and application have taken into account as specified in this clause 5 and Annex T": "選擇和應用已考慮本條款 5 和附錄 T 中的規定",
+  "The earthing pin of the appliance inlet is considered as protective earthing terminal": {
+    "title_cn": "器具插座之接地腳視為保護接地端子"
+  },
+  "Thermal cut-outs": {
+    "title_cn": "熱切斷裝置"
+  },
   "Thermal cut-outs separately approved according to IEC 60730 with conditions indicated in a) & b)": "依 IEC 60730 另行認可的熱切斷器，符合 a) 及 b) 所述條件",
   "Torque value (Nm)": "扭矩值 (Nm)",
+  "Transformer is tested in the complete unit": {
+    "title_cn": "變壓器已於完整機組中測試"
+  },
+  "Triple insulated wires winding used as reinforced safeguard in the isolating transformer": {
+    "title_cn": "隔離變壓器中使用三重絕緣線繞組作為強化安全防護"
+  },
   "Two layers of insulation tape provided on core as reinforce insulation": "在鐵芯上提供兩層絕緣膠帶作為強化絕緣",
+  "Type test voltage V": {
+    "title_cn": "型式試驗電壓 V"
+  },
   "U": {
     "remark_cn": "陰極射線管(cathode-ray tubes, CRT)機械強度及防爆措施",
     "title_cn": "陰極射線管(cathode-ray tubes, CRT)機械強度及防爆措施",
@@ -3375,11 +3798,26 @@
     "title_cn": "保護屏幕",
     "verdict_cn": "不適用"
   },
+  "UL": {
+    "title_cn": "UL"
+  },
+  "USB": {
+    "title_cn": "USB"
+  },
+  "USB-C": {
+    "title_cn": "USB-C"
+  },
+  "USB-C輸出": {
+    "title_cn": "USB-C 輸出"
+  },
   "UV radiation exposure": "UV輻射暴露",
   "V": {
     "remark_cn": "可觸及部件之決定",
     "title_cn": "可觸及部件之決定",
     "verdict_cn": "符合"
+  },
+  "V-0 fire enclosure is used, which comply with 6.4.8.4": {
+    "title_cn": "使用 V-0 等級防火外殼，符合 6.4.8.4"
   },
   "V.1": {
     "remark_cn": "設備可觸及部件",
@@ -3421,8 +3859,47 @@
     "title_cn": "可觸及部件準則",
     "verdict_cn": "符合"
   },
+  "VA": {
+    "title_cn": "VA"
+  },
+  "VDE": {
+    "title_cn": "VDE"
+  },
+  "Vac": {
+    "title_cn": "Vac"
+  },
+  "Vdc": {
+    "title_cn": "Vdc"
+  },
+  "Vicat softening test": {
+    "title_cn": "軟化(Vicat)試驗"
+  },
+  "Vini,a": {
+    "title_cn": "型式試驗電壓"
+  },
+  "Vini,b": {
+    "title_cn": "例行試驗電壓"
+  },
+  "Vpeak": {
+    "title_cn": "Vpeak"
+  },
+  "Vrms": {
+    "title_cn": "Vrms"
+  },
   "Wall thickness (mm)": "壁厚 (mm)",
   "Wall 厚度 (mm)": "壁厚 (mm)",
+  "Wall/ceiling mounted": {
+    "title_cn": "壁面/天花板安裝式"
+  },
+  "Warning for MEL ≥ 100 dB(A)": {
+    "title_cn": "MEL ≥ 100 dB(A) 警告"
+  },
+  "Wheels diameter (mm)": {
+    "title_cn": "輪徑 (mm)"
+  },
+  "When plug is disconnected": {
+    "title_cn": "當插頭拔除時"
+  },
   "Wye": "星形",
   "X": {
     "remark_cn": "表格: 確定最小間隙距離的替代方法",
@@ -3574,8 +4051,311 @@
     "title_cn": "撞擊試驗:",
     "verdict_cn": "不適用"
   },
+  "ambient temperature": {
+    "title_cn": "環境溫度"
+  },
+  "and double": {
+    "title_cn": "及雙重"
+  },
+  "appliance inlet": {
+    "title_cn": "器具插座"
+  },
+  "approved": {
+    "title_cn": "經認可"
+  },
+  "barrier": {
+    "title_cn": "隔板"
+  },
+  "basic insulation": {
+    "title_cn": "基本絕緣"
+  },
+  "bleeding resistor": {
+    "title_cn": "洩放電阻"
+  },
+  "bleeding resistor rating": {
+    "title_cn": "洩放電阻額定值"
+  },
+  "bobbin": {
+    "title_cn": "骨架"
+  },
+  "bonding": {
+    "title_cn": "接合"
+  },
+  "capacitor": {
+    "title_cn": "電容器"
+  },
+  "cathode-ray tubes": {
+    "title_cn": "陰極射線管"
+  },
+  "certified": {
+    "title_cn": "經認證"
+  },
+  "classed as MS1": {
+    "title_cn": "歸類為 MS1"
+  },
+  "coil": {
+    "title_cn": "線圈"
+  },
+  "complied": {
+    "title_cn": "符合"
+  },
+  "comply": {
+    "title_cn": "符合"
+  },
+  "connector": {
+    "title_cn": "連接器"
+  },
+  "contact current": {
+    "title_cn": "接觸電流"
+  },
+  "contact voltage": {
+    "title_cn": "接觸電壓"
+  },
+  "core": {
+    "title_cn": "鐵芯"
+  },
+  "cover": {
+    "title_cn": "蓋板"
+  },
+  "diode": {
+    "title_cn": "二極體"
+  },
+  "double insulation": {
+    "title_cn": "雙重絕緣"
+  },
+  "e.g., normal operation, or open fuse": {
+    "title_cn": "例如正常運作或保險絲開路"
+  },
+  "earth pin": {
+    "title_cn": "接地腳"
+  },
+  "earthing": {
+    "title_cn": "接地"
+  },
+  "effects of water-borne contaminants by": {
+    "title_cn": "水性污染物之影響"
+  },
+  "electric strength test": {
+    "title_cn": "耐電壓試驗"
+  },
+  "enclosure": {
+    "title_cn": "外殼"
+  },
+  "explosion-proof measures": {
+    "title_cn": "防爆措施"
+  },
+  "external": {
+    "title_cn": "外部"
+  },
+  "failed": {
+    "title_cn": "未通過"
+  },
+  "fire enclosure": {
+    "title_cn": "防火外殼"
+  },
+  "for detail": {
+    "title_cn": "詳情"
+  },
+  "for details": {
+    "title_cn": "詳情"
+  },
+  "functional earth": {
+    "title_cn": "功能接地"
+  },
+  "functional insulation": {
+    "title_cn": "功能性絕緣"
+  },
+  "fuse": {
+    "title_cn": "保險絲"
+  },
+  "grounding": {
+    "title_cn": "接地"
+  },
+  "housing": {
+    "title_cn": "殼體"
+  },
+  "immediately shut down": {
+    "title_cn": "立即關機"
+  },
   "impulse": "脈衝",
+  "impulse test": {
+    "title_cn": "脈衝試驗"
+  },
+  "inductor": {
+    "title_cn": "電感器"
+  },
+  "ini, b": {
+    "title_cn": "例行試驗電壓"
+  },
+  "ini,a": {
+    "title_cn": "型式試驗電壓"
+  },
+  "ini,b": {
+    "title_cn": "例行試驗電壓"
+  },
+  "input": {
+    "title_cn": "輸入"
+  },
+  "input terminal": {
+    "title_cn": "輸入端子"
+  },
+  "insulation tape": {
+    "title_cn": "絕緣膠帶"
+  },
+  "internal": {
+    "title_cn": "內部"
+  },
+  "mApk": {
+    "title_cn": "mApk"
+  },
+  "maximum output current": {
+    "title_cn": "最大輸出電流"
+  },
+  "measured temperature": {
+    "title_cn": "量測溫度"
+  },
+  "mechanical strength": {
+    "title_cn": "機械強度"
+  },
+  "natural rubber, hygroscopic materials or asbestos are not used as insulation": {
+    "title_cn": "天然橡膠、吸濕性材料或石棉未用作絕緣"
+  },
+  "normal operation": {
+    "title_cn": "正常運作"
+  },
+  "oC": {
+    "title_cn": "°C"
+  },
+  "open circuit": {
+    "title_cn": "開路"
+  },
+  "open fuse": {
+    "title_cn": "保險絲開路"
+  },
+  "opening": {
+    "title_cn": "開口"
+  },
+  "opto-coupler": {
+    "title_cn": "光耦合器"
+  },
+  "optocoupler": {
+    "title_cn": "光耦合器"
+  },
+  "output": {
+    "title_cn": "輸出"
+  },
+  "output terminal": {
+    "title_cn": "輸出端子"
+  },
+  "passed": {
+    "title_cn": "通過"
+  },
+  "peak voltage": {
+    "title_cn": "峰值電壓"
+  },
+  "primary": {
+    "title_cn": "一次側"
+  },
+  "protective earth": {
+    "title_cn": "保護接地"
+  },
+  "protective earthing terminal": {
+    "title_cn": "保護接地端子"
+  },
+  "provided": {
+    "title_cn": "已提供"
+  },
+  "recoverable": {
+    "title_cn": "可恢復"
+  },
+  "reinforced insulation": {
+    "title_cn": "強化絕緣"
+  },
+  "relay": {
+    "title_cn": "繼電器"
+  },
+  "resistor": {
+    "title_cn": "電阻器"
+  },
+  "rms voltage": {
+    "title_cn": "有效值電壓"
+  },
+  "routine test voltage": {
+    "title_cn": "例行試驗電壓"
+  },
+  "secondary": {
+    "title_cn": "二次側"
+  },
+  "see appended table 4.1.2": {
+    "title_cn": "見附表 4.1.2"
+  },
+  "see table 4.1.2 for detail": {
+    "title_cn": "詳見表格 4.1.2"
+  },
+  "short circuit": {
+    "title_cn": "短路"
+  },
+  "silkscreen printing on approval appliance inlet body": {
+    "title_cn": "於經認可之器具插座本體上絲印"
+  },
+  "slot": {
+    "title_cn": "槽口"
+  },
+  "steady state power": {
+    "title_cn": "穩態功率"
+  },
+  "supplementary insulation": {
+    "title_cn": "附加絕緣"
+  },
   "surge": "突波",
+  "terminal": {
+    "title_cn": "端子"
+  },
+  "tested": {
+    "title_cn": "已測試"
+  },
+  "tested voltage (V)": {
+    "title_cn": "測試電壓 (V)"
+  },
+  "transformer": {
+    "title_cn": "變壓器"
+  },
+  "transient voltage": {
+    "title_cn": "暫態電壓"
+  },
+  "transistor": {
+    "title_cn": "電晶體"
+  },
+  "triple insulated wire": {
+    "title_cn": "三重絕緣線"
+  },
+  "triple insulated wires": {
+    "title_cn": "三重絕緣線"
+  },
+  "type test voltage": {
+    "title_cn": "型式試驗電壓"
+  },
+  "used": {
+    "title_cn": "使用"
+  },
+  "varistor": {
+    "title_cn": "變阻器"
+  },
+  "ventilation": {
+    "title_cn": "通風"
+  },
+  "voltage difference during 24 h period (%)": {
+    "title_cn": "24 小時期間電壓差異 (%)"
+  },
+  "where the steady state power exceeding": {
+    "title_cn": "穩態功率超過"
+  },
+  "winding": {
+    "title_cn": "繞組"
+  },
+  "wire": {
+    "title_cn": "導線"
+  },
   "Ť": {
     "remark_cn": "機械強度試驗",
     "title_cn": "機械強度試驗",
@@ -3595,14 +4375,32 @@
   "允許壓痕直徑(mm)": "允許壓痕直徑 (mm)",
   "允許溫度Tmax (C)": "允許溫度 Tmax (°C)",
   "功能性絕緣的沿面距離短路": "塗層印刷電路板上之功能性絕緣短路",
+  "厚度 (mm)": {
+    "title_cn": "厚度 (mm)"
+  },
+  "厚度(mm)": {
+    "title_cn": "厚度 (mm)"
+  },
   "含雷射設備符合之標準": "含雷射之設備應符合標準指定之要求",
   "單相": "單相",
   "因老化產生之最大增量 ΔUsa": "因老化而產生的最大額定操作電壓變動值U sa",
   "因變動產生之最大增量 ΔUsp": "為生產差異產生的額定操作電壓負容許差Usp",
+  "壁厚 (mm)": {
+    "title_cn": "壁厚 (mm)"
+  },
   "室外設備裸露部位之可接觸性": "可訪問戶外設備裸露部件",
+  "室溫": {
+    "title_cn": "室溫"
+  },
   "導線固定不致使安全防護失效": "修復導體,不要擊敗保護",
   "導體截面積 (mm²)": "導體大小(mm2)",
   "層數 (片)": "層數(層)",
+  "峰值 (Vpeak)": {
+    "title_cn": "峰值 (Vpeak)"
+  },
+  "峰值(Vpeak)": {
+    "title_cn": "峰值 (Vpeak)"
+  },
   "指導性安全防護": "指示型安全防護",
   "指導性安全防護 s for neutral fuse": "中性保險絲的指示型安全防護",
   "插頭刃片極型檢查及尺度量測": "插頭刃片極型檢查及尺寸量測",
@@ -3619,6 +4417,12 @@
   "有效值 (Vrms)": "有效值 (Vrms)",
   "標稱電壓 Upeak (V)": "標稱電壓 U峰值(V)",
   "機械系統經受 100,000 次操作循環": "機械系統可承受100 000個迴圈操作",
+  "治具": {
+    "title_cn": "治具"
+  },
+  "測試時環境溫度": {
+    "title_cn": "測試時環境溫度"
+  },
   "測試時環境溫度 Tamb (C)": "測試時環境溫度 Tamb (°C)",
   "溫度量測條件": "正常操作條件",
   "溫度量測要求": "溫度測量要求",
@@ -3663,10 +4467,25 @@
   "表格:電池備用電源之反饋安全防護": "表格: 電池備用電源之反饋安全防護",
   "表格:頻率超過30 kHz 之固體絕緣": "表格: 頻率超過 30 kHz 之固體絕緣",
   "規定電池溫度(oC)": "規定電池溫度 (°C)",
+  "視在功率 S (VA)": {
+    "title_cn": "視在功率 S (VA)"
+  },
   "試驗 1，額外向下力 (N)": "試驗1 附加向下力(N)",
   "試驗 2，附著點數量及試驗力 (N)": "試驗2 連接點數和測試力(N)",
+  "負載": {
+    "title_cn": "負載"
+  },
   "身體部位 (普通人員)": "身體部位（一般人員）",
   "軟化(Vicat)試驗": "軟化(維卡)試驗",
+  "輸入": {
+    "title_cn": "輸入"
+  },
+  "輸出": {
+    "title_cn": "輸出"
+  },
+  "輸出 terminal": {
+    "title_cn": "輸出端子"
+  },
   "逆向充電電流 (A)": "逆向充電電流 (A)",
   "連接 AC 主電源電路之間隙，替代方法": "連接到交流電源的電路中的間隙, 替代方法",
   "開口尺寸 (mm)": "開口大小(mm)",
@@ -3678,6 +4497,9 @@
   "電流 (Arms or Apk)": "電流 (Arms 或 Apk)",
   "非加權 RMS 輸出電壓 (mV)": "未加權RMS輸出電壓(mV)",
   "非預期充電電流 (A)": "非預期充電電流 (A)",
+  "靠近": {
+    "title_cn": "靠近"
+  },
   "音頻訊號源類型": "音頻信號來源類型",
   "音頻輸出功率 (W)": "音頻輸出功率(W)",
   "音頻輸出電壓 (V)": "音頻輸出電壓(V)",
