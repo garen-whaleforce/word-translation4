@@ -1568,9 +1568,10 @@
     "verdict_cn": "不適用"
   },
   "95%, 40°C, 120 hours": "95%、40°C、120 小時",
+  "AGAINST THE EFFECTS OF IMPLOSION": "防止內爆效應",
   "All models mass <7Kg, classed as MS1": "所有型號重量 <7Kg，歸類為 MS1",
   "All source of transformer and insulation materials listed in table 4.1.2. were considered": "表 4.1.2 中列出的所有變壓器和絕緣材料的來源均已考慮",
-  "Alternative by electric strength test, tested voltage (V), K": "透過耐電壓試驗替代,測試電壓(V), K",
+  "Alternative by electric strength test, tested voltage (V), K": "透過耐電壓試驗替代,測試電壓(V), KR",
   "B": {
     "remark_cn": "正常操作條件試驗、異常操作條件試驗及單一故障條件試驗",
     "title_cn": "正常操作條件試驗、異常操作條件試驗及單一故障條件試驗",
@@ -2711,6 +2712,7 @@
     "title_cn": "監視電壓(V):",
     "verdict_cn": "不適用"
   },
+  "INSULATION": "絕緣",
   "J": {
     "remark_cn": "無套絕緣套管之絕緣繞線",
     "title_cn": "無套絕緣套管之絕緣繞線",
@@ -2846,6 +2848,7 @@
     "title_cn": "多電源組",
     "verdict_cn": "不適用"
   },
+  "Lasers": "雷射",
   "Loading force applied (N)": "施加的負重力(N)",
   "M": {
     "remark_cn": "設備包含電池及其保護電路",
@@ -3077,6 +3080,8 @@
     "title_cn": "用於防止電解質溢出的托盤",
     "verdict_cn": "不適用"
   },
+  "Manufacturers' defined drift": "製造商定義之漂移",
+  "Max increase due to ageing U ......................... : sa": "因老化而產生的最大額定操作電壓變動值U sa",
   "N": {
     "remark_cn": "電化學電位表",
     "title_cn": "電化學電位表",
@@ -3088,11 +3093,13 @@
   "No insulation compound forming solid insulation other than optical isolator": "除光學隔離器外，沒有形成固體絕緣的絕緣化合物",
   "No openings on enclosures as received and after mechanical test": "外殼上無開口，無論是收到時還是經過機械測試後",
   "Number of handles": "句柄數",
+  "Number of particles counted": "粒子數量",
   "O": {
     "remark_cn": "沿面距離及空間距離之量測",
     "title_cn": "沿面距離及空間距離之量測",
     "verdict_cn": "符合"
   },
+  "Operating voltage": "工作電壓",
   "P": {
     "remark_cn": "防止導電物件之安全防護",
     "title_cn": "防止導電物件之安全防護",
@@ -3173,6 +3180,8 @@
     "title_cn": "試驗",
     "verdict_cn": "不適用"
   },
+  "Personal music player": "個人音樂播放器",
+  "Phase to Neutral": "相對中性",
   "Primary windings and secondary windings are separated by Reinforced insulation": "一次側繞線和二次側繞線由加強絕緣分隔",
   "Protective bonding conductor size (mm2)": "保護搭接導體大小(mm2)",
   "Q": {
@@ -3266,7 +3275,9 @@
     "title_cn": "穩態功率超過4,000 W 之設備其防火機殼材料之耐燃試驗",
     "verdict_cn": "不適用"
   },
+  "SAFEGUARDS": "安全防護",
   "SPD 跨越外部電路與接地間之隔離": "橋接在ES1或ES2外部電路與接地突波保護裝置(SPD)",
+  "See below": "見下方",
   "T.1": {
     "remark_cn": "一般",
     "title_cn": "一般",
@@ -3322,6 +3333,11 @@
     "title_cn": "玻璃撞擊試驗:",
     "verdict_cn": "不適用"
   },
+  "Tape used in T1": "在 T1 中使用的膠帶",
+  "Test temperature (C)": "試驗溫度 (°C)",
+  "The choice and application have taken into account as specified in this clause 5 and Annex T": "選擇和應用已考慮本條款 5 和附錄 T 中的規定",
+  "Torque value (Nm)": "扭矩值 (Nm)",
+  "Two layers of insulation tape provided on core as reinforce insulation": "在鐵芯上提供兩層絕緣膠帶作為強化絕緣",
   "U": {
     "remark_cn": "陰極射線管(cathode-ray tubes, CRT)機械強度及防爆措施",
     "title_cn": "陰極射線管(cathode-ray tubes, CRT)機械強度及防爆措施",
@@ -3342,6 +3358,7 @@
     "title_cn": "保護屏幕",
     "verdict_cn": "不適用"
   },
+  "UV radiation exposure": "UV輻射暴露",
   "V": {
     "remark_cn": "可觸及部件之決定",
     "title_cn": "可觸及部件之決定",
@@ -3387,6 +3404,7 @@
     "title_cn": "可觸及部件準則",
     "verdict_cn": "符合"
   },
+  "Wall thickness (mm)": "壁厚 (mm)",
   "X": {
     "remark_cn": "表格: 確定最小間隙距離的替代方法",
     "title_cn": "表格: 確定最小間隙距離的替代方法",
@@ -3551,6 +3569,7 @@
     "title_cn": "備註:",
     "verdict_cn": "備註:"
   },
+  "功能性絕緣的沿面距離短路": "塗層印刷電路板上之功能性絕緣短路",
   "含雷射設備符合之標準": "含雷射之設備應符合標準指定之要求",
   "因老化產生之最大增量 ΔUsa": "因老化而產生的最大額定操作電壓變動值U sa",
   "因變動產生之最大增量 ΔUsp": "為生產差異產生的額定操作電壓負容許差Usp",
@@ -3561,8 +3580,11 @@
   "指導性安全防護": "指示型安全防護",
   "收聽設備(耳機、耳機等)的要求": "收聽設備(耳機、耳機等)的要求",
   "數位輸出訊號 (dBFS)": "數位輸出訊號(dBFS)",
+  "最大無削峰輸出功率 (W)": "最大非箝制式輸出功率(W)",
   "標稱電壓 Upeak (V)": "標稱電壓 U峰值(V)",
   "機械系統經受 100,000 次操作循環": "機械系統可承受100 000個迴圈操作",
+  "溫度量測條件": "正常操作條件",
+  "溫度量測要求": "溫度測量要求",
   "無開口及防火屏障": "無開口與防火隔板",
   "燈具及燈具系統": "光源及光源系統(包括LEDs)",
   "空間距離介於:": {
@@ -3572,12 +3594,17 @@
   },
   "符合性以試驗檢查": "通過試驗檢查符合性性",
   "聆聽裝置輸入電壓 (mV)": "收聽裝置輸入電壓(mV)",
+  "脈衝試驗產生器": "電子脈衝產生器",
   "試驗 1，額外向下力 (N)": "試驗1 附加向下力(N)",
   "試驗 2，附著點數量及試驗力 (N)": "試驗2 連接點數和測試力(N)",
   "連接 AC 主電源電路之間隙，替代方法": "連接到交流電源的電路中的間隙, 替代方法",
   "開口尺寸 (mm)": "開口大小(mm)",
   "開啟扭力試驗": "打開扭矩試驗",
   "非加權 RMS 輸出電壓 (mV)": "未加權RMS輸出電壓(mV)",
+  "音頻訊號源類型": "音頻信號來源類型",
+  "音頻輸出功率 (W)": "音頻輸出功率(W)",
+  "音頻輸出電壓 (V)": "音頻輸出電壓(V)",
   "額定工作電壓 Uop (V)": "交流主電源系統標稱電壓(V)",
+  "額定負載阻抗 (Ω)": "額定負載阻抗(Ω)",
   "風險群組標示及位置": "風險類別標示與位置"
 }
