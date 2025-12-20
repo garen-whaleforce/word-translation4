@@ -28,6 +28,62 @@ if TRANSLATIONS_PATH.exists():
     with open(TRANSLATIONS_PATH, 'r', encoding='utf-8') as f:
         CLAUSE_TRANSLATIONS = json.load(f)
 
+
+def clean_field_text(text: str) -> str:
+    """清理欄位文字，移除填充符號和末尾冒號，用於字典匹配"""
+    if not text:
+        return ''
+    # 統一撇號格式（彎撇號 → 直撇號）
+    # \u2018 = '（左單引號），\u2019 = '（右單引號）
+    cleaned = text.replace('\u2018', "'").replace('\u2019', "'")
+    # 處理特殊字元：\uf0b0 是 Wingdings 字體的度數符號，轉換為標準格式
+    # (\uf0b0C) → (C) 或 (°C)
+    cleaned = re.sub(r'\(\s*\uf0b0\s*C\s*\)', '(C)', cleaned)
+    cleaned = cleaned.replace('\uf0b0', '°')  # 其他位置的度數符號
+    # 移除填充用的點號序列（如 "... :" 或 " ..... :"）
+    cleaned = re.sub(r'\s*\.{2,}\s*:?\s*$', '', cleaned)
+    # 移除末尾的冒號和空格
+    cleaned = re.sub(r'\s*:\s*$', '', cleaned)
+    # 移除多餘空格
+    cleaned = ' '.join(cleaned.split())
+    return cleaned
+
+
+def translate_field_title(text: str) -> str:
+    """
+    智能翻譯欄位標題：
+    1. 先清理文字（移除填充符號）
+    2. 查詢翻譯字典
+    3. 保留原有格式（填充符號和冒號）
+    """
+    if not text or not re.search(r'[a-zA-Z]{2,}', text):
+        return text
+
+    # 提取結尾的填充符號（如 " ..... :"）
+    suffix_match = re.search(r'(\s*\.{2,}\s*:?\s*)$', text)
+    suffix = suffix_match.group(1) if suffix_match else ''
+
+    # 清理後的文字用於字典查詢
+    cleaned = clean_field_text(text)
+
+    # 查詢翻譯字典
+    if cleaned in CLAUSE_TRANSLATIONS:
+        entry = CLAUSE_TRANSLATIONS[cleaned]
+        # 處理不同格式：可能是字典或字串
+        if isinstance(entry, dict):
+            title_cn = entry.get('title_cn', '')
+        else:
+            title_cn = str(entry) if entry else ''
+
+        if title_cn:
+            # 保留原有的填充符號格式
+            if suffix:
+                return title_cn + suffix
+            return title_cn
+
+    return text
+
+
 def load_json(p: Path) -> dict:
     with p.open("r", encoding="utf-8") as f:
         return json.load(f)
@@ -2954,6 +3010,8 @@ def translate_all_tables(doc: Document):
     ]
 
     translated_count = 0
+    field_translated_count = 0
+
     for tbl_idx, table in enumerate(doc.tables):
         for row in table.rows:
             for cell in row.cells:
@@ -2962,9 +3020,17 @@ def translate_all_tables(doc: Document):
                     continue
 
                 modified_text = original_text
-                for eng, chn in phrase_translations:
-                    if eng in modified_text:
-                        modified_text = modified_text.replace(eng, chn)
+
+                # 1. 先嘗試使用智能欄位翻譯（處理帶填充符號的欄位標題）
+                field_result = translate_field_title(modified_text)
+                if field_result != modified_text:
+                    modified_text = field_result
+                    field_translated_count += 1
+                else:
+                    # 2. 使用常規短語翻譯
+                    for eng, chn in phrase_translations:
+                        if eng in modified_text:
+                            modified_text = modified_text.replace(eng, chn)
 
                 # 處理帶有可變長度點號的 Conditioning
                 if 'Conditioning (\uf0b0C)' in modified_text:
@@ -2975,7 +3041,7 @@ def translate_all_tables(doc: Document):
                     translated_count += 1
 
     if translated_count > 0:
-        print(f"全文件表格：已翻譯 {translated_count} 個儲存格中的通用英文短語")
+        print(f"全文件表格：已翻譯 {translated_count} 個儲存格（含 {field_translated_count} 個欄位標題）")
 
 
 def fill_table_412(doc: Document, table_412_data: list):
