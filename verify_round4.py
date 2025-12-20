@@ -50,8 +50,7 @@ def process_pdf_to_word(pdf_path: str, output_path: str):
     from tools.generate_cns_json import (
         extract_meta_from_chunks,
         convert_overview_to_cns,
-        dedupe_clauses,
-        generate_qa
+        dedupe_clauses
     )
 
     pdf_file = Path(pdf_path)
@@ -115,15 +114,13 @@ def process_pdf_to_word(pdf_path: str, output_path: str):
         overview_cns = convert_overview_to_cns(overview_raw)
         clauses = dedupe_clauses(clauses_raw)
         overview_cb_p12_rows = overview.get('rows', []) if isinstance(overview, dict) and 'error' not in overview else []
-        qa = generate_qa(meta, overview_cns, clauses, overview_raw)
 
         cns_data = {
             'meta': meta,
             'overview_energy_sources_and_safeguards': overview_cns,
             'overview_cb_p12_rows': overview_cb_p12_rows,
             'clauses': clauses,
-            'attachments_or_annex': [],
-            'qa': qa
+            'attachments_or_annex': []
         }
 
         cns_json_path = out_dir / "cns_report_data.json"

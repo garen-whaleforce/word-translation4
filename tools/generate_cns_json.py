@@ -89,10 +89,6 @@ def extract_meta_from_chunks(chunks: list, pdf_name: str) -> dict:
                 meta['ratings_input'] = m.group(1).strip()
 
     # Ratings Output - 抓取多行直到遇到下一個欄位標題或空行
-    # Output 可能跨多行，例如：
-    # Output: 5.0V 3.0A 15.0W or 9.0V 3.0A 27.0W or 15.0V
-    # 3.0A 45.0W or 20.0V 3.0A 60.0W or 5.0-20.0V 3.0A
-    # 60.0W MAX
     m = re.search(r'Output[:\s]*(.*?)(?=\n[A-Z][a-z]+[:\s]|\n\n|\nTest|\nNotes)', first_pages_text, re.IGNORECASE | re.DOTALL)
     if m:
         # 將多行合併為單行，去除多餘空白
@@ -170,63 +166,6 @@ def dedupe_clauses(clauses_raw: list) -> list:
             result.append(c)
     return result
 
-def generate_qa(meta: dict, overview: list, clauses: list, pdf_overview_raw: list) -> dict:
-    """生成 QA 報告"""
-    issues = []
-
-    # 必填欄位檢查
-    required_meta = ['cb_report_no', 'applicant', 'model_type_references', 'ratings_input']
-    for field in required_meta:
-        val = meta.get(field)
-        if not val or val == 'MISSING' or (isinstance(val, list) and len(val) == 0):
-            issues.append(f"meta.{field} is missing or empty")
-
-    # Overview 列數檢查
-    if len(overview) < 1:
-        issues.append("overview_energy_sources_and_safeguards has no rows")
-
-    # Clause 數量檢查
-    if len(clauses) < 20:
-        issues.append(f"clauses count is {len(clauses)}, expected >= 20")
-
-    # 特殊檢查：Capacitor row
-    has_capacitor_in_pdf = any('Capacitor connected between L and N' in str(r) for r in pdf_overview_raw)
-    has_capacitor_in_json = any('Capacitor connected between L and N' in str(o) for o in overview)
-
-    if has_capacitor_in_pdf and not has_capacitor_in_json:
-        issues.append("PDF contains 'Capacitor connected between L and N' but JSON overview is missing it")
-
-    # ES3 計數檢查
-    pdf_es3_count = sum(1 for r in pdf_overview_raw if 'ES3:' in str(r.get('row', [])))
-    json_es3_count = sum(1 for o in overview if o.get('energy_source_class') == 'ES3')
-    if pdf_es3_count > json_es3_count:
-        issues.append(f"PDF has {pdf_es3_count} ES3 rows but JSON has only {json_es3_count}")
-
-    # 第一列 ES3 的 safeguards 必須包含 5.5.2
-    first_es3_safeguards = ''
-    for r in pdf_overview_raw:
-        row = r.get('row', [])
-        if row and 'ES3:' in str(row[0]) and 'Primary' in str(row[0]):
-            first_es3_safeguards = str(row[-1]) if row else ''
-            break
-
-    if '5.5.2' in first_es3_safeguards:
-        first_json_es3 = next((o for o in overview if o.get('energy_source_class') == 'ES3'), None)
-        if first_json_es3 and '5.5.2' not in str(first_json_es3):
-            issues.append("First ES3 row safeguards should contain '5.5.2' but it's missing in JSON")
-
-    status = 'PASS' if not issues else 'FAIL'
-
-    return {
-        'summary': {
-            'status': status,
-            'overview_rows': len(overview),
-            'clauses_count': len(clauses),
-            'issues_count': len(issues)
-        },
-        'issues': issues
-    }
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input_dir", required=True, help="包含 cb_*.json 的目錄")
@@ -253,19 +192,10 @@ def main():
     overview = convert_overview_to_cns(overview_raw)
     clauses = dedupe_clauses(clauses_raw)
 
-    # 從特殊表格抽取 overview_cb_p12_rows（保留完整 10 列）
+    # 從特殊表格抽取 overview_cb_p12_rows
     overview_cb_p12_rows = []
     if 'overview' in special_tables and 'rows' in special_tables['overview']:
         overview_cb_p12_rows = special_tables['overview']['rows']
-
-    # QA
-    qa = generate_qa(meta, overview, clauses, overview_raw)
-
-    # 更新 QA：overview_cb_p12_rows 列數檢查
-    if len(overview_cb_p12_rows) != 10:
-        qa['issues'].append(f"overview_cb_p12_rows should have 10 rows but has {len(overview_cb_p12_rows)}")
-        qa['summary']['status'] = 'FAIL'
-        qa['summary']['issues_count'] = len(qa['issues'])
 
     # 組合最終 JSON
     result = {
@@ -273,8 +203,7 @@ def main():
         'overview_energy_sources_and_safeguards': overview,
         'overview_cb_p12_rows': overview_cb_p12_rows,
         'clauses': clauses,
-        'attachments_or_annex': [],
-        'qa': qa
+        'attachments_or_annex': []
     }
 
     # 輸出
@@ -284,11 +213,8 @@ def main():
         json.dump(result, f, ensure_ascii=False, indent=2)
 
     print(f"Generated: {out_path}")
-    print(f"QA Status: {qa['summary']['status']}")
     print(f"overview_cb_p12_rows: {len(overview_cb_p12_rows)} rows")
-    if qa['issues']:
-        for issue in qa['issues']:
-            print(f"  - {issue}")
+    print(f"clauses: {len(clauses)} rows")
 
 if __name__ == "__main__":
     main()

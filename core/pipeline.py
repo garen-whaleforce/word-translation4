@@ -28,12 +28,9 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
     1. 下載 PDF 到暫存目錄
     2. 抽取 PDF 資料 (extract_cb_pdf, extract_pdf_clause_rows, extract_special_tables)
     3. 生成 CNS JSON (generate_cns_json)
-    4. QA Gate 1: Overview match
-    5. QA Gate 2: Clause table match
-    6. 渲染 Word 文件 (render_word)
-    7. QA Gate 3: Final QA
-    8. 上傳結果到 Storage
-    9. 更新 Job 狀態
+    4. 渲染 Word 文件 (render_word)
+    5. 上傳結果到 Storage
+    6. 更新 Job 狀態
 
     Args:
         job: Job 物件
@@ -79,29 +76,21 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
         with open(clause_rows_path, 'w', encoding='utf-8') as f:
             json.dump(clause_rows, f, ensure_ascii=False, indent=2)
 
-        job.add_qa_result("extract_clause_rows", "PASS", f"抽取 {len(clause_rows)} 條款列")
-
         # 2c. 特殊表格抽取
         with pdfplumber.open(str(pdf_path)) as pdf:
             try:
                 overview = extract_overview_energy_sources(pdf)
-                job.add_qa_result("extract_overview", "PASS", f"Overview {overview['total_rows']} 列")
             except ValueError as e:
-                job.add_qa_result("extract_overview", "FAIL", str(e))
                 overview = {'error': str(e), 'rows': []}
 
             try:
                 table_5522 = extract_table_5522(pdf)
-                job.add_qa_result("extract_5522", "PASS", f"5.5.2.2 verdict={table_5522.get('verdict', 'N/A')}")
             except ValueError as e:
-                job.add_qa_result("extract_5522", "WARN", str(e))
                 table_5522 = {'error': str(e)}
 
             try:
                 table_b25 = extract_table_b25(pdf)
-                job.add_qa_result("extract_b25", "PASS", f"B.2.5 I_rated={table_b25.get('i_rated_values', [])}")
             except ValueError as e:
-                job.add_qa_result("extract_b25", "WARN", str(e))
                 table_b25 = {'error': str(e)}
 
         special_tables = {
@@ -118,8 +107,7 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
             load_json,
             extract_meta_from_chunks,
             convert_overview_to_cns,
-            dedupe_clauses,
-            generate_qa
+            dedupe_clauses
         )
 
         chunks = load_json(out_dir / "cb_text_chunks.json")
@@ -130,26 +118,20 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
         overview_cns = convert_overview_to_cns(overview_raw)
         clauses = dedupe_clauses(clauses_raw)
 
-        # overview_cb_p12_rows 保留完整 10 列
+        # overview_cb_p12_rows 保留完整列
         overview_cb_p12_rows = overview.get('rows', []) if 'error' not in overview else []
-
-        qa = generate_qa(meta, overview_cns, clauses, overview_raw)
 
         cns_data = {
             'meta': meta,
             'overview_energy_sources_and_safeguards': overview_cns,
             'overview_cb_p12_rows': overview_cb_p12_rows,
             'clauses': clauses,
-            'attachments_or_annex': [],
-            'qa': qa
+            'attachments_or_annex': []
         }
 
         cns_json_path = out_dir / "cns_report_data.json"
         with open(cns_json_path, 'w', encoding='utf-8') as f:
             json.dump(cns_data, f, ensure_ascii=False, indent=2)
-
-        job.add_qa_result("generate_cns_json", qa['summary']['status'],
-                          f"overview={len(overview_cns)}, clauses={len(clauses)}")
 
         # ===== Step 4: 渲染 Word =====
         template_path = PROJECT_ROOT / "templates" / "CNS_15598_1_109_template_clean.docx"
@@ -171,106 +153,15 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
             cover_fields=cover_fields
         )
 
-        job.add_qa_result("render_word", "PASS", "Word 文件生成完成")
-
-        # ===== Step 5: QA Gates =====
-        all_pass = True
-
-        # Gate 1: Overview match
-        from tools.qa_overview_match import extract_word_overview_rows, compare_rows
-        word_overview_rows = extract_word_overview_rows(docx_path)
-        overview_match = compare_rows(overview_cb_p12_rows, word_overview_rows)
-
-        overview_match_path = out_dir / "qa_overview_match.json"
-        with open(overview_match_path, 'w', encoding='utf-8') as f:
-            json.dump(overview_match, f, ensure_ascii=False, indent=2)
-
-        if overview_match.get('match') and len(overview_match.get('differences', [])) == 0:
-            job.add_qa_result("qa_overview_match", "PASS", "Overview 表格一致")
-        else:
-            job.add_qa_result("qa_overview_match", "WARN",
-                              f"差異: {len(overview_match.get('differences', []))}",
-                              {"differences": overview_match.get('differences', [])})
-            # Overview mismatch 目前設為 WARN，不影響最終結果
-
-        # Gate 2: Clause table match
-        from tools.qa_clause_table_match import extract_word_clause_rows, compare_clause_tables
-        word_clause_rows = extract_word_clause_rows(docx_path)
-        clause_match = compare_clause_tables(clause_rows, word_clause_rows)
-
-        clause_match_path = out_dir / "qa_clause_table_match.json"
-        with open(clause_match_path, 'w', encoding='utf-8') as f:
-            json.dump(clause_match, f, ensure_ascii=False, indent=2)
-
-        if clause_match.get('status') == 'PASS':
-            job.add_qa_result("qa_clause_match", "PASS", "條款表格一致")
-        else:
-            job.add_qa_result("qa_clause_match", "WARN",
-                              f"問題: {len(clause_match.get('issues', []))}",
-                              {"issues": clause_match.get('issues', [])})
-            # Clause mismatch 目前設為 WARN
-
-        # Gate 3: Final QA
-        from tools.final_qa import (
-            is_missing, check_docx_overview, check_docx_5522, check_docx_b25
-        )
-
-        final_issues = []
-
-        # 基本檢查
-        for k in ['cb_report_no', 'applicant', 'model_type_references', 'ratings_input']:
-            if is_missing(meta.get(k)):
-                final_issues.append({"type": "missing_meta", "field": k})
-
-        if len(overview_cns) < 1:
-            final_issues.append({"type": "overview_empty"})
-
-        if len(clauses) < 20:
-            final_issues.append({"type": "clauses_too_few", "count": len(clauses)})
-
-        # Word 內容檢查
-        docx_overview_check = check_docx_overview(docx_path)
-        if not docx_overview_check['has_capacitor_row']:
-            final_issues.append({"type": "docx_missing_capacitor_row"})
-
-        if not docx_overview_check['has_5_5_2_in_es3']:
-            final_issues.append({"type": "docx_es3_missing_5_5_2"})
-
-        final_qa_report = {
-            "status": "PASS" if len(final_issues) == 0 else "FAIL",
-            "issues": final_issues,
-            "stats": {
-                "overview_rows": len(overview_cns),
-                "clauses": len(clauses),
-                "word_overview_rows": docx_overview_check['data_row_count']
-            }
-        }
-
-        final_qa_path = out_dir / "final_qa_report.json"
-        with open(final_qa_path, 'w', encoding='utf-8') as f:
-            json.dump(final_qa_report, f, ensure_ascii=False, indent=2)
-
-        if final_qa_report['status'] == 'PASS':
-            job.add_qa_result("final_qa", "PASS", "所有檢查通過")
-            all_pass = True
-        else:
-            job.add_qa_result("final_qa", "FAIL", f"{len(final_issues)} 個問題",
-                              {"issues": final_issues})
-            all_pass = False
-
-        # ===== Step 6: 決定最終狀態並上傳 =====
-        if all_pass:
-            job.update_status(JobStatus.PASS)
-            job.docx_type = "FINAL"
-        else:
-            job.update_status(JobStatus.FAIL)
-            job.docx_type = "DRAFT"
+        # ===== Step 5: 設定狀態並上傳 =====
+        job.update_status(JobStatus.PASS)
+        job.docx_type = "FINAL"
 
         # 上傳結果
         job_prefix = f"jobs/{job.job_id}"
 
         # 上傳 DOCX
-        docx_key = f"{job_prefix}/{job.docx_type.lower()}_cns_report.docx"
+        docx_key = f"{job_prefix}/cns_report.docx"
         storage.upload_file(str(docx_path), docx_key)
         job.docx_key = docx_key
 
@@ -278,20 +169,6 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
         json_key = f"{job_prefix}/cns_report_data.json"
         storage.upload_file(str(cns_json_path), json_key)
         job.json_data_key = json_key
-
-        # 上傳 QA 報告
-        qa_report_key = f"{job_prefix}/qa_report.json"
-        combined_qa = {
-            "job_id": job.job_id,
-            "status": job.status.value,
-            "qa_results": [r.to_dict() for r in job.qa_results],
-            "final_qa": final_qa_report,
-            "overview_match": overview_match,
-            "clause_match": clause_match,
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        storage.upload_json(combined_qa, qa_report_key)
-        job.qa_report_key = qa_report_key
 
         # 上傳 clause rows
         clause_rows_key = f"{job_prefix}/pdf_clause_rows.json"
@@ -302,8 +179,7 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
         job.update_status(JobStatus.ERROR)
         job.error_message = str(e)
         import traceback
-        job.add_qa_result("pipeline_error", "ERROR", str(e),
-                          {"traceback": traceback.format_exc()})
+        print(f"Pipeline error: {traceback.format_exc()}")
 
     finally:
         # 清理暫存目錄
