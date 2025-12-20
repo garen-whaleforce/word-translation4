@@ -5283,5 +5283,80 @@
   },
   "風險群組標示及位置": {
     "title_cn": "風險類別標示與位置"
+  },
+  "Instructions in English and Germany are provided.": {
+    "title_cn": "提供英文及德文說明書。"
+  },
+  "No insulation compound forming solid insulation other than optical isolator, see table 4.1.2 for detail.": {
+    "title_cn": "除光耦合器外，無形成固體絕緣的絕緣化合物，詳見附表 4.1.2。"
+  },
+  "All models mass <7Kg, classed as MS1.": {
+    "title_cn": "所有型號重量 <7Kg，歸類為 MS1。"
+  },
+  "No opening.": {
+    "title_cn": "無開口。"
+  },
+  "Triple insulated wires winding used as reinforced safeguard in the isolating transformer. See table 4.1.2.": {
+    "title_cn": "隔離變壓器使用三重絕緣導線繞組作為強化安全防護。詳見附表 4.1.2。"
+  },
+  "IN CIRCUITS CONNECTED TO AN AC MAINS NOT EXCEEDING 420 V PEAK (300": {
+    "title_cn": "連接至交流電源且不超過 420 V 峰值之電路 (300"
+  },
+  "For EU, UK, AU, JP plug, see attached plug test report.": {
+    "title_cn": "歐規、英規、澳規、日規插頭請參閱附件插頭測試報告。"
+  },
+  "No insulation compound forming solid insulation other than optical isolator.": {
+    "title_cn": "除光耦合器外，無形成固體絕緣的絕緣化合物。"
+  },
+  "Bobbin and tape.": {
+    "title_cn": "線架與絕緣膠帶。"
+  },
+  "AC plug used.": {
+    "title_cn": "使用交流插頭。"
+  },
+  "No openings on enclosures as received and after mechanical test.": {
+    "title_cn": "收到時及機械測試後外殼無開口。"
+  },
+  "No fire barrier.": {
+    "title_cn": "無防火屏障。"
+  },
+  "V RMS)": {
+    "title_cn": "V 有效值)"
+  },
+  "No such switch on the equipment.": {
+    "title_cn": "設備上無此類開關。"
+  },
+  "Transformer is tested in the complete unit.": {
+    "title_cn": "變壓器於完整設備中測試。"
+  },
+  "The choice and application have taken into account as specified in this Clause 5 and Annex T and natural rubber, hygroscopic materials or asbestos are not used as insulation.": {
+    "title_cn": "選擇與應用已考量本條款 5 及附錄 T 之規定，且未使用天然橡膠、吸濕性材料或石棉作為絕緣。"
+  },
+  "See below.": {
+    "title_cn": "見下文。"
+  },
+  "IPX0    IP___": {
+    "title_cn": "IPX0    IP___"
+  },
+  "Routine test voltage, V": {
+    "title_cn": "例行試驗電壓，V"
+  },
+  "(silkscreen printing on approval appliance inlet body)": {
+    "title_cn": "（器具插座本體絲印）"
+  },
+  "The earthing pin of the appliance inlet is considered as protective earthing terminal.": {
+    "title_cn": "器具插座之接地腳視為保護接地端子。"
+  },
+  "No such components.": {
+    "title_cn": "無此類元件。"
+  },
+  "Type test voltage V": {
+    "title_cn": "型式試驗電壓 V"
+  },
+  "LED types)": {
+    "title_cn": "LED 類型)"
+  },
+  "S (RX1 OC)": {
+    "title_cn": "S（RX1 開路）"
   }
 }
