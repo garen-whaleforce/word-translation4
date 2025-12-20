@@ -5358,5 +5358,8 @@
   },
   "S (RX1 OC)": {
     "title_cn": "S（RX1 開路）"
+  },
+  "No connection to external circuits with transient voltage.": {
+    "title_cn": "無連接至具有暫態電壓之外部電路。"
   }
 }
