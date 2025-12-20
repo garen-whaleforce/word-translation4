@@ -310,6 +310,50 @@
             font-size: 12px;
             color: #666;
         }
+
+        .processing-steps {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            color: #004085;
+            font-weight: 600;
+        }
+
+        .step.completed {
+            color: #155724;
+        }
+
+        .step.error {
+            color: #721c24;
+        }
+
+        .step-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .step.active .step-icon {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
@@ -362,6 +406,32 @@
 
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <p id="progressText" style="color: #666; margin-bottom: 20px; font-size: 14px;"></p>
+
+            <!-- Processing Steps -->
+            <div id="processingSteps" class="processing-steps">
+                <div class="step" id="step1">
+                    <span class="step-icon">⏳</span>
+                    <span class="step-text">等待處理</span>
+                </div>
+                <div class="step" id="step2">
+                    <span class="step-icon">⏳</span>
+                    <span class="step-text">讀取 PDF 內容</span>
+                </div>
+                <div class="step" id="step3">
+                    <span class="step-icon">⏳</span>
+                    <span class="step-text">抽取表格資料</span>
+                </div>
+                <div class="step" id="step4">
+                    <span class="step-icon">⏳</span>
+                    <span class="step-text">QA 品質檢查</span>
+                </div>
+                <div class="step" id="step5">
+                    <span class="step-icon">⏳</span>
+                    <span class="step-text">產生 Word 報告</span>
+                </div>
             </div>
 
             <div class="qa-results" id="qaResults"></div>
@@ -515,15 +585,56 @@
             document.getElementById('jobInfo').textContent =
                 `任務 ID: ${job.job_id} | 檔案: ${job.pdf_filename}`;
 
-            // Progress
-            const progress = {
-                'PENDING': 10,
-                'RUNNING': 50,
-                'PASS': 100,
-                'FAIL': 100,
-                'ERROR': 100
-            };
-            document.getElementById('progressFill').style.width = `${progress[job.status]}%`;
+            // Determine current step based on qa_results
+            const qaNames = (job.qa_results || []).map(q => q.gate_name);
+            let currentStep = 1;
+            let progressPercent = 10;
+            let progressText = '等待 Worker 處理...';
+
+            if (job.status === 'RUNNING') {
+                if (qaNames.includes('extract_overview') || qaNames.includes('extract_clause_rows')) {
+                    currentStep = 3;
+                    progressPercent = 40;
+                    progressText = '正在抽取表格資料...';
+                } else if (job.json_data_key) {
+                    currentStep = 2;
+                    progressPercent = 25;
+                    progressText = '正在讀取 PDF 內容...';
+                } else {
+                    currentStep = 2;
+                    progressPercent = 20;
+                    progressText = '正在讀取 PDF 內容...';
+                }
+
+                if (qaNames.includes('qa_overview_match') || qaNames.includes('qa_clause_match')) {
+                    currentStep = 4;
+                    progressPercent = 60;
+                    progressText = '正在進行 QA 品質檢查...';
+                }
+
+                if (qaNames.includes('final_qa')) {
+                    currentStep = 5;
+                    progressPercent = 80;
+                    progressText = '正在產生 Word 報告...';
+                }
+            } else if (job.status === 'PASS') {
+                currentStep = 6;
+                progressPercent = 100;
+                progressText = '完成！所有 QA 檢查通過，已產生 FINAL 報告';
+            } else if (job.status === 'FAIL') {
+                currentStep = 6;
+                progressPercent = 100;
+                progressText = '完成！部分 QA 檢查未通過，已產生 DRAFT 報告供審閱';
+            } else if (job.status === 'ERROR') {
+                progressPercent = 100;
+                progressText = '處理失敗：' + (job.error_message || '未知錯誤');
+            }
+
+            document.getElementById('progressFill').style.width = `${progressPercent}%`;
+            document.getElementById('progressText').textContent = progressText;
+
+            // Update step indicators
+            updateStepIndicators(currentStep, job.status);
 
             // QA Results
             const qaContainer = document.getElementById('qaResults');
@@ -643,6 +754,60 @@
 
             } catch (error) {
                 console.error(error);
+            }
+        }
+
+        function updateStepIndicators(currentStep, status) {
+            const steps = [
+                { id: 'step1', name: '等待處理' },
+                { id: 'step2', name: '讀取 PDF 內容' },
+                { id: 'step3', name: '抽取表格資料' },
+                { id: 'step4', name: 'QA 品質檢查' },
+                { id: 'step5', name: '產生 Word 報告' }
+            ];
+
+            steps.forEach((step, index) => {
+                const el = document.getElementById(step.id);
+                const icon = el.querySelector('.step-icon');
+
+                // Reset classes
+                el.classList.remove('active', 'completed', 'error');
+
+                const stepNum = index + 1;
+
+                if (status === 'ERROR') {
+                    if (stepNum <= currentStep) {
+                        el.classList.add('error');
+                        icon.textContent = '✗';
+                    } else {
+                        icon.textContent = '⏳';
+                    }
+                } else if (stepNum < currentStep) {
+                    // Completed steps
+                    el.classList.add('completed');
+                    icon.textContent = '✓';
+                } else if (stepNum === currentStep) {
+                    // Current step
+                    if (currentStep === 6) {
+                        // All done
+                        el.classList.add('completed');
+                        icon.textContent = '✓';
+                    } else {
+                        el.classList.add('active');
+                        icon.textContent = '🔄';
+                    }
+                } else {
+                    // Pending steps
+                    icon.textContent = '⏳';
+                }
+            });
+
+            // Hide/show processing steps based on completion
+            const stepsContainer = document.getElementById('processingSteps');
+            if (['PASS', 'FAIL'].includes(status)) {
+                stepsContainer.style.display = 'none';
+            } else {
+                stepsContainer.style.display = 'block';
             }
         }
 
