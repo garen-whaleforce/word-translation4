@@ -690,13 +690,22 @@
                 return;
             }
 
-            const createdAt = new Date(job.created_at);
+            // 確保時間是 UTC 格式（如果沒有時區資訊，加上 Z）
+            let createdAtStr = job.created_at;
+            if (!createdAtStr.endsWith('Z') && !createdAtStr.includes('+')) {
+                createdAtStr += 'Z';
+            }
+            const createdAt = new Date(createdAtStr);
             const now = new Date();
 
             // 計算時間差
             let endTime;
             if (['PASS', 'FAIL', 'ERROR'].includes(job.status) && job.updated_at) {
-                endTime = new Date(job.updated_at);
+                let updatedAtStr = job.updated_at;
+                if (!updatedAtStr.endsWith('Z') && !updatedAtStr.includes('+')) {
+                    updatedAtStr += 'Z';
+                }
+                endTime = new Date(updatedAtStr);
             } else {
                 endTime = now;
             }
