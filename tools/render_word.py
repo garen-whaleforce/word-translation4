@@ -2603,6 +2603,78 @@ def translate_remark(remark: str, clause_id: str) -> str:
 
         # 材料製造商
         'LIANG YI TAPE': '良義膠帶',
+
+        # 6.2.x 電力能量源與潛在起火源分類
+        'PS (power source) classification determined by measuring the maximum power in Figures 34 and 35 for load and power source circuits.':
+            'PS (電力源) 分級由圖 34 及圖 35 測量負載電路及電力源電路之最大功率決定。',
+        'PS (power source) classification determined by measuring the maximum power in Figures 34 and 35 for load and power source circuits':
+            'PS (電力源) 分級由圖 34 及圖 35 測量負載電路及電力源電路之最大功率決定。',
+        'PIS classification determined by sub-clause 6.2.3.1 – 6.2.3.4.':
+            'PIS 分級由 6.2.3.1 – 6.2.3.4 條款決定。',
+        'PIS classification determined by sub-clause 6.2.3.1 – 6.2.3.4':
+            'PIS 分級由 6.2.3.1 – 6.2.3.4 條款決定。',
+        'PIS classification determined by sub-clauses 6.2.3.1 – 6.2.3.4.':
+            'PIS 分級由 6.2.3.1 – 6.2.3.4 條款決定。',
+        'Potential ignition source classification determined by sub-clauses 6.2.3.1 – 6.2.3.4.':
+            '潛在起火源分類由 6.2.3.1 – 6.2.3.4 條款決定。',
+        'Arcs, sparks and interruption of inductive circuits – arc at fuses and at relay contacts.':
+            '電弧、火花及電感性電路中斷 – 保險絲及繼電器接點處之電弧。',
+        'Arcs, sparks and interruption of inductive circuits – arc at fuses and at relay contacts':
+            '電弧、火花及電感性電路中斷 – 保險絲及繼電器接點處之電弧。',
+        'Arcs, sparks and interruption of inductive circuits':
+            '電弧、火花及電感性電路中斷。',
+        'No arcs, sparks within equipment.':
+            '設備內無電弧或火花。',
+        'No arcs, sparks within equipment':
+            '設備內無電弧或火花。',
+        'All resistive components are classified as PIS 3.':
+            '所有電阻性元件分類為 PIS 3。',
+        'All resistive components are classified as PIS 3':
+            '所有電阻性元件分類為 PIS 3。',
+        'Resistive components':
+            '電阻性元件',
+        'Faulty connections':
+            '故障連接',
+        'No connections that need high contact pressure.':
+            '無需高接觸壓力之連接。',
+        'No connections that need high contact pressure':
+            '無需高接觸壓力之連接。',
+        'All connections need no high contact pressure.':
+            '所有連接均無需高接觸壓力。',
+        'All connections need no high contact pressure':
+            '所有連接均無需高接觸壓力。',
+        'Component abnormal operation and fault':
+            '元件異常運作及故障',
+        'Components are certified or tested.':
+            '元件已認證或經測試。',
+        'Components are certified or tested':
+            '元件已認證或經測試。',
+        'All components within the fire enclosure are certified or tested.':
+            '防火外殼內之所有元件均已認證或經測試。',
+        'All components within the fire enclosure are certified or tested':
+            '防火外殼內之所有元件均已認證或經測試。',
+
+        # 6.2.3.1 / 6.2.3.2 電弧/電阻 PIS 分類
+        'All circuit inside enclosure is claimed as Arcing PIS':
+            '外殼內所有電路均宣告為電弧 PIS。',
+        'All circuit inside enclosure is claimed as Arcing PIS.':
+            '外殼內所有電路均宣告為電弧 PIS。',
+        'All circuits inside enclosure is claimed as Arcing PIS':
+            '外殼內所有電路均宣告為電弧 PIS。',
+        'All circuits inside enclosure are claimed as Arcing PIS':
+            '外殼內所有電路均宣告為電弧 PIS。',
+        'All circuit inside enclosure is claimed as Resistive PIS':
+            '外殼內所有電路均宣告為電阻 PIS。',
+        'All circuit inside enclosure is claimed as Resistive PIS.':
+            '外殼內所有電路均宣告為電阻 PIS。',
+        'All circuits inside enclosure is claimed as Resistive PIS':
+            '外殼內所有電路均宣告為電阻 PIS。',
+        'All circuits inside enclosure are claimed as Resistive PIS':
+            '外殼內所有電路均宣告為電阻 PIS。',
+        'No arcing occurs within the equipment':
+            '設備內無電弧發生。',
+        'No arcing occurs within the equipment.':
+            '設備內無電弧發生。',
     }
 
     if remark_normalized in exact_translations:
@@ -2727,11 +2799,23 @@ def translate_remark(remark: str, clause_id: str) -> str:
     if remark_normalized in simple_translations:
         return simple_translations[remark_normalized]
 
-    # 如果模板中有翻譯，優先使用模板
+    # 如果 PDF remark 是空的或只有簡單參考，則使用 clause_translations.json 的 remark_cn
+    # 但如果 PDF 有實質內容（技術描述），則不使用模板覆蓋
     if clause_id and clause_id in CLAUSE_TRANSLATIONS:
         template_remark = CLAUSE_TRANSLATIONS[clause_id].get('remark_cn', '')
         if template_remark:
-            return template_remark
+            # 判斷 PDF remark 是否有實質內容
+            # 簡單參考模式：空、純數字、純標點、只有 "See" 開頭等
+            is_simple_ref = (
+                not remark_normalized or
+                remark_normalized.strip() in ('', '-', '--', 'N/A', '0') or
+                re.match(r'^[\d.]+$', remark_normalized.strip()) or
+                re.match(r'^\(See\s', remark_normalized, re.IGNORECASE)
+            )
+            # 如果是簡單參考，使用模板翻譯
+            if is_simple_ref:
+                return template_remark
+            # 否則繼續用 LLM 翻譯實質內容
 
     # 字典未匹配，嘗試 LLM 翻譯
     if HAS_LLM:
