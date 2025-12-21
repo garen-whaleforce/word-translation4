@@ -124,17 +124,41 @@ def extract_clause_rows(pdf, start_page: int = 0) -> list:
                         'pdf_page': page_num
                     })
                 elif first_cell == '' and req:
-                    # 檢查是否是標題斷行的延續（全大寫英文且 verdict 是 ⎯，且前一行存在）
+                    req_clean = req.replace('\n', ' ').strip()
+
+                    # 檢查是否是需要合併到前一行的延續行
+                    # 情況 1: 標題斷行（全大寫英文且 verdict 是 ⎯）
                     is_title_continuation = (
                         rows and
                         verdict == '⎯' and
-                        req.isupper() and
-                        re.match(r'^[A-Z\s,]+$', req.replace('\n', ' '))
+                        req_clean.isupper() and
+                        re.match(r'^[A-Z\s,]+$', req_clean)
                     )
 
-                    if is_title_continuation:
+                    # 情況 2: 描述性延續行（verdict 是 ⎯ 且以冒號結尾或包含 "...." 省略號）
+                    # 這些通常是表格欄位標題的延續，如 "for contact gaps (mm) ...:"
+                    is_description_continuation = (
+                        rows and
+                        verdict == '⎯' and
+                        (req_clean.endswith(':') or
+                         re.search(r'\.{3,}', req_clean) or  # 省略號 "....."
+                         req_clean.lower() in ['circuit elements', 'parts'])  # 常見的單獨標題詞
+                    )
+
+                    # 情況 3: 前一行的 verdict 有值（如 N/A, P），當前行 verdict 為 ⎯
+                    # 且當前行看起來是前一行描述的一部分
+                    prev_has_verdict = (
+                        rows and
+                        rows[-1].get('verdict') in ['N/A', 'P', 'F'] and
+                        verdict == '⎯'
+                    )
+
+                    if is_title_continuation or is_description_continuation:
                         # 合併到前一行的 req
-                        rows[-1]['req'] = rows[-1]['req'] + ' ' + req.replace('\n', ' ')
+                        rows[-1]['req'] = rows[-1]['req'] + ' ' + req_clean
+                    elif prev_has_verdict and len(req_clean) < 50:
+                        # 短描述且前一行有明確 verdict，合併
+                        rows[-1]['req'] = rows[-1]['req'] + ' ' + req_clean
                     else:
                         # 無 clause_id 的子項目
                         rows.append({

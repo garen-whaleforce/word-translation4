@@ -558,6 +558,13 @@ def rebuild_clause_tables_v2(doc: Document, pdf_clause_rows: list) -> dict:
             if is_section_header:
                 set_cell_shading(tc, 'D9D9D9')  # 淺灰色
 
+        # 當 verdict 為 ⎯ 時，為 verdict 欄位設定灰色背景並清空文字
+        if verdict in ['⎯', '-', '—', '–']:
+            verdict_tc = cells[3] if len(cells) > 3 else None
+            if verdict_tc is not None:
+                set_cell_shading(verdict_tc, 'D9D9D9')  # 淺灰色
+                fill_cell_text(verdict_tc, '')  # 清空文字（符合人工版本）
+
         word_rows_generated.append({
             'clause_id': clause_id,
             'remark': remark_cn,
