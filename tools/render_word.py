@@ -3106,6 +3106,11 @@ def translate_all_tables(doc: Document):
                 if not original_text or len(original_text) < 3:
                     continue
 
+                # 跳過包含 FORMCHECKBOX 的儲存格（避免破壞 checkbox 結構）
+                cell_xml = cell._element.xml
+                if 'FORMCHECKBOX' in cell_xml:
+                    continue
+
                 modified_text = original_text
 
                 # 1. 先嘗試使用智能欄位翻譯（處理帶填充符號的欄位標題）
