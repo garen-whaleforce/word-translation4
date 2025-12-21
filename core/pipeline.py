@@ -189,6 +189,12 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
         storage.upload_file(str(clause_rows_path), clause_rows_key)
         job.pdf_clause_rows_key = clause_rows_key
 
+        # 讀取 LLM 統計並存入 Job
+        llm_stats_path = out_dir / "llm_stats.json"
+        if llm_stats_path.exists():
+            with open(llm_stats_path, 'r', encoding='utf-8') as f:
+                job.llm_stats = json.load(f)
+
     except Exception as e:
         job.update_status(JobStatus.ERROR)
         job.error_message = str(e)

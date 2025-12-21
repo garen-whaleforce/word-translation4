@@ -337,6 +337,18 @@
             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
             color: #1565c0;
         }
+
+        .llm-stats {
+            margin: 15px 0;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 8px;
+            color: #e65100;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -409,7 +421,7 @@
                 </div>
                 <div class="step" id="step4">
                     <span class="step-icon">⏳</span>
-                    <span class="step-text">QA 檢查：比對欄位完整性與翻譯準確度</span>
+                    <span class="step-text">LLM 翻譯：批次翻譯 + 二次殘留英文掃描</span>
                 </div>
                 <div class="step" id="step5">
                     <span class="step-icon">⏳</span>
@@ -420,6 +432,11 @@
             <!-- Time Info -->
             <div id="timeInfo" class="time-info" style="display: none;">
                 <span id="elapsedTime"></span>
+            </div>
+
+            <!-- LLM Stats -->
+            <div id="llmStats" class="llm-stats" style="display: none;">
+                <span id="llmStatsText"></span>
             </div>
 
             <div class="qa-results" id="qaResults"></div>
@@ -590,12 +607,12 @@
                 if (qaNames.includes('qa_overview_match') || qaNames.includes('qa_clause_match')) {
                     currentStep = 4;
                     progressPercent = 60;
-                    progressText = '正在比對欄位完整性與翻譯準確度...';
+                    progressText = '正在進行 LLM 翻譯（批次 + 二次掃描）...';
                 }
 
                 if (qaNames.includes('final_qa')) {
                     currentStep = 5;
-                    progressPercent = 80;
+                    progressPercent = 85;
                     progressText = '正在填充模板並產生 DOCX 報告...';
                 }
             } else if (job.status === 'PASS') {
@@ -653,6 +670,9 @@
                 } else {
                     docxBtn.textContent = '📥 下載 DRAFT 報告';
                 }
+
+                // Fetch and display LLM stats
+                fetchLLMStats(job.job_id);
             }
 
             // Error message
@@ -660,6 +680,30 @@
                 const errorDiv = document.getElementById('errorMessage');
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = job.error_message;
+            }
+        }
+
+        async function fetchLLMStats(jobId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/jobs/${jobId}/llm-stats`);
+                if (response.ok) {
+                    const stats = await response.json();
+                    const llmStatsEl = document.getElementById('llmStats');
+                    const llmStatsText = document.getElementById('llmStatsText');
+
+                    if (stats && stats.total_cost !== undefined) {
+                        const inputTokens = (stats.input_tokens || 0).toLocaleString();
+                        const outputTokens = (stats.output_tokens || 0).toLocaleString();
+                        const cachedTokens = (stats.cached_tokens || 0).toLocaleString();
+                        const totalCost = (stats.total_cost || 0).toFixed(4);
+                        const model = stats.model || 'gpt-5.1';
+
+                        llmStatsText.innerHTML = `🤖 LLM 統計 | Model: ${model} | Input: ${inputTokens} | Output: ${outputTokens} | Cached: ${cachedTokens} | Cost: $${totalCost} USD`;
+                        llmStatsEl.style.display = 'flex';
+                    }
+                }
+            } catch (e) {
+                console.log('LLM stats not available:', e);
             }
         }
 
@@ -679,6 +723,7 @@
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('qaResults').innerHTML = '';
             document.getElementById('timeInfo').style.display = 'none';
+            document.getElementById('llmStats').style.display = 'none';
         }
 
         function updateTimeInfo(job) {
@@ -740,7 +785,7 @@
                 { id: 'step1', name: '等待 Worker 接收任務' },
                 { id: 'step2', name: '讀取 PDF：解析文件結構與頁面內容' },
                 { id: 'step3', name: '抽取資料：Overview、條款表、零件表、附表' },
-                { id: 'step4', name: 'QA 檢查：比對欄位完整性與翻譯準確度' },
+                { id: 'step4', name: 'LLM 翻譯：批次翻譯 + 二次殘留英文掃描' },
                 { id: 'step5', name: '產生報告：填充模板並輸出 DOCX 檔案' }
             ];
 

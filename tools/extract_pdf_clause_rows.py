@@ -123,6 +123,15 @@ def extract_clause_rows(pdf, start_page: int = 0) -> list:
                         'verdict': verdict,
                         'pdf_page': page_num
                     })
+                elif first_cell == '' and not req and remark:
+                    # 情況：remark 跨行延續（如 "9.3, B.1.5, B.2.6)"）
+                    # 前一行可能有未完成的 remark，需要合併
+                    if rows and rows[-1].get('remark', '').rstrip().endswith(','):
+                        # 前一行 remark 以逗號結尾，合併當前行的 remark
+                        rows[-1]['remark'] = rows[-1]['remark'] + ' ' + remark
+                    elif rows and '(' in rows[-1].get('remark', '') and ')' not in rows[-1].get('remark', ''):
+                        # 前一行 remark 有未閉合的括號，合併當前行
+                        rows[-1]['remark'] = rows[-1]['remark'] + ' ' + remark
                 elif first_cell == '' and req:
                     req_clean = req.replace('\n', ' ').strip()
 

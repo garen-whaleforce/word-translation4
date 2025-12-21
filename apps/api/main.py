@@ -243,6 +243,33 @@ async def download_qa_report(job_id: str):
     )
 
 
+@app.get("/api/jobs/{job_id}/llm-stats")
+async def get_llm_stats(job_id: str):
+    """
+    取得 LLM 翻譯統計（token 使用量與成本）
+    """
+    r = get_redis()
+    job_data = r.get(f"job:{job_id}")
+
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    job = Job.from_dict(json.loads(job_data))
+
+    # 從 Job 物件取得 llm_stats
+    if job.llm_stats:
+        return job.llm_stats
+
+    # 如果沒有，返回預設值
+    return {
+        "model": "gpt-5.1",
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cached_tokens": 0,
+        "total_cost": 0.0
+    }
+
+
 @app.get("/api/jobs")
 async def list_jobs(limit: int = Query(default=20, le=100)):
     """

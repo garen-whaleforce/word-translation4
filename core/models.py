@@ -61,6 +61,9 @@ class Job:
     cover_applicant_name: str = ""
     cover_applicant_address: str = ""
 
+    # LLM 翻譯統計
+    llm_stats: Dict[str, Any] = field(default_factory=dict)
+
     def update_status(self, status: JobStatus):
         self.status = status
         self.updated_at = datetime.utcnow().isoformat()
@@ -92,6 +95,7 @@ class Job:
             "cover_report_no": self.cover_report_no,
             "cover_applicant_name": self.cover_applicant_name,
             "cover_applicant_address": self.cover_applicant_address,
+            "llm_stats": self.llm_stats,
         }
 
     def to_json(self) -> str:
@@ -115,6 +119,7 @@ class Job:
             cover_report_no=data.get("cover_report_no", ""),
             cover_applicant_name=data.get("cover_applicant_name", ""),
             cover_applicant_address=data.get("cover_applicant_address", ""),
+            llm_stats=data.get("llm_stats", {}),
         )
         for qa in data.get("qa_results", []):
             job.qa_results.append(QAResult(**qa))

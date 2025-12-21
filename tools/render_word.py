@@ -2689,12 +2689,13 @@ def translate_remark(remark: str, clause_id: str) -> str:
     if remark_normalized in exact_translations:
         return exact_translations[remark_normalized]
 
-    # 處理包含 (See appended table X) 開頭的複合備註
+    # 處理包含 (See appended table X) 或 (See appended table X, Y, Z) 開頭的複合備註
     if remark_normalized.startswith('(See appended table'):
-        # 提取表格號碼
-        m = re.match(r'^\(See appended table ([\d.]+)\)\s*(.*)', remark_normalized, re.DOTALL)
+        # 提取表格號碼（支援多個編號，如 "5.4.1.4, 9.3, B.1.5, B.2.6"）
+        # 格式: (See appended table X) 或 (See appended table X, Y, Z)
+        m = re.match(r'^\(See appended table ([\dA-Z.,\s]+?)\)\s*(.*)', remark_normalized, re.DOTALL)
         if m:
-            table_num = m.group(1)
+            table_nums = m.group(1).strip()
             rest = m.group(2).strip()
             if rest:
                 # 有附加內容，翻譯常見的附加內容（正規化後比對）
@@ -2704,10 +2705,10 @@ def translate_remark(remark: str, clause_id: str) -> str:
                         '符合 IEC 及/或國家標準認證之組件在其額定值內正確使用。未涵蓋於 IEC 標準之組件在設備實際條件下測試。另見附錄 G',
                 }
                 if rest_normalized in rest_translations:
-                    return f'(見附表 {table_num}) {rest_translations[rest_normalized]}'
+                    return f'(見附表 {table_nums}) {rest_translations[rest_normalized]}'
                 # 如果附加內容太長，只翻譯開頭部分
-                return f'(見附表 {table_num}) {rest_normalized[:50]}...' if len(rest_normalized) > 50 else f'(見附表 {table_num}) {rest_normalized}'
-            return f'(見附表 {table_num})'
+                return f'(見附表 {table_nums}) {rest_normalized[:50]}...' if len(rest_normalized) > 50 else f'(見附表 {table_nums}) {rest_normalized}'
+            return f'(見附表 {table_nums})'
 
     # 處理 The US plug / Japan plug 等插頭說明（已在 exact_translations 處理）
     # 這裡保留作為後備，處理複雜的多插頭說明
@@ -2867,6 +2868,15 @@ def fill_table_5522(doc: Document, table_5522_data: dict):
         else:
             last_cell.text = verdict
 
+    # 測試條件翻譯字典
+    condition_translations = {
+        'N': '正常操作',
+        'Normal': '正常操作',
+        'Normal operation': '正常操作',
+        'S': '單一故障',
+        'Single fault': '單一故障',
+    }
+
     # 更新資料列（R2, R3 是資料列）
     for i, row_data in enumerate(rows_data[:2]):
         row_idx = i + 2  # R2 開始
@@ -2875,7 +2885,25 @@ def fill_table_5522(doc: Document, table_5522_data: dict):
             row.cells[0].text = row_data.get('location', '--')
             row.cells[1].text = row_data.get('location', '--')  # 合併儲存格
             row.cells[2].text = row_data.get('supply_voltage', '--')
-            row.cells[3].text = row_data.get('condition', '--')
+
+            # 翻譯測試條件
+            condition = row_data.get('condition', '--')
+            # 處理 "S (R1 OC)" 類型的條件
+            if condition.startswith('S') and '(' in condition:
+                # 提取括號內容並翻譯
+                import re
+                match = re.match(r'S\s*\((.+)\)', condition)
+                if match:
+                    inner = match.group(1).strip()
+                    # 翻譯 OC = 開路, SC = 短路
+                    inner_cn = inner.replace('OC', '開路').replace('SC', '短路')
+                    condition = inner_cn
+                else:
+                    condition = condition_translations.get(condition, condition)
+            else:
+                condition = condition_translations.get(condition, condition)
+            row.cells[3].text = condition
+
             row.cells[4].text = row_data.get('switch_position', '--')
             row.cells[5].text = row_data.get('measured_voltage', '--')
             row.cells[6].text = row_data.get('es_class', '--')
@@ -3514,12 +3542,12 @@ def fill_remarks_section(doc: Document, meta: dict):
         meta: 包含 general_product_remarks 和 model_differences 的 meta 資料
 
     備註格式（依照人工檔案）：
-    1. 此份報告是依據 {CB機構} 所發行之CB證書，其報告號碼為 {報告號碼}，
-       參考證書號碼為{證書號碼}，標準版本為{標準}。
-       - 針對直接插牆式插頭, 增加評估CNS 690極性檢查及尺度量測，量測結果執詳如表4.1.2。
-    2. 本產品為影音、資訊及通訊設備類與室內使用，產品為電源供應器。
-    3. 使用超音波固定外殼。
-    4. 生產廠資訊: (動態)
+    此份報告是依據 {CB機構} 所發行之CB證書，其報告號碼為 {報告號碼}，
+    參考證書號碼為{證書號碼}，標準版本為{標準}。
+    - 針對直接插牆式插頭, 增加評估CNS 690極性檢查及尺度量測，量測結果執詳如表4.1.2。
+    本產品為影音、資訊及通訊設備類與室內使用，產品為電源供應器。
+    使用超音波固定外殼。
+    生產廠資訊: (表格)
     """
     if len(doc.tables) <= 3:
         return 0
@@ -3527,10 +3555,10 @@ def fill_remarks_section(doc: Document, meta: dict):
     table = doc.tables[3]  # T4
     filled_count = 0
 
-    # 組合備註內容（依照人工檔案格式，使用編號列表）
+    # 組合備註內容
     remarks_lines = []
 
-    # 1. CB 證書資訊（含標準版本）
+    # CB 證書資訊（含標準版本）
     cb_report_no = meta.get('cb_report_no', '')
     standard = meta.get('standard', 'IEC 62368-1:2018')
     cb_lab = meta.get('cb_testing_lab', '')  # CB 測試實驗室
@@ -3547,46 +3575,43 @@ def fill_remarks_section(doc: Document, meta: dict):
         if cb_cert_no:
             cb_info += f"，參考證書號碼為{cb_cert_no}"
         cb_info += f"，標準版本為{standard}。"
-        remarks_lines.append(f"1. {cb_info}")
+        remarks_lines.append(cb_info)
         remarks_lines.append("- 針對直接插牆式插頭, 增加評估CNS 690極性檢查及尺度量測，量測結果執詳如表4.1.2。")
 
-    # 2. 產品類型和用途
-    remarks_lines.append("2. 本產品為影音、資訊及通訊設備類與室內使用，產品為電源供應器。")
+    # 產品類型和用途
+    remarks_lines.append("本產品為影音、資訊及通訊設備類與室內使用，產品為電源供應器。")
 
-    # 3. 外殼固定方式
+    # 外殼固定方式
     general_remarks = meta.get('general_product_remarks', '')
     if 'ultrasonic' in general_remarks.lower():
-        remarks_lines.append("3. 使用超音波固定外殼。")
+        remarks_lines.append("使用超音波固定外殼。")
 
-    # 4. 生產廠資訊（動態抓取）
+    # 生產廠資訊（純文字，表格將在後面處理）
     factory_locations = meta.get('factory_locations', [])
-    if factory_locations:
-        factory_text = "4. 生產廠資訊:\n"
-        for i, factory in enumerate(factory_locations, 1):
-            factory_clean = factory.strip()
-            if factory_clean:
-                # 嘗試分割名稱和地址
-                # 格式通常是 "名稱\n地址" 或 "名稱, 地址"
-                if '\n' in factory_clean:
-                    parts = factory_clean.split('\n', 1)
-                    factory_text += f"   {i}. {parts[0].strip()}\n      {parts[1].strip()}\n"
-                else:
-                    factory_text += f"   {i}. {factory_clean}\n"
-        remarks_lines.append(factory_text.rstrip())
-    else:
-        remarks_lines.append("4. 生產廠資訊:")
+    remarks_lines.append("生產廠資訊:")
 
     if not remarks_lines:
         return 0
 
-    # 找到備註列 (R19) 並完全替換內容
-    for row in table.rows:
+    # 找到備註列（最後一列通常是備註）- 只處理 Table 3 (試驗樣品特性) 的最後一個備註列
+    # 備註列通常是第 18 行（索引 17 後面）
+    remarks_filled = False
+    for row_idx in range(len(table.rows) - 1, -1, -1):  # 從後往前找
+        row = table.rows[row_idx]
         first_cell_text = row.cells[0].text.strip()
-        if '備註' in first_cell_text:
+        if first_cell_text.startswith('備註'):
+            if remarks_filled:
+                continue  # 只處理第一個找到的備註列
+
             # 找到備註列
             if len(row.cells) > 0:
                 target_cell = row.cells[0]  # 備註通常跨欄，所以填入第一欄
                 remarks_text = "備註:\n" + "\n".join(remarks_lines)
+
+                # 先移除現有的嵌套表格
+                for nested_tbl in target_cell.tables[:]:
+                    tbl_elem = nested_tbl._tbl
+                    tbl_elem.getparent().remove(tbl_elem)
 
                 # 完全清除現有內容（包括所有段落）
                 for paragraph in target_cell.paragraphs:
@@ -3598,9 +3623,74 @@ def fill_remarks_section(doc: Document, meta: dict):
                 else:
                     target_cell.text = remarks_text
                 filled_count += 1
+
+                # 同時處理第二個儲存格（如果存在且是跨欄）
+                if len(row.cells) > 1:
+                    second_cell = row.cells[1]
+                    # 移除嵌套表格
+                    for nested_tbl in second_cell.tables[:]:
+                        tbl_elem = nested_tbl._tbl
+                        tbl_elem.getparent().remove(tbl_elem)
+                    # 清除內容
+                    for paragraph in second_cell.paragraphs:
+                        paragraph.clear()
+                    if second_cell.paragraphs:
+                        second_cell.paragraphs[0].add_run(remarks_text)
+                    else:
+                        second_cell.text = remarks_text
+
+                # 在備註儲存格內建立生產廠嵌套表格（只建立一次）
+                if factory_locations:
+                    _add_factory_nested_table(target_cell, factory_locations)
+                    if len(row.cells) > 1:
+                        _add_factory_nested_table(row.cells[1], factory_locations)
+
+                remarks_filled = True
             break
 
     return filled_count
+
+
+def _add_factory_nested_table(cell, factory_locations: list):
+    """
+    在儲存格內添加生產廠嵌套表格
+
+    Args:
+        cell: 目標儲存格
+        factory_locations: 生產廠資訊列表
+    """
+    import re
+    from docx.shared import Pt, Inches
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+
+    # 在儲存格末尾添加新段落，然後創建表格
+    p = cell.add_paragraph()
+
+    # 創建嵌套表格
+    nested_table = cell.add_table(rows=len(factory_locations) + 1, cols=2)
+
+    # 設定表格標題行
+    header_row = nested_table.rows[0]
+    header_row.cells[0].text = "名稱"
+    header_row.cells[1].text = "地址"
+
+    # 填充工廠資訊
+    for i, factory in enumerate(factory_locations):
+        factory_clean = factory.strip()
+        if factory_clean:
+            # 分離廠名和地址
+            match = re.match(r'^(.+?(?:Co\.,?\s*Ltd\.?|Limited|Inc\.|Corporation|Corp\.?))\s*[,.]?\s*(.+)$', factory_clean, re.IGNORECASE)
+            if match:
+                company_name = match.group(1).strip()
+                address = match.group(2).strip()
+            else:
+                company_name = factory_clean
+                address = ""
+
+            row = nested_table.rows[i + 1]
+            row.cells[0].text = company_name
+            row.cells[1].text = address
 
 
 def translate_product_remarks(remarks: str) -> str:
@@ -4249,6 +4339,351 @@ def fill_table_t7_t8(doc: Document, cb_tables: list):
             print(f"  已更新 {data_row_idx} 行觀察結果")
 
 
+def extract_appendix_tables_from_pdf(cb_tables: list) -> dict:
+    """
+    從 cb_tables_text.json 提取所有附表資料，按條款編號組織
+
+    Returns:
+        dict: {
+            '5.2': {'rows': [...], 'verdict': 'P'},
+            '5.4.1.8': {'rows': [...], 'verdict': 'P'},
+            ...
+        }
+    """
+    import re
+
+    appendix_tables = {}
+    current_clause = None
+    current_rows = []
+    current_verdict = ''
+
+    for table_block in cb_tables:
+        page = table_block.get('page', 0)
+        rows = table_block.get('rows', [])
+
+        for row in rows:
+            if not row:
+                continue
+
+            first_cell = str(row[0]).strip() if row else ''
+            row_text = ' '.join(str(c) for c in row if c)
+
+            # 檢查是否是附表標題行（包含 TABLE:）
+            if 'TABLE:' in row_text:
+                # 儲存前一個表格
+                if current_clause and current_rows:
+                    appendix_tables[current_clause] = {
+                        'rows': current_rows,
+                        'verdict': current_verdict
+                    }
+
+                # 提取新的條款編號（正規化換行符）
+                first_cell_normalized = ' '.join(first_cell.split())
+                match = re.match(r'^([\d.]+(?:,\s*[\d.A-Z]+)*)', first_cell_normalized)
+                if match:
+                    current_clause = match.group(1).strip()
+                    current_rows = [row]
+                    # 提取 verdict（通常在最後一欄）
+                    for cell in reversed(row):
+                        cell_text = str(cell).strip()
+                        if cell_text in ['P', 'N/A', 'F']:
+                            current_verdict = cell_text
+                            break
+                    else:
+                        current_verdict = ''
+            elif current_clause:
+                # 跳過頁眉行
+                if 'IEC 62368-1' in first_cell or first_cell == 'Clause':
+                    continue
+                current_rows.append(row)
+
+    # 儲存最後一個表格
+    if current_clause and current_rows:
+        appendix_tables[current_clause] = {
+            'rows': current_rows,
+            'verdict': current_verdict
+        }
+
+    return appendix_tables
+
+
+def fill_appendix_table(doc: Document, clause_id: str, pdf_table_data: dict, translations: dict = None):
+    """
+    填充單個附表 - 只填充資料行，保留原有表頭
+
+    Args:
+        doc: Word 文件
+        clause_id: 條款編號，如 '5.2', '5.4.1.8'
+        pdf_table_data: {'rows': [...], 'verdict': '...'}
+        translations: 可選的翻譯字典
+    """
+    import re
+    from docx.shared import Pt
+
+    pdf_rows = pdf_table_data.get('rows', [])
+    verdict = pdf_table_data.get('verdict', '')
+
+    if not pdf_rows:
+        return False
+
+    # 找到對應的 Word 表格
+    target_table = None
+    for tbl in doc.tables:
+        if tbl.rows:
+            first_cell = tbl.rows[0].cells[0].text.strip()
+            # 匹配條款編號（可能有多個，如 "5.4.2, 5.4.3"）
+            if first_cell.startswith(clause_id) or clause_id in first_cell.split(',')[0]:
+                target_table = tbl
+                break
+
+    if not target_table:
+        print(f"警告：找不到條款 {clause_id} 的表格")
+        return False
+
+    # 從 PDF 資料中提取真正的資料行（跳過表頭）
+    # PDF 表頭通常包含 "TABLE:", 欄位標題（如 Supply, Location, Parameters），或空白行
+    pdf_data_start = 0
+    for i, row in enumerate(pdf_rows):
+        if not row:
+            continue
+        first_cell = str(row[0]).strip() if row else ''
+        row_text = ' '.join(str(c) for c in row if c)
+
+        # 跳過標題行
+        if 'TABLE:' in row_text:
+            pdf_data_start = i + 1
+            continue
+
+        # 跳過欄位標題行（通常包含 Supply, Location, Parameters, Voltage 等）
+        header_keywords = ['Supply', 'Location', 'Parameters', 'Test conditions',
+                          'Voltage', 'Current', 'Type', 'Additional', 'ES', 'Class',
+                          'RMS voltage', 'Peak voltage', 'Frequency', 'Comments',
+                          'Object', 'Part No', 'Material', 'Manufacturer', 'Thickness',
+                          'Distance', 'Insulation', 'Required', 'Measured']
+        is_header = any(kw in row_text for kw in header_keywords)
+
+        # 找到第一個資料行（通常以 Model: 或數字開頭）
+        if 'Model:' in first_cell or 'Model:' in row_text:
+            pdf_data_start = i
+            break
+        elif first_cell and first_cell[0].isdigit() and not is_header:
+            # 數值資料行
+            pdf_data_start = i
+            break
+        elif is_header:
+            pdf_data_start = i + 1
+            continue
+
+    pdf_data_rows = pdf_rows[pdf_data_start:] if pdf_data_start < len(pdf_rows) else []
+
+    if not pdf_data_rows:
+        return False
+
+    # 找到 Word 表格中的資料起始行
+    word_data_start = 2  # 預設跳過標題和表頭
+    for i, row in enumerate(target_table.rows):
+        first_cell_text = row.cells[0].text.strip()
+        # 找到含有 "型號" 或 "Model" 的行作為資料起始
+        if '型號' in first_cell_text or 'Model' in first_cell_text:
+            word_data_start = i
+            break
+        # 或者找到數據行開始（數字開頭的行）
+        if first_cell_text and first_cell_text[0].isdigit() and i > 1:
+            word_data_start = i
+            break
+
+    # 填充資料（只填充資料行，不覆蓋表頭）
+    filled_count = 0
+    for i, pdf_row in enumerate(pdf_data_rows):
+        word_row_idx = word_data_start + i
+        if word_row_idx >= len(target_table.rows):
+            break
+
+        word_row = target_table.rows[word_row_idx]
+        word_first_cell = word_row.cells[0].text.strip()
+
+        # 跳過 Word 表格中的表頭行（不應該被資料覆蓋）
+        if any(kw in word_first_cell for kw in ['測試', '位置', '參數', '量測', '電壓', '電流', '頻率', '絕緣', '物件', '零件']):
+            continue
+
+        for j, cell_value in enumerate(pdf_row):
+            if j < len(word_row.cells):
+                cell_text = str(cell_value).strip() if cell_value else ''
+                if cell_text and cell_text != '--' and cell_text != '':
+                    # 翻譯常用術語
+                    cell_text = translate_appendix_cell(cell_text)
+                    # 只覆蓋空白或佔位符內容
+                    current_text = word_row.cells[j].text.strip()
+                    if not current_text or current_text == '--' or 'DYS830-xyW' in current_text:
+                        word_row.cells[j].text = cell_text
+                        filled_count += 1
+
+    if filled_count > 0:
+        print(f"附表 {clause_id}：已填入 {filled_count} 個儲存格")
+
+    return filled_count > 0
+
+
+def translate_appendix_cell(text: str) -> str:
+    """
+    翻譯附表儲存格中的常用術語
+    """
+    import re
+
+    # 處理 Model: 前綴
+    if text.startswith('Model:'):
+        model_name = text.replace('Model:', '').strip()
+        return f'型號：{model_name}'
+
+    translations = {
+        # 測試條件 (更精確的匹配)
+        'Normal operation': '正常',
+        'Normal': '正常',
+        'Abnormal (see table B.3)': '異常（見表 B.3）',
+        'Abnormal (see\ntable B.3)': '異常（見表 B.3）',
+        'Abnormal': '異常',
+        'Single fault (see table B.4)': '單一故障（見表 B.4）',
+        'Single fault (see\ntable B.4)': '單一故障（見表 B.4）',
+        'Single fault': '單一故障',
+        'Overload': '過載',
+        'over load': '過載',
+        'Normal condition': '正常條件',
+
+        # 電路位置
+        'Primary circuits supplied by a.c. mains supply': '由交流電源供電的主電路',
+        'Primary circuits\nsupplied by a.c.\nmains supply': '由交流電源供電的主電路',
+        'Primary circuits': '主電路',
+        'Primary circuit': '主電路',
+        'Secondary circuit': '二次側電路',
+        'Output "+" to "-"': '輸出"+"到"-"',
+        'Output': '輸出',
+        'Input': '輸入',
+        'Between "L" to "N"': '於"L"與"N"之間',
+        'Between "L"\nto "N"': '於"L"與"N"之間',
+
+        # 絕緣相關
+        'Basic insulation': '基本絕緣',
+        'Supplementary insulation': '補充絕緣',
+        'Reinforced insulation': '強化絕緣',
+        'Reinforced': '強化絕緣',
+        'Functional insulation': '功能絕緣',
+
+        # 元件
+        'Transformer pin': '變壓器腳位',
+        'Transformer': '變壓器',
+        'Opto-coupler': '光耦合器',
+        'Optocoupler': '光耦合器',
+        'Capacitor': '電容',
+        'Resistor': '電阻',
+        'Fuse': '保險絲',
+        'Bobbin': '線架',
+        'Enclosure': '外殼',
+        'YC1 primary to secondary': 'YC1 主側至副側',
+
+        # 其他
+        'short circuit': '短路',
+        'open circuit': '開路',
+        'Yes': '是',
+        'No': '否',
+        'Declaration': '宣告',
+        'See below': '見下表',
+        'See table': '見附表',
+        'Min.': '最小',
+        'Max.': '最大',
+        'Measured': '量測值',
+        'Required': '要求值',
+        'Allowed': '允許值',
+        'Supplementary information': '補充資料',
+    }
+
+    result = text
+
+    # 正規化換行符
+    result = result.replace('\n', ' ')
+    result = ' '.join(result.split())
+
+    # 按長度排序，優先替換較長的短語
+    sorted_translations = sorted(translations.items(), key=lambda x: len(x[0]), reverse=True)
+
+    for eng, chn in sorted_translations:
+        eng_normalized = ' '.join(eng.split())
+        pattern = re.compile(re.escape(eng_normalized), re.IGNORECASE)
+        result = pattern.sub(chn, result)
+
+    # 處理 "S (R1 OC)" 或 "SC" / "OC" 縮寫
+    # SC = 短路, OC = 開路
+    result = re.sub(r'\bSC\b', '短路', result)
+    result = re.sub(r'\bOC\b', '開路', result)
+
+    # 處理複合故障條件如 "U2 pin 1-2 SC"
+    result = re.sub(r'(U\d+)\s*pin\s*(\d+-?\d*)\s*短路', r'\1 腳位\2 短路', result)
+    result = re.sub(r'(U\d+)\s*pin\s*(\d+-?\d*)\s*開路', r'\1 腳位\2 開路', result)
+    result = re.sub(r'(R\d+)\s*短路', r'\1短路', result)
+    result = re.sub(r'(R\d+)\s*開路', r'\1開路', result)
+
+    # 處理電壓格式 "264Va.c, 60Hz" -> "264 V, 60 Hz"
+    result = re.sub(r'(\d+)Va\.c\.,?\s*(\d+)Hz', r'\1 V, \2 Hz', result)
+    result = re.sub(r'(\d+)Va\.c,\s*(\d+)Hz', r'\1 V, \2 Hz', result)
+    result = re.sub(r'(\d+)Vac,\s*(\d+)Hz', r'\1 V, \2 Hz', result)
+
+    return result
+
+
+def fill_all_appendix_tables(doc: Document, cb_tables: list):
+    """
+    從 PDF 資料動態填充所有附表
+
+    Args:
+        doc: Word 文件
+        cb_tables: cb_tables_text.json 的內容
+    """
+    # 提取所有附表資料
+    appendix_data = extract_appendix_tables_from_pdf(cb_tables)
+
+    print(f"從 PDF 提取了 {len(appendix_data)} 個附表")
+
+    # 需要動態填充的表格清單
+    tables_to_fill = [
+        '5.2',           # 電氣能量源之分級
+        '5.4.1.8',       # 工作電壓
+        '5.4.1.10.2',    # 熱塑性塑料軟化溫度試驗
+        '5.4.1.10.3',    # 球壓試驗
+        '5.4.2, 5.4.3',  # 最小空間/沿面距離
+        '5.4.4.2',       # 絕緣厚度的量測
+        '5.4.4.9',       # 頻率超過30 kHz之固體絕緣
+        '5.4.9',         # 耐電壓試驗
+        # 5.5.2.2 已有專門函數處理
+        '5.6.6',         # 接地導體及端子之阻抗
+        '5.7.4',         # 未接地導電部件
+        '5.7.5',         # 接地導電部件
+        '5.8',           # 電池備用電源之反饋安全防護
+        '6.2.2',         # 電氣功率源(PS) 之分級
+        '6.2.3.1',       # 決定電弧PIS
+        '6.2.3.2',       # 決定電阻性PIS
+        '8.5.5',         # 高壓燈管
+        '9.6',           # 無線功率發射器的溫度測量
+        '5.4.1.4, 9.3, B.1.5, B.2.6',  # 溫度要求
+    ]
+
+    filled_count = 0
+    for clause_id in tables_to_fill:
+        # 嘗試匹配 PDF 資料中的條款
+        pdf_data = appendix_data.get(clause_id)
+        if not pdf_data:
+            # 嘗試模糊匹配（處理多條款表格）
+            for key in appendix_data:
+                if clause_id.split(',')[0].strip() in key or key in clause_id:
+                    pdf_data = appendix_data[key]
+                    break
+
+        if pdf_data:
+            if fill_appendix_table(doc, clause_id, pdf_data):
+                filled_count += 1
+
+    print(f"動態附表填充：共處理 {filled_count} 個表格")
+    return filled_count
+
+
 def fill_table_b25(doc: Document, table_b25_data: dict, special_tables: dict):
     """
     確保 B.2.5 表格使用正確的 I rated 值（不是舊案殘留）
@@ -4434,6 +4869,9 @@ def main():
         if cb_tables_path.exists():
             cb_tables_data = load_json(cb_tables_path)
             fill_table_t7_t8(docx, cb_tables_data)
+
+            # 動態填充所有附表（5.2, 5.4.x, 5.5.x, 6.x 等）
+            fill_all_appendix_tables(docx, cb_tables_data)
 
     # 翻譯 B.3/B.4 表格的觀察結果欄位
     translate_b34_observations(docx)
