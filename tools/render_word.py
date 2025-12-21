@@ -3055,9 +3055,10 @@ def fill_annex_model_rows(doc: Document, annex_model_rows: list):
         if not table.rows:
             continue
 
-        # 檢查第一行第一格是否是附表 ID
+        # 檢查第一行第一格是否是附表 ID（數字或字母開頭）
         first_cell_text = table.rows[0].cells[0].text.strip()
-        table_id_match = re.match(r'^(\d+\.\d+(?:\.\d+)?)$', first_cell_text)
+        # 匹配 5.2, 6.2.2, Q.1, B.3 等格式
+        table_id_match = re.match(r'^((?:\d+|[A-Z])\.\d+(?:\.\d+)?)$', first_cell_text)
         if not table_id_match:
             continue
 

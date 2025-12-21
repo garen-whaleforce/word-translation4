@@ -188,7 +188,7 @@ def extract_table_412(tables: list) -> list:
 def extract_annex_model_rows(tables: list) -> list:
     """
     抽取附表中的 Model 行資訊
-    用於 5.2, 5.7.4, 6.2.2 等附表的型號/輸出規格
+    用於 5.2, 5.7.4, 6.2.2, Q.1, B.3 等附表的型號/輸出規格
 
     Returns:
         list of dict: [{'table_id': '5.2', 'page': 44, 'model_text': 'Model: MC-601 (output: 20.0Vdc, 3.0A)'}, ...]
@@ -207,12 +207,16 @@ def extract_annex_model_rows(tables: list) -> list:
             first_cell = norm(row[0])
 
             # 識別附表開頭 - 多種格式
-            # 格式1: "5.2" (單獨的條款編號)
+            # 格式1: "5.2" (數字條款編號)
             if re.match(r'^(\d+\.\d+(?:\.\d+)?)$', first_cell):
                 current_table_id = first_cell
                 continue
-            # 格式2: "5.2 TABLE:..."
-            table_id_match = re.match(r'^(\d+\.\d+(?:\.\d+)?)\s+TABLE', first_cell)
+            # 格式2: "Q.1", "B.3" (字母條款編號)
+            if re.match(r'^([A-Z]\.\d+(?:\.\d+)?)$', first_cell):
+                current_table_id = first_cell
+                continue
+            # 格式3: "5.2 TABLE:..." 或 "Q.1 TABLE:..."
+            table_id_match = re.match(r'^((?:\d+|[A-Z])\.\d+(?:\.\d+)?)\s+TABLE', first_cell)
             if table_id_match:
                 current_table_id = table_id_match.group(1)
                 continue
