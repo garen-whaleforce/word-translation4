@@ -185,6 +185,49 @@ def extract_table_412(tables: list) -> list:
     return component_rows
 
 
+def extract_annex_model_rows(tables: list) -> list:
+    """
+    抽取附表中的 Model 行資訊
+    用於 5.2, 5.7.4, 6.2.2 等附表的型號/輸出規格
+
+    Returns:
+        list of dict: [{'table_id': '5.2', 'page': 44, 'model_text': 'Model: MC-601 (output: 20.0Vdc, 3.0A)'}, ...]
+    """
+    model_rows = []
+    current_table_id = None
+
+    for tbl in tables:
+        page = tbl.get('page')
+        rows = tbl.get('rows', [])
+
+        for row in rows:
+            if not row or not row[0]:
+                continue
+
+            first_cell = norm(row[0])
+
+            # 識別附表開頭 - 多種格式
+            # 格式1: "5.2" (單獨的條款編號)
+            if re.match(r'^(\d+\.\d+(?:\.\d+)?)$', first_cell):
+                current_table_id = first_cell
+                continue
+            # 格式2: "5.2 TABLE:..."
+            table_id_match = re.match(r'^(\d+\.\d+(?:\.\d+)?)\s+TABLE', first_cell)
+            if table_id_match:
+                current_table_id = table_id_match.group(1)
+                continue
+
+            # 識別 Model 行
+            if first_cell.startswith('Model:') and current_table_id:
+                model_rows.append({
+                    'table_id': current_table_id,
+                    'page': page,
+                    'model_text': first_cell
+                })
+
+    return model_rows
+
+
 def extract_clauses_from_pages(pdf, start_idx: int) -> list:
     """從指定頁開始抽取所有條款"""
     if start_idx < 0:
@@ -297,12 +340,18 @@ def main():
     if table_412_data:
         print(f"4.1.2 表格: 抽取 {len(table_412_data)} 列零件資料")
 
+    # 5. 抽取附表 Model 行
+    annex_model_rows = extract_annex_model_rows(tables)
+    if annex_model_rows:
+        print(f"附表 Model 行: 抽取 {len(annex_model_rows)} 列")
+
     # 輸出檔案
     out_chunks = out_dir / "cb_text_chunks.json"
     out_tables = out_dir / "cb_tables_text.json"
     out_overview = out_dir / "cb_overview_raw.json"
     out_clauses = out_dir / "cb_clauses_raw.json"
     out_table_412 = out_dir / "cb_table_412.json"
+    out_annex_model = out_dir / "cb_annex_model_rows.json"
 
     with open(out_chunks, "w", encoding="utf-8") as f:
         json.dump(chunks, f, ensure_ascii=False, indent=2)
@@ -319,12 +368,16 @@ def main():
     with open(out_table_412, "w", encoding="utf-8") as f:
         json.dump(table_412_data, f, ensure_ascii=False, indent=2)
 
+    with open(out_annex_model, "w", encoding="utf-8") as f:
+        json.dump(annex_model_rows, f, ensure_ascii=False, indent=2)
+
     print("OK")
     print("cb_text_chunks:", out_chunks)
     print("cb_tables_text:", out_tables)
     print("cb_overview_raw:", out_overview)
     print("cb_clauses_raw:", out_clauses)
     print("cb_table_412:", out_table_412)
+    print("cb_annex_model_rows:", out_annex_model)
 
 if __name__ == "__main__":
     main()

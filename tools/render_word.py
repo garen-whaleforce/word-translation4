@@ -3026,6 +3026,113 @@ def _apply_llm_translations(doc: Document, candidates: list):
         print(f"[LLM] 新翻譯已保存至: {new_trans_path}")
 
 
+def fill_annex_model_rows(doc: Document, annex_model_rows: list):
+    """
+    使用 PDF 抽取的 Model 行資料填充 Word 附表中的型號行
+
+    Args:
+        doc: Word 文件
+        annex_model_rows: PDF 抽取的 Model 行列表
+            [{'table_id': '5.2', 'page': 44, 'model_text': 'Model: MC-601 (output: 20.0Vdc, 3.0A)'}, ...]
+    """
+    if not annex_model_rows:
+        return
+
+    # 建立 table_id -> model_texts 的對應（同一個表可能有多個不同的 Model 行）
+    table_models = {}
+    for mr in annex_model_rows:
+        table_id = mr.get('table_id', '')
+        model_text = mr.get('model_text', '')
+        if table_id and model_text:
+            if table_id not in table_models:
+                table_models[table_id] = []
+            table_models[table_id].append(model_text)
+
+    updated_count = 0
+
+    # 遍歷 Word 文件中的表格
+    for tbl_idx, table in enumerate(doc.tables):
+        if not table.rows:
+            continue
+
+        # 檢查第一行第一格是否是附表 ID
+        first_cell_text = table.rows[0].cells[0].text.strip()
+        table_id_match = re.match(r'^(\d+\.\d+(?:\.\d+)?)$', first_cell_text)
+        if not table_id_match:
+            continue
+
+        word_table_id = table_id_match.group(1)
+        if word_table_id not in table_models:
+            continue
+
+        pdf_models = table_models[word_table_id]
+        pdf_model_idx = 0  # 用於追蹤已使用的 PDF Model 行
+
+        # 遍歷表格中的行，尋找型號行
+        for row_idx, row in enumerate(table.rows):
+            for cell_idx, cell in enumerate(row.cells):
+                text = cell.text.strip()
+                # 檢查是否是需要替換的型號行（包含完整規格列表）
+                if '型號:' in text and ' or ' in text:
+                    # 取得對應的 PDF Model 行
+                    if pdf_model_idx < len(pdf_models):
+                        pdf_model_text = pdf_models[pdf_model_idx]
+                        # 翻譯 PDF Model 行
+                        # Model: MC-601 (output: 20.0Vdc, 3.0A) → 型號: MC-601 (輸出: 20.0 Vdc, 3.0 A)
+                        translated = translate_model_text(pdf_model_text)
+                        cell.text = translated
+                        updated_count += 1
+
+            # 檢查這行是否有 Model 行被替換（只在第一個儲存格有時才增加索引）
+            first_cell = row.cells[0].text.strip() if row.cells else ''
+            if '型號:' in first_cell and 'or' not in first_cell and pdf_model_idx < len(pdf_models):
+                pdf_model_idx += 1
+
+    if updated_count > 0:
+        print(f"附表 Model 行：已從 PDF 填入 {updated_count} 個儲存格")
+
+
+def translate_model_text(model_text: str) -> str:
+    """
+    翻譯 PDF 中的 Model 行文字
+    Model: MC-601 (output: 20.0Vdc, 3.0A) → 型號: MC-601 (輸出: 20.0 Vdc, 3.0 A)
+    Model: MC-601 (load with 20.0Vdc, 3.0A for...) → 型號: MC-601 (負載 20.0 Vdc, 3.0 A ...)
+    """
+    if not model_text:
+        return model_text
+
+    # 替換基本格式
+    result = model_text.replace('Model:', '型號:')
+
+    # output: X.XVdc, Y.YA → 輸出: X.X Vdc, Y.Y A
+    output_match = re.search(r'\(output:\s*(\d+\.?\d*)Vdc,\s*(\d+\.?\d*)A\)', result)
+    if output_match:
+        voltage = output_match.group(1)
+        current = output_match.group(2)
+        result = re.sub(r'\(output:\s*\d+\.?\d*Vdc,\s*\d+\.?\d*A\)',
+                       f'(輸出: {voltage} Vdc, {current} A)', result)
+        return result
+
+    # load with X.XVdc, Y.YA for... → 負載 X.X Vdc, Y.Y A ...
+    load_match = re.search(r'\(load with\s*(\d+\.?\d*)Vdc,\s*(\d+\.?\d*)A\s*(.*?)\)', result, re.IGNORECASE)
+    if load_match:
+        voltage = load_match.group(1)
+        current = load_match.group(2)
+        extra = load_match.group(3).strip()
+        # 翻譯常見的附加描述
+        extra = extra.replace('for long working', '長時間工作')
+        extra = extra.replace('for 5 minutes', '持續5分鐘')
+        extra = extra.replace('then reduced to', '然後降至')
+        extra = extra.replace('long working as specification', '依規格長時間工作')
+        if extra:
+            result = f"型號: {result.split('型號:')[1].split('(')[0].strip()}\n(負載{voltage} Vdc, {current}A{extra})"
+        else:
+            result = f"型號: {result.split('型號:')[1].split('(')[0].strip()} (負載{voltage} Vdc, {current}A)"
+        return result
+
+    return result
+
+
 def translate_all_tables(doc: Document):
     """翻譯所有表格中的通用英文短語"""
     # 通用英文短語翻譯（適用於所有表格）
@@ -3135,7 +3242,21 @@ def translate_all_tables(doc: Document):
                 if 'Conditioning (\uf0b0C)' in modified_text:
                     modified_text = re.sub(r'Conditioning \(\uf0b0C\)\s*\.+\s*:?', '調節 (°C) :', modified_text)
 
-                # 3. 格式正規化
+                # 3. 處理附表中的「型號」行 - 將完整規格替換成簡潔格式
+                # 匹配: 型號: MC-601 (5.0V 3.0A 15.0W or 9.0V ...) → 型號: MC-601 (輸出: 20.0 Vdc, 3.0 A)
+                model_match = re.match(r'^(型號:\s*\S+)\s*\(([^)]+or[^)]+)\)$', modified_text.strip())
+                if model_match:
+                    model_name = model_match.group(1)  # 型號: MC-601
+                    full_spec = model_match.group(2)   # 5.0V 3.0A 15.0W or 9.0V ...
+                    # 抽取最後一個電壓規格（通常是最大功率的）
+                    # 格式: 20.0V 3.0A 60.0W 或 5.0-20.0V 3.0A 60.0W MAX
+                    last_spec_match = re.search(r'(\d+\.?\d*)V\s+(\d+\.?\d*)A\s*(?:\d+\.?\d*W)?\s*(?:MAX)?$', full_spec)
+                    if last_spec_match:
+                        voltage = last_spec_match.group(1)
+                        current = last_spec_match.group(2)
+                        modified_text = f"{model_name} (輸出: {voltage} Vdc, {current} A)"
+
+                # 4. 格式正規化
                 modified_text = normalize_text_format(modified_text)
 
                 if modified_text != original_text:
@@ -3462,6 +3583,7 @@ def main():
     ap.add_argument("--pdf_clause_rows", default=None, help="PDF 主幹條款列 JSON 路徑")
     ap.add_argument("--table_412", default=None, help="4.1.2 零件表格 JSON 路徑")
     ap.add_argument("--cb_tables", default=None, help="CB 表格原始資料 JSON 路徑 (cb_tables_text.json)")
+    ap.add_argument("--annex_model_rows", default=None, help="附表 Model 行 JSON 路徑 (cb_annex_model_rows.json)")
     # 封面欄位（用戶填入）
     ap.add_argument("--cover_report_no", default="", help="封面報告編號")
     ap.add_argument("--cover_applicant_name", default="", help="封面申請者名稱")
@@ -3546,6 +3668,13 @@ def main():
 
     # 翻譯總覽表格（Table 48）的英文短語
     translate_summary_table(docx)
+
+    # 填充附表 Model 行（從 PDF 動態提取）
+    if args.annex_model_rows:
+        annex_model_path = Path(args.annex_model_rows)
+        if annex_model_path.exists():
+            annex_model_data = load_json(annex_model_path)
+            fill_annex_model_rows(docx, annex_model_data)
 
     # 翻譯所有表格中的通用英文短語
     translate_all_tables(docx)
