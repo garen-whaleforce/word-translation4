@@ -1720,10 +1720,9 @@ def fill_remarks_section(doc: Document, meta: dict):
                         second_cell.text = remarks_text
 
                 # 在備註儲存格內建立生產廠嵌套表格（只建立一次）
+                # 注意：跨欄合併時 row.cells[0] 和 row.cells[1] 可能指向同一儲存格
                 if factory_locations:
                     _add_factory_nested_table(target_cell, factory_locations)
-                    if len(row.cells) > 1:
-                        _add_factory_nested_table(row.cells[1], factory_locations)
 
                 remarks_filled = True
             break
