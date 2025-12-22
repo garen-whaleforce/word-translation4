@@ -232,6 +232,173 @@ def extract_annex_model_rows(tables: list) -> list:
     return model_rows
 
 
+def extract_annex_tables(tables: list) -> list:
+    """
+    抽取所有附表（5.2, 5.4.1.8, 5.4.1.10.2, 5.4.1.10.3, 5.4.2, 5.4.3 等）
+
+    識別模式：
+    - 第一欄為數字條款編號（支援多條款如 "5.4.2, 5.4.3"）
+    - 第二欄為 "TABLE: xxx" 標題
+
+    Returns:
+        list of dict: [
+            {
+                'table_id': '5.2',           # 條款編號（多條款以逗號分隔）
+                'table_title': 'Classification of electrical energy sources',
+                'page': 44,
+                'verdict': 'P',              # 判定結果（P/N/A/F）
+                'model_rows': ['Model: MC-601 (output: 20.0Vdc, 3.0A)'],
+                'data_rows': [[...], ...],   # 資料列（排除表頭和 Model 行）
+                'header_rows': [[...], ...], # 表頭列
+                'supplementary_info': '...'  # 補充資訊
+            }, ...
+        ]
+    """
+    annex_tables = []
+
+    # 條款編號模式（支援多條款如 "5.4.2, 5.4.3" 或 "6.4.8.3.3, 6.4.8.3.4, 6.4.8.3.5, P.2.2, P.2.3"）
+    # 數字條款: 5.2, 5.4.1.8, 5.4.1.10.2
+    # 字母條款: B.2.5, Q.1, P.2.2
+    clause_pattern = re.compile(
+        r'^((?:[\d]+(?:\.[\d]+)*|[A-Z](?:\.[\d]+)+)(?:\s*,\s*(?:[\d]+(?:\.[\d]+)*|[A-Z](?:\.[\d]+)+))*)$'
+    )
+
+    current_table = None
+
+    for tbl in tables:
+        page = tbl.get('page')
+        rows = tbl.get('rows', [])
+
+        if not rows or len(rows) < 2:
+            continue
+
+        first_row = rows[0]
+        if not first_row or len(first_row) < 2:
+            continue
+
+        first_cell = norm(first_row[0]).replace('\n', ' ').replace('  ', ' ')
+        second_cell = norm(first_row[1]) if len(first_row) > 1 else ''
+
+        # 檢查是否為附表開頭（第一欄條款編號 + 第二欄 TABLE:）
+        clause_match = clause_pattern.match(first_cell)
+        has_table_keyword = 'TABLE' in second_cell.upper()
+
+        if clause_match and has_table_keyword:
+            # 儲存前一個表格
+            if current_table:
+                annex_tables.append(current_table)
+
+            # 抽取表格標題（移除 "TABLE:" 前綴）
+            table_title = re.sub(r'^TABLE\s*:\s*', '', second_cell, flags=re.IGNORECASE).strip()
+
+            # 抽取 verdict（通常在最後一欄）
+            verdict = ''
+            for cell in reversed(first_row):
+                cell_norm = norm(cell or '')
+                if cell_norm.upper() in ['P', 'PASS', '符合']:
+                    verdict = 'P'
+                    break
+                elif cell_norm.upper() in ['N/A', 'NA', '不適用']:
+                    verdict = 'N/A'
+                    break
+                elif cell_norm.upper() in ['F', 'FAIL', '不符合']:
+                    verdict = 'F'
+                    break
+
+            current_table = {
+                'table_id': first_cell,
+                'table_title': table_title,
+                'page': page,
+                'verdict': verdict,
+                'model_rows': [],
+                'data_rows': [],
+                'header_rows': [],
+                'supplementary_info': ''
+            }
+
+            # 處理後續行
+            for row_idx, row in enumerate(rows[1:], start=1):
+                if not row:
+                    continue
+
+                row_norm = [norm(c) for c in row]
+                first_cell_row = row_norm[0] if row_norm else ''
+                row_text = ' '.join(row_norm)
+
+                # 跳過 PDF 頁眉行（跨頁表格的重複表頭）
+                if first_cell_row in ['IEC 62368-1', 'Clause'] or \
+                   'Requirement + Test' in row_text or \
+                   'Result - Remark' in row_text:
+                    continue
+
+                # Model 行
+                if first_cell_row.startswith('Model:'):
+                    current_table['model_rows'].append(first_cell_row)
+                # Supplementary information
+                elif 'supplementary' in first_cell_row.lower():
+                    current_table['supplementary_info'] = ' '.join([c for c in row_norm if c])
+                # 表頭行（通常前幾行，包含欄位名稱）
+                elif row_idx <= 3 and any(kw in ' '.join(row_norm).lower() for kw in
+                    ['location', 'voltage', 'position', 'material', 'method', 'object',
+                     'frequency', 'test', 'measurement', 'insulation', 'peak', 'rms']):
+                    current_table['header_rows'].append(row_norm)
+                # 資料行
+                elif first_cell_row and first_cell_row not in ['--', '']:
+                    current_table['data_rows'].append(row_norm)
+
+        # 非附表開頭，但可能是前一個表格的延續（跨頁表格）
+        elif current_table:
+            # 取得前一個表格的最後頁碼
+            prev_page = current_table.get('_last_page', current_table['page'])
+            if isinstance(prev_page, str) and '-' in str(prev_page):
+                prev_page = int(str(prev_page).split('-')[-1])
+            elif isinstance(prev_page, str):
+                prev_page = int(prev_page)
+
+            # 跨頁表格延續條件：下一頁或同一頁的後續表格
+            if page == prev_page + 1 or page == prev_page:
+                # 跨頁表格延續
+                for row in rows:
+                    if not row:
+                        continue
+                    row_norm = [norm(c) for c in row]
+                    first_cell_row = row_norm[0] if row_norm else ''
+                    row_text = ' '.join(row_norm)
+
+                    # 跳過 PDF 頁眉行（跨頁表格的重複表頭）
+                    if first_cell_row in ['IEC 62368-1', 'Clause'] or \
+                       'Requirement + Test' in row_text or \
+                       'Result - Remark' in row_text:
+                        continue
+
+                    # Model 行
+                    if first_cell_row.startswith('Model:'):
+                        current_table['model_rows'].append(first_cell_row)
+                    # Supplementary information
+                    elif 'supplementary' in first_cell_row.lower():
+                        current_table['supplementary_info'] = ' '.join([c for c in row_norm if c])
+                    # 資料行（排除表頭重複）
+                    elif first_cell_row and first_cell_row not in ['--', '']:
+                        # 檢查是否為重複的表頭
+                        is_header = any(kw in first_cell_row.lower() for kw in
+                            ['location', 'voltage', 'position', 'material', 'object'])
+                        if not is_header:
+                            current_table['data_rows'].append(row_norm)
+
+                # 更新頁碼（表示跨頁）
+                start_page = current_table['page']
+                if isinstance(start_page, str) and '-' in start_page:
+                    start_page = start_page.split('-')[0]
+                current_table['page'] = f"{start_page}-{page}"
+                current_table['_last_page'] = page
+
+    # 儲存最後一個表格
+    if current_table:
+        annex_tables.append(current_table)
+
+    return annex_tables
+
+
 def extract_clauses_from_pages(pdf, start_idx: int) -> list:
     """從指定頁開始抽取所有條款"""
     if start_idx < 0:
@@ -349,6 +516,14 @@ def main():
     if annex_model_rows:
         print(f"附表 Model 行: 抽取 {len(annex_model_rows)} 列")
 
+    # 6. 抽取完整附表資料
+    annex_tables_data = extract_annex_tables(tables)
+    if annex_tables_data:
+        # 移除內部欄位
+        for t in annex_tables_data:
+            t.pop('_last_page', None)
+        print(f"附表: 抽取 {len(annex_tables_data)} 個表格")
+
     # 輸出檔案
     out_chunks = out_dir / "cb_text_chunks.json"
     out_tables = out_dir / "cb_tables_text.json"
@@ -356,6 +531,7 @@ def main():
     out_clauses = out_dir / "cb_clauses_raw.json"
     out_table_412 = out_dir / "cb_table_412.json"
     out_annex_model = out_dir / "cb_annex_model_rows.json"
+    out_annex_tables = out_dir / "cb_annex_tables.json"
 
     with open(out_chunks, "w", encoding="utf-8") as f:
         json.dump(chunks, f, ensure_ascii=False, indent=2)
@@ -375,6 +551,9 @@ def main():
     with open(out_annex_model, "w", encoding="utf-8") as f:
         json.dump(annex_model_rows, f, ensure_ascii=False, indent=2)
 
+    with open(out_annex_tables, "w", encoding="utf-8") as f:
+        json.dump(annex_tables_data, f, ensure_ascii=False, indent=2)
+
     print("OK")
     print("cb_text_chunks:", out_chunks)
     print("cb_tables_text:", out_tables)
@@ -382,6 +561,7 @@ def main():
     print("cb_clauses_raw:", out_clauses)
     print("cb_table_412:", out_table_412)
     print("cb_annex_model_rows:", out_annex_model)
+    print("cb_annex_tables:", out_annex_tables)
 
 if __name__ == "__main__":
     main()

@@ -69,7 +69,7 @@ def process_job(job: Job, storage: Optional[StorageClient] = None, redis_client=
 
         # ===== Step 2: 抽取 PDF 資料 =====
         update_progress("extract_pdf", "PASS", "正在解析 PDF 結構...")
-        from tools.extract_cb_pdf import main as extract_cb_pdf_main, extract_annex_model_rows
+        from tools.extract_cb_pdf import main as extract_cb_pdf_main, extract_annex_model_rows, extract_annex_tables
         from tools.extract_pdf_clause_rows import extract_clause_rows, find_clause_start_page
         from tools.extract_special_tables import (
             extract_overview_energy_sources,
@@ -137,11 +137,24 @@ def process_job(job: Job, storage: Optional[StorageClient] = None, redis_client=
             annex_model_rows = extract_annex_model_rows(cb_tables)
         else:
             annex_model_rows = []
+            cb_tables = []
 
         annex_model_rows_path = out_dir / "cb_annex_model_rows.json"
         with open(annex_model_rows_path, 'w', encoding='utf-8') as f:
             json.dump(annex_model_rows, f, ensure_ascii=False, indent=2)
         update_progress("extract_annex_model_done", "PASS", f"抽取 {len(annex_model_rows)} 附表 Model 行完成")
+
+        # 2e. 抽取完整附表資料
+        update_progress("extract_annex_tables", "PASS", "正在抽取附表資料...")
+        annex_tables = extract_annex_tables(cb_tables)
+        # 移除內部欄位
+        for t in annex_tables:
+            t.pop('_last_page', None)
+
+        annex_tables_path = out_dir / "cb_annex_tables.json"
+        with open(annex_tables_path, 'w', encoding='utf-8') as f:
+            json.dump(annex_tables, f, ensure_ascii=False, indent=2)
+        update_progress("extract_annex_tables_done", "PASS", f"抽取 {len(annex_tables)} 個附表完成")
 
         # ===== Step 3: 生成 CNS JSON =====
         update_progress("generate_cns_json", "PASS", "正在生成 CNS JSON...")
@@ -195,7 +208,8 @@ def process_job(job: Job, storage: Optional[StorageClient] = None, redis_client=
             special_tables_path=str(special_tables_path),
             output_path=str(docx_path),
             cover_fields=cover_fields,
-            annex_model_rows_path=str(annex_model_rows_path)
+            annex_model_rows_path=str(annex_model_rows_path),
+            annex_tables_path=str(annex_tables_path)
         )
         update_progress("render_word_done", "PASS", "Word 報告渲染完成")
 
@@ -317,7 +331,8 @@ def _run_extract_cb_pdf(pdf_path: str, out_dir: str):
 
 def _run_render_word(json_path: str, template_path: str, pdf_clause_rows_path: str,
                      special_tables_path: str, output_path: str,
-                     cover_fields: dict = None, annex_model_rows_path: str = None):
+                     cover_fields: dict = None, annex_model_rows_path: str = None,
+                     annex_tables_path: str = None):
     """執行 render_word"""
     import subprocess
 
@@ -334,6 +349,10 @@ def _run_render_word(json_path: str, template_path: str, pdf_clause_rows_path: s
     # 添加附表 Model 行參數
     if annex_model_rows_path:
         cmd.extend(["--annex_model_rows", annex_model_rows_path])
+
+    # 添加附表資料參數
+    if annex_tables_path:
+        cmd.extend(["--annex_tables", annex_tables_path])
 
     # 添加封面欄位參數
     if cover_fields:

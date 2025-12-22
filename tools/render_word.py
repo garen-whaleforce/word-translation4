@@ -2805,6 +2805,108 @@ def fill_all_appendix_tables(doc: Document, cb_tables: list):
     return filled_count
 
 
+def fill_annex_tables_from_extracted(doc: Document, annex_tables: list):
+    """
+    使用預處理的附表資料填充 Word 表格
+
+    Args:
+        doc: Word 文件
+        annex_tables: 從 cb_annex_tables.json 讀取的附表清單
+                      每個附表包含: table_id, table_title, verdict, model_rows, data_rows, header_rows
+    """
+    if not annex_tables:
+        print("警告：沒有附表資料")
+        return 0
+
+    print(f"開始填充 {len(annex_tables)} 個附表...")
+
+    # 建立 table_id -> 附表資料 的映射
+    annex_map = {}
+    for t in annex_tables:
+        table_id = t.get('table_id', '')
+        if table_id:
+            # 處理多條款表格（如 "5.4.2, 5.4.3"）
+            annex_map[table_id] = t
+            # 也用第一個條款作為 key
+            first_clause = table_id.split(',')[0].strip()
+            if first_clause != table_id:
+                annex_map[first_clause] = t
+
+    # 需要動態填充的表格清單
+    tables_to_fill = [
+        '5.2',
+        '5.4.1.8',
+        '5.4.1.10.2',
+        '5.4.1.10.3',
+        '5.4.2, 5.4.3',
+        '5.4.4.2',
+        '5.4.4.9',
+        '5.4.9',
+        '5.5.2.2',
+        '5.6.6',
+        '5.7.4',
+        '5.7.5',
+        '5.8',
+        '6.2.2',
+        '6.2.3.1',
+        '6.2.3.2',
+        '8.5.5',
+        '9.6',
+        '5.4.1.4, 9.3, B.1.5, B.2.6',
+        'B.3, B.4',
+        'M.3',
+        'M.4.2',
+        'Q.1',
+        'T.2, T.3, T.4, T.5',
+        'T.6, T.9',
+        'T.7',
+        'T.8',
+    ]
+
+    filled_count = 0
+
+    for clause_id in tables_to_fill:
+        # 嘗試精確匹配
+        pdf_data = annex_map.get(clause_id)
+
+        # 嘗試模糊匹配
+        if not pdf_data:
+            first_clause = clause_id.split(',')[0].strip()
+            pdf_data = annex_map.get(first_clause)
+
+        if not pdf_data:
+            # 嘗試從 annex_map 中找包含該條款的 key
+            for key in annex_map:
+                if first_clause in key or key.startswith(first_clause):
+                    pdf_data = annex_map[key]
+                    break
+
+        if pdf_data:
+            # 轉換為 fill_table_dynamic 期望的格式
+            converted_data = {
+                'rows': pdf_data.get('data_rows', []),
+                'verdict': pdf_data.get('verdict', ''),
+                'model_rows': pdf_data.get('model_rows', []),
+                'header_rows': pdf_data.get('header_rows', []),
+                'supplementary_info': pdf_data.get('supplementary_info', ''),
+            }
+
+            # 將 model_rows 加到 rows 開頭
+            if converted_data['model_rows']:
+                for model_text in reversed(converted_data['model_rows']):
+                    # 建立一個只有第一欄有值的列
+                    converted_data['rows'].insert(0, [model_text])
+
+            if fill_table_dynamic(doc, clause_id, converted_data):
+                filled_count += 1
+                print(f"  ✓ {clause_id}: 填充 {len(converted_data['rows'])} 行資料")
+        else:
+            print(f"  ✗ {clause_id}: 在 PDF 中找不到對應資料")
+
+    print(f"附表填充完成：共填充 {filled_count} 個表格")
+    return filled_count
+
+
 def fill_table_dynamic(doc: Document, clause_id: str, pdf_table_data: dict):
     """
     動態填充附表 - 刪除模板舊資料，完全用 PDF 資料重建
@@ -3311,6 +3413,7 @@ def main():
     ap.add_argument("--table_412", default=None, help="4.1.2 零件表格 JSON 路徑")
     ap.add_argument("--cb_tables", default=None, help="CB 表格原始資料 JSON 路徑 (cb_tables_text.json)")
     ap.add_argument("--annex_model_rows", default=None, help="附表 Model 行 JSON 路徑 (cb_annex_model_rows.json)")
+    ap.add_argument("--annex_tables", default=None, help="附表完整資料 JSON 路徑 (cb_annex_tables.json)")
     # 封面欄位（用戶填入）
     ap.add_argument("--cover_report_no", default="", help="封面報告編號")
     ap.add_argument("--cover_applicant_name", default="", help="封面申請者名稱")
@@ -3424,6 +3527,13 @@ def main():
         if annex_model_path.exists():
             annex_model_data = load_json(annex_model_path)
             fill_annex_model_rows(docx, annex_model_data)
+
+    # 使用預處理的附表資料填充（優先於 cb_tables）
+    if args.annex_tables:
+        annex_tables_path = Path(args.annex_tables)
+        if annex_tables_path.exists():
+            annex_tables_data = load_json(annex_tables_path)
+            fill_annex_tables_from_extracted(docx, annex_tables_data)
 
     # 翻譯所有表格中的通用英文短語
     translate_all_tables(docx)
