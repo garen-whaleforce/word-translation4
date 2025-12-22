@@ -79,6 +79,14 @@ def normalize_context(data: dict) -> dict:
 
 def translate_verdict(verdict: str) -> str:
     """將英文 verdict 轉換為中文"""
+    # 過濾 Wingdings 特殊字符（如 \uf0be 等 Private Use Area 字符）
+    verdict_clean = ''.join(c for c in verdict if ord(c) < 0xF000 or ord(c) > 0xF0FF)
+    verdict_clean = verdict_clean.strip()
+
+    # 如果過濾後為空，返回空字串
+    if not verdict_clean:
+        return ''
+
     verdict_map = {
         'P': '符合',
         'PASS': '符合',
@@ -88,7 +96,7 @@ def translate_verdict(verdict: str) -> str:
         'F': '不符合',
         'FAIL': '不符合',
     }
-    return verdict_map.get(verdict.upper().strip(), verdict)
+    return verdict_map.get(verdict_clean.upper(), verdict_clean)
 
 
 def translate_energy_source(energy_source: str, clause: int) -> str:
@@ -854,6 +862,9 @@ def translate_remark(remark: str, clause_id: str) -> str:
     """翻譯 remark 備註 - 使用 LLM 翻譯"""
     # 正規化：移除換行並壓縮多餘空白（PDF 提取常有換行）
     remark_normalized = ' '.join(remark.split())
+
+    # 過濾 CB PDF 中的佔位符點號（如 "............."）
+    remark_normalized = re.sub(r'\.{3,}', '', remark_normalized).strip()
 
     if not remark_normalized or remark_normalized.strip() in ('', '-', '--'):
         return remark_normalized
@@ -2702,6 +2713,16 @@ def translate_appendix_cell(text: str) -> str:
     result = re.sub(r'(\d+)Va\.c,\s*(\d+)Hz', r'\1 V, \2 Hz', result)
     result = re.sub(r'(\d+)Vac,\s*(\d+)Hz', r'\1 V, \2 Hz', result)
 
+    # 如果還有大量英文內容，使用 LLM 翻譯
+    if HAS_LLM and result and re.search(r'[a-zA-Z]{3,}', result):
+        # 檢查是否主要是英文
+        english_chars = len(re.findall(r'[a-zA-Z]', result))
+        total_chars = len(result.replace(' ', ''))
+        if total_chars > 0 and english_chars / total_chars > 0.3:
+            translated = llm_translate(result)
+            if translated != result:
+                return translated
+
     return result
 
 
@@ -2874,15 +2895,35 @@ def fill_table_dynamic(doc: Document, clause_id: str, pdf_table_data: dict):
 
     print(f"刪除 {delete_end - delete_start} 行舊資料")
 
-    # 添加 PDF 資料行
+    # 確定目標表格的欄數
+    target_cols = len(target_table.rows[0].cells) if target_table.rows else 7
+
+    # 添加 PDF 資料行（正規化欄位數量）
     for pdf_row in pdf_data_rows:
+        # 過濾空白欄位並正規化
+        row_data = []
+        for cell in pdf_row:
+            cell_text = str(cell).strip() if cell else ''
+            row_data.append(cell_text)
+
+        # 移除連續的空白欄位（PDF 抽取可能有多餘空白）
+        normalized_row = []
+        for i, cell_text in enumerate(row_data):
+            # 如果不是空白，或者是第一欄，或者前一欄不是空白，則保留
+            if cell_text or i == 0 or (normalized_row and normalized_row[-1]):
+                normalized_row.append(cell_text)
+
+        # 確保欄數與目標表格一致
+        while len(normalized_row) < target_cols:
+            normalized_row.append('')
+        normalized_row = normalized_row[:target_cols]
+
         new_row = target_table.add_row()
-        for j, cell_value in enumerate(pdf_row):
+        for j, cell_text in enumerate(normalized_row):
             if j < len(new_row.cells):
-                cell_text = str(cell_value).strip() if cell_value else ''
-                # 翻譯常用術語
-                cell_text = translate_appendix_cell(cell_text)
-                new_row.cells[j].text = cell_text
+                # 翻譯常用術語（使用 LLM）
+                translated = translate_appendix_cell(cell_text)
+                new_row.cells[j].text = translated
 
     # 更新 verdict
     if verdict:
@@ -2943,69 +2984,27 @@ def fill_table_52(doc: Document, table_52_data: dict):
         # U+2019 (right single quote) -> '
         return s.replace('\u201c', '"').replace('\u201d', '"').replace('\u2018', "'").replace('\u2019', "'")
 
-    # 翻譯字典
-    location_translations = {
-        'Primary circuits supplied by a.c. mains supply': '由交流電源供電之一次側電路',
-        'Primary circuits\nsupplied by a.c.\nmains supply': '由交流電源供電之一次側電路',
-        'Output "+" to "-"': '輸出 "+" 至 "-"',
-        'Between "L" to "N"': '"L" 與 "N" 之間',
-        'Between "L"\nto "N"': '"L" 與 "N" 之間',
-        'Secondary circuits': '二次側電路',
-        'Secondary output': '二次側輸出',
-    }
-
-    condition_translations = {
-        'Normal': '正常操作',
-        'Abnormal': '異常操作',
-        'Abnormal (see table B.3)': '異常操作 (見表 B.3)',
-        'Abnormal (see\ntable B.3)': '異常操作 (見表 B.3)',
-        'Single fault': '單一故障',
-        'Single fault (see table B.4)': '單一故障 (見表 B.4)',
-        'Single fault (see\ntable B.4)': '單一故障 (見表 B.4)',
-    }
-
     def translate_location(loc: str) -> str:
-        """翻譯 location 欄位"""
+        """翻譯 location 欄位 - 使用 LLM"""
         loc_norm = normalize_quotes(loc.strip())
-        if loc_norm in location_translations:
-            return location_translations[loc_norm]
-        # 嘗試正規化換行後匹配
         loc_oneline = ' '.join(loc_norm.split())
-        for eng, chn in location_translations.items():
-            eng_oneline = ' '.join(eng.split())
-            if eng_oneline == loc_oneline:
-                return chn
-        return loc_norm
+        # 使用 LLM 翻譯
+        if HAS_LLM and loc_oneline:
+            translated = llm_translate(loc_oneline)
+            if translated != loc_oneline:
+                return translated
+        return loc_oneline
 
     def translate_condition(cond: str) -> str:
-        """翻譯 test_condition 欄位"""
+        """翻譯 test_condition 欄位 - 使用 LLM"""
         cond_norm = cond.strip()
-        if cond_norm in condition_translations:
-            return condition_translations[cond_norm]
-        # 嘗試正規化換行後匹配
         cond_oneline = ' '.join(cond_norm.split())
-        for eng, chn in condition_translations.items():
-            eng_oneline = ' '.join(eng.split())
-            if eng_oneline == cond_oneline:
-                return chn
-        # 處理 Single fault – XXX 格式
-        if cond_norm.startswith('Single fault'):
-            # 提取故障描述
-            parts = cond_norm.split('–')
-            if len(parts) > 1:
-                fault_desc = parts[1].strip()
-                # 翻譯 SC = 短路, OC = 開路
-                fault_desc_cn = fault_desc.replace('\n', ' ')
-                fault_desc_cn = fault_desc_cn.replace(' SC', ' 短路').replace(' OC', ' 開路')
-                return f'單一故障 – {fault_desc_cn}'
-        # 處理 Abnormal: XXX 格式
-        if cond_norm.startswith('Abnormal:'):
-            parts = cond_norm.split(':')
-            if len(parts) > 1:
-                desc = parts[1].strip().replace('\n', ' ')
-                desc_cn = desc.replace('over load', '過負載').replace('overload', '過負載')
-                return f'異常操作: {desc_cn}'
-        return cond_norm
+        # 使用 LLM 翻譯
+        if HAS_LLM and cond_oneline:
+            translated = llm_translate(cond_oneline)
+            if translated != cond_oneline:
+                return translated
+        return cond_oneline
 
     # 保留表頭行（前 4 行：標題行 + 表頭行）
     # 典型結構：
@@ -3059,31 +3058,23 @@ def fill_table_52(doc: Document, table_52_data: dict):
     model_row.cells[0].text = f'型號: {model_name}'
     # 合併型號行的所有儲存格（如果需要的話）
 
-    # 添加資料行
-    current_location = ''
+    # 添加資料行（每行都顯示完整資料，與人工版格式一致）
     for row_data in pdf_rows:
         new_row = target_table.add_row()
         cells = new_row.cells
 
-        # 處理 location（可能需要合併相同 location 的行）
+        # 處理 location
         location = row_data.get('location', '')
         location_cn = translate_location(location)
 
-        # 只在 location 變化時顯示
-        if location != current_location:
-            current_location = location
-            location_display = location_cn
-        else:
-            location_display = ''
-
-        # 填入資料
+        # 填入資料（每行都完整填入，不省略重複欄位）
         if len(cells) >= 8:
-            # 供應電壓 - 只顯示一次
+            # 供應電壓 - 每行都顯示
             supply_voltage = row_data.get('supply_voltage', '').replace('\n', ' ')
-            cells[0].text = supply_voltage if row_data == pdf_rows[0] else ''
+            cells[0].text = supply_voltage
 
-            # 位置（電路標示）
-            cells[1].text = location_display
+            # 位置（電路標示）- 每行都顯示
+            cells[1].text = location_cn
 
             # 測試條件
             test_cond = row_data.get('test_condition', '')
