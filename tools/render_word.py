@@ -2670,8 +2670,6 @@ def translate_appendix_cell(text: str) -> str:
         # 其他
         'short circuit': '短路',
         'open circuit': '開路',
-        'Yes': '是',
-        'No': '否',
         'Declaration': '宣告',
         'See below': '見下表',
         'See table': '見附表',
@@ -2696,6 +2694,11 @@ def translate_appendix_cell(text: str) -> str:
         eng_normalized = ' '.join(eng.split())
         pattern = re.compile(re.escape(eng_normalized), re.IGNORECASE)
         result = pattern.sub(chn, result)
+
+    # 處理獨立的 Yes/No（使用 word boundary 避免誤翻 Phenolic, Innovative 等）
+    # 注意：不翻譯 "No." 因為這是 "Number" 的縮寫
+    result = re.sub(r'\bYes\b', '是', result, flags=re.IGNORECASE)
+    result = re.sub(r'\bNo\b(?!\.)', '否', result, flags=re.IGNORECASE)
 
     # 處理 "S (R1 OC)" 或 "SC" / "OC" 縮寫
     # SC = 短路, OC = 開路
