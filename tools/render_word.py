@@ -4656,10 +4656,17 @@ def fill_all_appendix_tables(doc: Document, cb_tables: list):
 
     print(f"從 PDF 提取了 {len(appendix_data)} 個附表")
 
-    # 需要動態填充的表格清單
+    # 需要完全動態重建的表格（刪除舊資料，添加所有 PDF 資料）
+    tables_dynamic = [
+        '5.4.1.8',       # 工作電壓 - 行數變化大
+        '5.7.4',         # 未接地導電部件 - 行數變化大
+        '5.7.5',         # 接地導電部件 - 行數變化大
+    ]
+
+    # 需要動態填充的表格清單（覆蓋模式）
     tables_to_fill = [
         # 5.2 已有專門函數 fill_table_52 處理
-        '5.4.1.8',       # 工作電壓
+        # 5.4.1.8 改用動態模式
         '5.4.1.10.2',    # 熱塑性塑料軟化溫度試驗
         '5.4.1.10.3',    # 球壓試驗
         '5.4.2, 5.4.3',  # 最小空間/沿面距離
@@ -4668,8 +4675,7 @@ def fill_all_appendix_tables(doc: Document, cb_tables: list):
         '5.4.9',         # 耐電壓試驗
         # 5.5.2.2 已有專門函數處理
         '5.6.6',         # 接地導體及端子之阻抗
-        '5.7.4',         # 未接地導電部件
-        '5.7.5',         # 接地導電部件
+        # 5.7.4, 5.7.5 改用動態模式
         '5.8',           # 電池備用電源之反饋安全防護
         '6.2.2',         # 電氣功率源(PS) 之分級
         '6.2.3.1',       # 決定電弧PIS
@@ -4680,6 +4686,21 @@ def fill_all_appendix_tables(doc: Document, cb_tables: list):
     ]
 
     filled_count = 0
+
+    # 先處理需要動態重建的表格
+    for clause_id in tables_dynamic:
+        pdf_data = appendix_data.get(clause_id)
+        if not pdf_data:
+            for key in appendix_data:
+                if clause_id.split(',')[0].strip() in key or key in clause_id:
+                    pdf_data = appendix_data[key]
+                    break
+
+        if pdf_data:
+            if fill_table_dynamic(doc, clause_id, pdf_data):
+                filled_count += 1
+
+    # 再處理覆蓋模式的表格
     for clause_id in tables_to_fill:
         # 嘗試匹配 PDF 資料中的條款
         pdf_data = appendix_data.get(clause_id)
@@ -4696,6 +4717,123 @@ def fill_all_appendix_tables(doc: Document, cb_tables: list):
 
     print(f"動態附表填充：共處理 {filled_count} 個表格")
     return filled_count
+
+
+def fill_table_dynamic(doc: Document, clause_id: str, pdf_table_data: dict):
+    """
+    動態填充附表 - 刪除模板舊資料，完全用 PDF 資料重建
+
+    用於 5.4.1.8 等需要動態行數的表格
+
+    Args:
+        doc: Word 文件
+        clause_id: 條款編號
+        pdf_table_data: {'rows': [...], 'verdict': '...'}
+    """
+    import re
+
+    pdf_rows = pdf_table_data.get('rows', [])
+    verdict = pdf_table_data.get('verdict', '')
+
+    if not pdf_rows:
+        return False
+
+    # 找到對應的 Word 表格
+    target_table = None
+    for tbl in doc.tables:
+        if tbl.rows:
+            first_cell = tbl.rows[0].cells[0].text.strip()
+            if first_cell.startswith(clause_id) or clause_id in first_cell.split(',')[0]:
+                target_table = tbl
+                break
+
+    if not target_table:
+        print(f"警告：找不到條款 {clause_id} 的表格")
+        return False
+
+    print(f"找到 {clause_id} 表格，原有 {len(target_table.rows)} 行")
+
+    # 從 PDF 資料中提取資料行（跳過表頭）
+    pdf_data_start = 0
+    for i, row in enumerate(pdf_rows):
+        if not row:
+            continue
+        first_cell = str(row[0]).strip() if row else ''
+        row_text = ' '.join(str(c) for c in row if c)
+
+        if 'TABLE:' in row_text:
+            pdf_data_start = i + 1
+            continue
+
+        header_keywords = ['Location', 'RMS voltage', 'Peak voltage', 'Frequency', 'Comments',
+                          'Supply', 'Parameters', 'Test conditions', 'Voltage', 'Current']
+        is_header = any(kw in row_text for kw in header_keywords)
+
+        if 'Model:' in first_cell or 'Model:' in row_text:
+            pdf_data_start = i
+            break
+        elif is_header:
+            pdf_data_start = i + 1
+            continue
+
+    pdf_data_rows = pdf_rows[pdf_data_start:] if pdf_data_start < len(pdf_rows) else []
+
+    if not pdf_data_rows:
+        return False
+
+    # 找到 Word 表格中的表頭結束位置（型號行之前）
+    header_end_idx = 2  # 預設
+    model_row_idx = -1
+    for i, row in enumerate(target_table.rows):
+        first_cell_text = row.cells[0].text.strip()
+        if '型號' in first_cell_text or 'Model' in first_cell_text:
+            model_row_idx = i
+            header_end_idx = i
+            break
+
+    # 找備註行位置
+    note_row_idx = -1
+    for i in range(len(target_table.rows) - 1, header_end_idx, -1):
+        first_cell = target_table.rows[i].cells[0].text.strip()
+        if '備註' in first_cell or 'Supplementary' in first_cell.lower() or first_cell == '':
+            # 檢查是否是真正的備註行
+            if '備註' in first_cell:
+                note_row_idx = i
+                break
+
+    # 刪除舊資料行（從型號行到備註行之間）
+    delete_start = model_row_idx if model_row_idx > 0 else header_end_idx
+    delete_end = note_row_idx if note_row_idx > 0 else len(target_table.rows)
+
+    # 從後往前刪除
+    for i in range(delete_end - 1, delete_start - 1, -1):
+        if i < len(target_table.rows) and i >= delete_start:
+            target_table._tbl.remove(target_table.rows[i]._tr)
+
+    print(f"刪除 {delete_end - delete_start} 行舊資料")
+
+    # 添加 PDF 資料行
+    for pdf_row in pdf_data_rows:
+        new_row = target_table.add_row()
+        for j, cell_value in enumerate(pdf_row):
+            if j < len(new_row.cells):
+                cell_text = str(cell_value).strip() if cell_value else ''
+                # 翻譯常用術語
+                cell_text = translate_appendix_cell(cell_text)
+                new_row.cells[j].text = cell_text
+
+    # 更新 verdict
+    if verdict:
+        verdict_cell = target_table.rows[0].cells[-1]
+        if verdict == 'P':
+            verdict_cell.text = '符合'
+        elif verdict == 'N/A':
+            verdict_cell.text = '不適用'
+        else:
+            verdict_cell.text = verdict
+
+    print(f"{clause_id} 表格：已填入 {len(pdf_data_rows)} 行資料")
+    return True
 
 
 def fill_table_52(doc: Document, table_52_data: dict):
