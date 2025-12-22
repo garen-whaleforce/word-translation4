@@ -42,6 +42,11 @@ def get_redis_client() -> redis.Redis:
     return redis.from_url(REDIS_URL, decode_responses=True)
 
 
+def is_job_cancelled(r: redis.Redis, job_id: str) -> bool:
+    """檢查任務是否已被取消"""
+    return r.get(f"job:{job_id}:cancel") is not None
+
+
 def process_queue_item(r: redis.Redis, job_id: str) -> bool:
     """
     處理單個佇列項目
@@ -52,6 +57,11 @@ def process_queue_item(r: redis.Redis, job_id: str) -> bool:
     print(f"\n[Worker] 處理任務: {job_id}")
 
     try:
+        # 檢查是否已被取消
+        if is_job_cancelled(r, job_id):
+            print(f"[Worker] 任務 {job_id} 已被取消，跳過")
+            return False
+
         # 讀取 Job
         job_data = r.get(f"job:{job_id}")
         if not job_data:
@@ -60,8 +70,8 @@ def process_queue_item(r: redis.Redis, job_id: str) -> bool:
 
         job = Job.from_dict(json.loads(job_data))
 
-        # 檢查狀態
-        if job.status != JobStatus.PENDING:
+        # 檢查狀態（包含 CANCELLED）
+        if job.status not in [JobStatus.PENDING]:
             print(f"[Worker] 任務 {job_id} 狀態為 {job.status.value}，跳過")
             return False
 

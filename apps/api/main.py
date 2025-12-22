@@ -317,6 +317,36 @@ async def get_llm_stats(job_id: str, _: str = Depends(verify_password)):
     }
 
 
+@app.post("/api/jobs/{job_id}/cancel")
+async def cancel_job(job_id: str, _: str = Depends(verify_password)):
+    """
+    取消任務
+
+    認證：若已設定 SHARED_PASSWORD，需在 query string 提供 ?p=<password>
+    """
+    job = get_job_or_404(job_id)
+
+    # 只能取消 PENDING 或 RUNNING 的任務
+    if job.status not in [JobStatus.PENDING, JobStatus.RUNNING]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel job with status: {job.status.value}"
+        )
+
+    # 更新狀態為 CANCELLED
+    job.update_status(JobStatus.CANCELLED)
+    job.error_message = "任務已被使用者取消"
+
+    # 儲存到 Redis
+    r = get_redis()
+    r.set(f"job:{job_id}", job.to_json())
+
+    # 設定取消標記（讓 worker 檢測）
+    r.set(f"job:{job_id}:cancel", "1", ex=3600)
+
+    return {"status": "cancelled", "job_id": job_id}
+
+
 @app.get("/api/jobs")
 async def list_jobs(limit: int = Query(default=20, le=100), _: str = Depends(verify_password)):
     """

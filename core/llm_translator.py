@@ -27,6 +27,7 @@ from typing import Optional, List, Dict
 from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import time
 
 # 嘗試導入 OpenAI
 try:
@@ -235,6 +236,7 @@ RETRY_DELAY = 2             # 重試間隔時間（秒）
 MAX_CONCURRENT_CHUNKS = 20  # 每個文件最大併發 API 呼叫數
 CACHE_TTL = 30 * 24 * 3600  # 快取過期時間：30 天（秒）
 CACHE_KEY_PREFIX = "llm:translate:"  # Redis 快取 key 前綴
+API_TIMEOUT = 60            # API 呼叫超時時間（秒）
 
 # Token 價格（USD per 1M tokens）
 TOKEN_PRICES = {
@@ -294,9 +296,10 @@ class LLMTranslator:
                 api_version=api_version,
                 azure_endpoint=endpoint,
                 api_key=api_key,
+                timeout=API_TIMEOUT,  # 設定超時時間
             )
             self.enabled = True
-            print(f"[LLM] Azure OpenAI 翻譯已啟用 (deployment: {self.deployment})")
+            print(f"[LLM] Azure OpenAI 翻譯已啟用 (deployment: {self.deployment}, timeout: {API_TIMEOUT}s)")
         except Exception as e:
             print(f"[LLM] Azure OpenAI 初始化失敗: {e}")
 
@@ -558,34 +561,39 @@ class LLMTranslator:
         if cached:
             return cached
 
-        # Step 3: 純 LLM 翻譯
+        # Step 3: 純 LLM 翻譯（含重試機制）
         if self.enabled and self._has_significant_english(text):
-            try:
-                response = self.client.chat.completions.create(
-                    model=self.deployment,
-                    messages=[
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": f"翻譯以下內容：\n{text}"}
-                    ],
-                    max_completion_tokens=500,
-                    temperature=0.1,  # 低溫度確保一致性
-                )
-                llm_result = response.choices[0].message.content.strip()
+            for retry in range(MAX_RETRIES):
+                try:
+                    response = self.client.chat.completions.create(
+                        model=self.deployment,
+                        messages=[
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": f"翻譯以下內容：\n{text}"}
+                        ],
+                        max_completion_tokens=500,
+                        temperature=0.1,  # 低溫度確保一致性
+                    )
+                    llm_result = response.choices[0].message.content.strip()
 
-                # 追蹤 token 使用量
-                if hasattr(response, 'usage') and response.usage:
-                    self._update_token_stats(response.usage)
+                    # 追蹤 token 使用量
+                    if hasattr(response, 'usage') and response.usage:
+                        self._update_token_stats(response.usage)
 
-                # 過濾拒絕消息
-                llm_result = self._filter_refusal(llm_result)
+                    # 過濾拒絕消息
+                    llm_result = self._filter_refusal(llm_result)
 
-                # 存入快取（Redis + 記憶體）
-                self._set_to_cache(text, llm_result)
-                return llm_result
-            except Exception as e:
-                print(f"[LLM] 翻譯失敗，保留原文: {e}")
-                # LLM 失敗時，保留原文（不使用字典）
-                return text
+                    # 存入快取（Redis + 記憶體）
+                    self._set_to_cache(text, llm_result)
+                    return llm_result
+                except Exception as e:
+                    if retry < MAX_RETRIES - 1:
+                        print(f"[LLM] 翻譯失敗 (重試 {retry + 1}/{MAX_RETRIES}): {e}")
+                        time.sleep(RETRY_DELAY)
+                    else:
+                        print(f"[LLM] 翻譯失敗，保留原文: {e}")
+                        # LLM 失敗時，保留原文（不使用字典）
+                        return text
 
         # LLM 未啟用時，保留原文（不使用字典）
         return text
@@ -646,48 +654,59 @@ class LLMTranslator:
         chunk_texts = [texts[i] for i in chunk_indices]
         combined_text = separator.join(chunk_texts)
 
-        try:
-            response = self.client.chat.completions.create(
-                model=self.deployment,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": f"翻譯以下內容（保持 ||| 分隔符）：\n{combined_text}"}
-                ],
-                max_completion_tokens=2000,
-                temperature=0.1,
-            )
-            translated_combined = response.choices[0].message.content.strip()
+        for retry in range(MAX_RETRIES):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.deployment,
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": f"翻譯以下內容（保持 ||| 分隔符）：\n{combined_text}"}
+                    ],
+                    max_completion_tokens=2000,
+                    temperature=0.1,
+                )
+                translated_combined = response.choices[0].message.content.strip()
 
-            # 追蹤 token 使用量
-            if hasattr(response, 'usage') and response.usage:
-                self._update_token_stats(response.usage)
+                # 追蹤 token 使用量
+                if hasattr(response, 'usage') and response.usage:
+                    self._update_token_stats(response.usage)
 
-            translated_combined = self._filter_refusal(translated_combined)
+                translated_combined = self._filter_refusal(translated_combined)
 
-            # 拆分翻譯結果
-            translated_texts = translated_combined.split(separator)
+                # 拆分翻譯結果
+                translated_texts = translated_combined.split(separator)
 
-            # 如果分隔符數量匹配
-            if len(translated_texts) == len(chunk_indices):
+                # 如果分隔符數量匹配
+                if len(translated_texts) == len(chunk_indices):
+                    result = {}
+                    for i, idx in enumerate(chunk_indices):
+                        result[idx] = translated_texts[i].strip()
+                    return result
+
+                # 分隔符不匹配，逐個翻譯
+                print(f"[LLM] Chunk 分隔符不匹配，改用逐個翻譯")
                 result = {}
-                for i, idx in enumerate(chunk_indices):
-                    result[idx] = translated_texts[i].strip()
+                for idx in chunk_indices:
+                    result[idx] = self.translate(texts[idx])
                 return result
 
-            # 分隔符不匹配，逐個翻譯
-            print(f"[LLM] Chunk 分隔符不匹配，改用逐個翻譯")
-            result = {}
-            for idx in chunk_indices:
-                result[idx] = self.translate(texts[idx])
-            return result
+            except Exception as e:
+                if retry < MAX_RETRIES - 1:
+                    print(f"[LLM] Chunk 翻譯失敗 (重試 {retry + 1}/{MAX_RETRIES}): {e}")
+                    time.sleep(RETRY_DELAY)
+                else:
+                    print(f"[LLM] Chunk 翻譯失敗，保留原文: {e}")
+                    # 失敗時保留原文（不使用字典）
+                    result = {}
+                    for idx in chunk_indices:
+                        result[idx] = texts[idx]
+                    return result
 
-        except Exception as e:
-            print(f"[LLM] Chunk 翻譯失敗，保留原文: {e}")
-            # 失敗時保留原文（不使用字典）
-            result = {}
-            for idx in chunk_indices:
-                result[idx] = texts[idx]
-            return result
+        # 所有重試都失敗
+        result = {}
+        for idx in chunk_indices:
+            result[idx] = texts[idx]
+        return result
 
     def translate_batch(self, texts: List[str]) -> List[str]:
         """

@@ -15,6 +15,7 @@ class JobStatus(str, Enum):
     PASS = "PASS"
     FAIL = "FAIL"
     ERROR = "ERROR"
+    CANCELLED = "CANCELLED"
 
 
 @dataclass

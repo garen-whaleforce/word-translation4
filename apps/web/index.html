@@ -170,6 +170,30 @@
         .status-PASS { background: #d4edda; color: #155724; }
         .status-FAIL { background: #f8d7da; color: #721c24; }
         .status-ERROR { background: #f5c6cb; color: #721c24; }
+        .status-CANCELLED { background: #e2e3e5; color: #6c757d; }
+
+        .btn-cancel {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+
+        .btn-cancel:hover {
+            background: #c82333;
+        }
+
+        .btn-cancel:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
 
         .progress-bar {
             height: 8px;
@@ -429,6 +453,11 @@
                 </div>
             </div>
 
+            <!-- Cancel Button -->
+            <button class="btn-cancel" id="cancelBtn" style="display: none;" onclick="cancelJob()">
+                ⏹️ 強制停止任務
+            </button>
+
             <!-- Time Info -->
             <div id="timeInfo" class="time-info" style="display: none;">
                 <span id="elapsedTime"></span>
@@ -564,7 +593,7 @@
                 updateJobStatus(job);
 
                 // Stop polling if job is done
-                if (['PASS', 'FAIL', 'ERROR'].includes(job.status)) {
+                if (['PASS', 'FAIL', 'ERROR', 'CANCELLED'].includes(job.status)) {
                     clearInterval(pollInterval);
                 }
 
@@ -626,6 +655,19 @@
             } else if (job.status === 'ERROR') {
                 progressPercent = 100;
                 progressText = '處理失敗：' + (job.error_message || '未知錯誤');
+            } else if (job.status === 'CANCELLED') {
+                progressPercent = 100;
+                progressText = '任務已被取消';
+            }
+
+            // 顯示/隱藏取消按鈕
+            const cancelBtn = document.getElementById('cancelBtn');
+            if (['PENDING', 'RUNNING'].includes(job.status)) {
+                cancelBtn.style.display = 'inline-block';
+                cancelBtn.disabled = false;
+                cancelBtn.textContent = '⏹️ 強制停止任務';
+            } else {
+                cancelBtn.style.display = 'none';
             }
 
             document.getElementById('progressFill').style.width = `${progressPercent}%`;
@@ -707,6 +749,48 @@
             }
         }
 
+        async function cancelJob() {
+            if (!currentJobId) return;
+
+            const cancelBtn = document.getElementById('cancelBtn');
+            cancelBtn.disabled = true;
+            cancelBtn.textContent = '取消中...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/jobs/${currentJobId}/cancel`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || '取消失敗');
+                }
+
+                // 停止輪詢
+                if (pollInterval) clearInterval(pollInterval);
+
+                // 更新顯示
+                const badge = document.getElementById('statusBadge');
+                badge.textContent = 'CANCELLED';
+                badge.className = 'status-badge status-CANCELLED';
+
+                document.getElementById('progressText').textContent = '任務已被取消';
+                document.getElementById('progressFill').style.width = '100%';
+
+                cancelBtn.style.display = 'none';
+
+                // 顯示錯誤訊息
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = '任務已被使用者取消';
+
+            } catch (error) {
+                alert(error.message);
+                cancelBtn.disabled = false;
+                cancelBtn.textContent = '⏹️ 強制停止任務';
+            }
+        }
+
         function resetForm() {
             currentJobId = null;
             if (pollInterval) clearInterval(pollInterval);
@@ -724,6 +808,7 @@
             document.getElementById('qaResults').innerHTML = '';
             document.getElementById('timeInfo').style.display = 'none';
             document.getElementById('llmStats').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'none';
         }
 
         function updateTimeInfo(job) {
