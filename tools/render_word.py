@@ -2665,7 +2665,9 @@ def translate_appendix_cell(text: str) -> str:
         'Fuse': '保險絲',
         'Bobbin': '線架',
         'Enclosure': '外殼',
-        'YC1 primary to secondary': 'YC1 主側至副側',
+        'YC1 primary to secondary': 'YC1 一次側到二次側',
+        'primary to secondary': '一次側到二次側',
+        'pin': '腳位',
 
         # 其他
         'short circuit': '短路',
@@ -2837,30 +2839,46 @@ def fill_table_dynamic(doc: Document, clause_id: str, pdf_table_data: dict):
 
     print(f"找到 {clause_id} 表格，原有 {len(target_table.rows)} 行")
 
-    # 從 PDF 資料中提取資料行（跳過表頭）
-    pdf_data_start = 0
+    # 從 PDF 資料中分離：資料行、備註行
+    pdf_data_rows = []
+    pdf_note_rows = []
+    in_data_section = False
+
     for i, row in enumerate(pdf_rows):
         if not row:
             continue
         first_cell = str(row[0]).strip() if row else ''
         row_text = ' '.join(str(c) for c in row if c)
 
+        # 跳過 TABLE: 標題行
         if 'TABLE:' in row_text:
-            pdf_data_start = i + 1
             continue
 
+        # 跳過欄位標題行
         header_keywords = ['Location', 'RMS voltage', 'Peak voltage', 'Frequency', 'Comments',
-                          'Supply', 'Parameters', 'Test conditions', 'Voltage', 'Current']
-        is_header = any(kw in row_text for kw in header_keywords)
+                          'Supply', 'Parameters', 'Test conditions', 'Voltage', 'Current',
+                          '(V)', '(Hz)']
+        is_header = any(kw in row_text for kw in header_keywords) and not first_cell.startswith('Model')
 
-        if 'Model:' in first_cell or 'Model:' in row_text:
-            pdf_data_start = i
-            break
-        elif is_header:
-            pdf_data_start = i + 1
+        if is_header and not in_data_section:
             continue
 
-    pdf_data_rows = pdf_rows[pdf_data_start:] if pdf_data_start < len(pdf_rows) else []
+        # 檢查是否是備註行
+        if 'Supplementary' in first_cell or 'Supplementary' in row_text:
+            pdf_note_rows.append(row)
+            continue
+        elif pdf_note_rows:
+            # 備註行之後的都是備註內容
+            pdf_note_rows.append(row)
+            continue
+
+        # 資料行（包含 Model: 行）
+        if first_cell.startswith('Model:') or first_cell.startswith('Model：'):
+            in_data_section = True
+            pdf_data_rows.append(row)
+        elif in_data_section or (first_cell and not is_header):
+            in_data_section = True
+            pdf_data_rows.append(row)
 
     if not pdf_data_rows:
         return False
@@ -2868,6 +2886,8 @@ def fill_table_dynamic(doc: Document, clause_id: str, pdf_table_data: dict):
     # 找到 Word 表格中的表頭結束位置（型號行之前）
     header_end_idx = 2  # 預設
     model_row_idx = -1
+    note_row_idx = -1
+
     for i, row in enumerate(target_table.rows):
         first_cell_text = row.cells[0].text.strip()
         if '型號' in first_cell_text or 'Model' in first_cell_text:
@@ -2875,56 +2895,139 @@ def fill_table_dynamic(doc: Document, clause_id: str, pdf_table_data: dict):
             header_end_idx = i
             break
 
-    # 找備註行位置
-    note_row_idx = -1
+    # 找備註行位置（從後往前找）
     for i in range(len(target_table.rows) - 1, header_end_idx, -1):
         first_cell = target_table.rows[i].cells[0].text.strip()
-        if '備註' in first_cell or 'Supplementary' in first_cell.lower() or first_cell == '':
-            # 檢查是否是真正的備註行
-            if '備註' in first_cell:
-                note_row_idx = i
-                break
+        if '備註' in first_cell:
+            note_row_idx = i
+            break
 
-    # 刪除舊資料行（從型號行到備註行之間）
+    # 刪除所有舊資料行（從型號行開始到表格結尾，包含備註行）
     delete_start = model_row_idx if model_row_idx > 0 else header_end_idx
-    delete_end = note_row_idx if note_row_idx > 0 else len(target_table.rows)
 
-    # 從後往前刪除
-    for i in range(delete_end - 1, delete_start - 1, -1):
+    # 從後往前刪除所有資料行和備註行
+    rows_to_delete = len(target_table.rows) - delete_start
+    for i in range(len(target_table.rows) - 1, delete_start - 1, -1):
         if i < len(target_table.rows) and i >= delete_start:
             target_table._tbl.remove(target_table.rows[i]._tr)
 
-    print(f"刪除 {delete_end - delete_start} 行舊資料")
+    print(f"刪除 {rows_to_delete} 行舊資料")
 
     # 確定目標表格的欄數
     target_cols = len(target_table.rows[0].cells) if target_table.rows else 7
 
-    # 添加 PDF 資料行（正規化欄位數量）
-    for pdf_row in pdf_data_rows:
-        # 過濾空白欄位並正規化
-        row_data = []
-        for cell in pdf_row:
-            cell_text = str(cell).strip() if cell else ''
-            row_data.append(cell_text)
+    # 5.4.1.8 特殊處理：Location 欄位佔兩欄（合併儲存格）
+    # 模板結構: [Location, Location, RMS, Peak, Freq, Comments, Comments]
+    # PDF 結構可能是: [Location, RMS, Peak, Freq, Comments] (5 欄) 或
+    #                [Location, '', RMS, Peak, Freq, Comments, ''] (7 欄)
+    is_5418 = clause_id == '5.4.1.8'
 
-        # 移除連續的空白欄位（PDF 抽取可能有多餘空白）
+    def normalize_row_for_5418(pdf_row):
+        """將 5.4.1.8 的 PDF 資料行正規化為 7 欄格式"""
+        row_data = [str(cell).strip() if cell else '' for cell in pdf_row]
+
+        if not row_data:
+            return [''] * target_cols
+
+        first_cell = row_data[0]
+
+        # 型號行：所有儲存格都填入型號（合併儲存格效果）
+        if first_cell.startswith('Model:') or first_cell.startswith('Model：'):
+            return [first_cell] * target_cols
+
+        # 資料行：需要判斷實際內容欄數並正確對齊
+        # 期望格式: [Location, Location, RMS, Peak, Freq, Comments, Comments]
+        # 第1、2欄合併顯示 Location，第6、7欄合併顯示 Comments
+
+        # 計算非空欄位數量和位置
+        non_empty_indices = [i for i, v in enumerate(row_data) if v]
+
+        # 5 欄格式: [Location, RMS, Peak, Freq, Comments] (索引 0, 1, 2, 3, 4)
+        if len(row_data) == 5 or (len(non_empty_indices) == 5 and non_empty_indices == [0, 1, 2, 3, 4]):
+            # PDF 5 欄格式: [Location, RMS, Peak, Freq, Comments]
+            location = row_data[0]
+            rms = row_data[1] if len(row_data) > 1 else ''
+            peak = row_data[2] if len(row_data) > 2 else ''
+            freq = row_data[3] if len(row_data) > 3 else ''
+            comments = row_data[4] if len(row_data) > 4 else ''
+            return [location, location, rms, peak, freq, comments, comments]
+
+        # 6 或 7 欄格式: [Location, '', RMS, Peak, Freq, Comments, ''] 或類似
+        # 這是 Table 82 的格式
+        if len(row_data) >= 6:
+            location = row_data[0]
+            # 檢查第二欄是否為空（合併儲存格的標誌）
+            if not row_data[1]:
+                # 格式: [Location, '', RMS, Peak, Freq, Comments, ...]
+                rms = row_data[2] if len(row_data) > 2 else ''
+                peak = row_data[3] if len(row_data) > 3 else ''
+                freq = row_data[4] if len(row_data) > 4 else ''
+                comments = row_data[5] if len(row_data) > 5 else ''
+                return [location, location, rms, peak, freq, comments, comments]
+            else:
+                # 如果第二欄有值，可能是其他格式，直接補齊
+                while len(row_data) < target_cols:
+                    row_data.append('')
+                return row_data[:target_cols]
+
+        # 其他情況，補齊到 7 欄
+        while len(row_data) < target_cols:
+            row_data.append('')
+        return row_data[:target_cols]
+
+    def normalize_row_general(pdf_row):
+        """一般表格的正規化"""
+        row_data = [str(cell).strip() if cell else '' for cell in pdf_row]
+
+        # 移除連續的空白欄位
         normalized_row = []
         for i, cell_text in enumerate(row_data):
-            # 如果不是空白，或者是第一欄，或者前一欄不是空白，則保留
             if cell_text or i == 0 or (normalized_row and normalized_row[-1]):
                 normalized_row.append(cell_text)
 
-        # 確保欄數與目標表格一致
         while len(normalized_row) < target_cols:
             normalized_row.append('')
-        normalized_row = normalized_row[:target_cols]
+        return normalized_row[:target_cols]
+
+    # 添加 PDF 資料行
+    for pdf_row in pdf_data_rows:
+        if is_5418:
+            normalized_row = normalize_row_for_5418(pdf_row)
+        else:
+            normalized_row = normalize_row_general(pdf_row)
 
         new_row = target_table.add_row()
         for j, cell_text in enumerate(normalized_row):
             if j < len(new_row.cells):
-                # 翻譯常用術語（使用 LLM）
                 translated = translate_appendix_cell(cell_text)
                 new_row.cells[j].text = translated
+
+    # 添加備註行（在最後）- 將所有備註行合併為一行
+    if pdf_note_rows:
+        # 合併所有備註行的內容
+        note_parts = []
+        for pdf_row in pdf_note_rows:
+            row_data = [str(cell).strip() if cell else '' for cell in pdf_row]
+            note_text = row_data[0] if row_data else ''
+            if note_text:
+                # 翻譯備註標題
+                if 'Supplementary' in note_text:
+                    note_text = note_text.replace('Supplementary information:', '備註:')
+                    note_text = note_text.replace('Supplementary information', '備註:')
+                note_parts.append(note_text)
+
+        # 合併為單一備註（用空格或換行連接）
+        combined_note = ' '.join(note_parts)
+        # 進一步翻譯
+        combined_note = translate_appendix_cell(combined_note)
+        # 格式調整：確保「備註:」後面有空格
+        combined_note = combined_note.replace('備註:', '備註: ')
+        combined_note = combined_note.replace('備註:  ', '備註: ')  # 避免雙空格
+
+        new_row = target_table.add_row()
+        # 備註行所有儲存格設為相同內容
+        for cell in new_row.cells:
+            cell.text = combined_note
 
     # 更新 verdict
     if verdict:

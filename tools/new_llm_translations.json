@@ -439,7 +439,7 @@
   "Incorporated with adaptor.A": "與 adaptor 一體構成。A",
   "Pin bending test\nThe pins of the plug portion of three samples (Samples EFG in Table J1) not subjected\nto any previous tests shall be tested for compliance with the pin bending test of Clause\n2.13.7.2 (AS/NZS 3112:2017/A1:2021)": "插腳彎曲試驗\n未經任何先前試驗之三個樣品（表 J1 中之樣品 EFG）之插頭部分插腳，應依據第 2.13.7.2 條（AS/NZS 3112:2017/A1:2021）之插腳彎曲試驗進行符合性測試。",
   "For socket only and movable\nblade plug only5.9": "僅適用於插座及可動刃片插頭 5.9",
-  "Strength of blade fixing part": "插片固定部之強度",
+  "Strength of blade fixing part": "刃片固定部強度",
   "Rotating property of movable plug type": "可動式插頭型式之旋轉特性",
   "Strength of Cord anchorage": "電源線固定裝置之強度",
   "Strength of Cord outlet": "電源線出口之強度",
@@ -463,5 +463,8 @@
   "Ammonia gas durability test": "氨氣耐久試驗",
   "Rotating test of movable plug-blade type": "可動插片型之旋轉試驗",
   "Tensile load test": "拉伸負載試驗",
-  "Flame retardance test": "阻燃性試驗"
+  "Flame retardance test": "阻燃性試驗",
+  "Ambient temperature T (C) ..................................................... : amb": "室溫溫度 T (C) ..................................................... : amb",
+  "Class II with functional earthing marking .............. :  \nClass II 並具有功能接地標示 .............. :": "Class II 並具有功能接地標示 .............. :  \nClass II 並具有功能接地標示 .............. :",
+  "Fire enclosures and 防火屏障": "Fire enclosures and 防火外殼及防火屏障"
 }
