@@ -4646,7 +4646,7 @@ def fill_all_appendix_tables(doc: Document, cb_tables: list):
 
     # 需要動態填充的表格清單
     tables_to_fill = [
-        '5.2',           # 電氣能量源之分級
+        # 5.2 已有專門函數 fill_table_52 處理
         '5.4.1.8',       # 工作電壓
         '5.4.1.10.2',    # 熱塑性塑料軟化溫度試驗
         '5.4.1.10.3',    # 球壓試驗
@@ -4684,6 +4684,232 @@ def fill_all_appendix_tables(doc: Document, cb_tables: list):
 
     print(f"動態附表填充：共處理 {filled_count} 個表格")
     return filled_count
+
+
+def fill_table_52(doc: Document, table_52_data: dict):
+    """
+    填充 5.2 表格：電氣能量源之分級 (Classification of electrical energy sources)
+
+    從 PDF 專門抽取的結構化資料動態填充 Word 表格，取代範本中的範例資料。
+
+    Args:
+        doc: Word 文件
+        table_52_data: extract_table_52() 返回的結構化資料
+    """
+    if not table_52_data or 'error' in table_52_data:
+        print("警告：5.2 表格資料為空或有錯誤")
+        return
+
+    pdf_rows = table_52_data.get('rows', [])
+    models = table_52_data.get('models', [])
+    verdict = table_52_data.get('verdict', '')
+
+    if not pdf_rows:
+        print("警告：5.2 表格無資料列")
+        return
+
+    # 找到 5.2 表格 (標題含「電氣能量源之分級」或「5.2」)
+    target_table = None
+    for tbl in doc.tables:
+        if len(tbl.rows) > 2:
+            first_row_text = ' '.join([c.text for c in tbl.rows[0].cells])
+            if '5.2' in first_row_text and ('電氣能量源' in first_row_text or '分級' in first_row_text):
+                target_table = tbl
+                break
+
+    if not target_table:
+        print("警告：找不到 5.2 電氣能量源之分級表格")
+        return
+
+    print(f"找到 5.2 表格，原有 {len(target_table.rows)} 行")
+
+    def normalize_quotes(s: str) -> str:
+        """正規化引號：將 Unicode fancy quotes 轉換為標準 ASCII 引號"""
+        # U+201C (left double quote) -> "
+        # U+201D (right double quote) -> "
+        # U+2018 (left single quote) -> '
+        # U+2019 (right single quote) -> '
+        return s.replace('\u201c', '"').replace('\u201d', '"').replace('\u2018', "'").replace('\u2019', "'")
+
+    # 翻譯字典
+    location_translations = {
+        'Primary circuits supplied by a.c. mains supply': '由交流電源供電之一次側電路',
+        'Primary circuits\nsupplied by a.c.\nmains supply': '由交流電源供電之一次側電路',
+        'Output "+" to "-"': '輸出 "+" 至 "-"',
+        'Between "L" to "N"': '"L" 與 "N" 之間',
+        'Between "L"\nto "N"': '"L" 與 "N" 之間',
+        'Secondary circuits': '二次側電路',
+        'Secondary output': '二次側輸出',
+    }
+
+    condition_translations = {
+        'Normal': '正常操作',
+        'Abnormal': '異常操作',
+        'Abnormal (see table B.3)': '異常操作 (見表 B.3)',
+        'Abnormal (see\ntable B.3)': '異常操作 (見表 B.3)',
+        'Single fault': '單一故障',
+        'Single fault (see table B.4)': '單一故障 (見表 B.4)',
+        'Single fault (see\ntable B.4)': '單一故障 (見表 B.4)',
+    }
+
+    def translate_location(loc: str) -> str:
+        """翻譯 location 欄位"""
+        loc_norm = normalize_quotes(loc.strip())
+        if loc_norm in location_translations:
+            return location_translations[loc_norm]
+        # 嘗試正規化換行後匹配
+        loc_oneline = ' '.join(loc_norm.split())
+        for eng, chn in location_translations.items():
+            eng_oneline = ' '.join(eng.split())
+            if eng_oneline == loc_oneline:
+                return chn
+        return loc_norm
+
+    def translate_condition(cond: str) -> str:
+        """翻譯 test_condition 欄位"""
+        cond_norm = cond.strip()
+        if cond_norm in condition_translations:
+            return condition_translations[cond_norm]
+        # 嘗試正規化換行後匹配
+        cond_oneline = ' '.join(cond_norm.split())
+        for eng, chn in condition_translations.items():
+            eng_oneline = ' '.join(eng.split())
+            if eng_oneline == cond_oneline:
+                return chn
+        # 處理 Single fault – XXX 格式
+        if cond_norm.startswith('Single fault'):
+            # 提取故障描述
+            parts = cond_norm.split('–')
+            if len(parts) > 1:
+                fault_desc = parts[1].strip()
+                # 翻譯 SC = 短路, OC = 開路
+                fault_desc_cn = fault_desc.replace('\n', ' ')
+                fault_desc_cn = fault_desc_cn.replace(' SC', ' 短路').replace(' OC', ' 開路')
+                return f'單一故障 – {fault_desc_cn}'
+        # 處理 Abnormal: XXX 格式
+        if cond_norm.startswith('Abnormal:'):
+            parts = cond_norm.split(':')
+            if len(parts) > 1:
+                desc = parts[1].strip().replace('\n', ' ')
+                desc_cn = desc.replace('over load', '過負載').replace('overload', '過負載')
+                return f'異常操作: {desc_cn}'
+        return cond_norm
+
+    # 保留表頭行（前 4 行：標題行 + 表頭行）
+    # 典型結構：
+    # Row 0: 5.2 表格:電氣能量源之分級 | ... | 判定
+    # Row 1: 供應電壓 | 位置 | 測試條件 | 參數 ... | 電氣能量源分類
+    # Row 2: (電路標示) | | U (V) | I (mA) | 形式 | 附加資訊 |
+    # Row 3: 型號: XXX
+    header_rows = 3  # 保留前 3 行作為表頭
+
+    # 找到「型號」行的位置
+    model_row_idx = -1
+    for i, row in enumerate(target_table.rows):
+        first_cell = row.cells[0].text.strip()
+        if '型號' in first_cell or 'Model' in first_cell:
+            model_row_idx = i
+            break
+
+    if model_row_idx == -1:
+        # 沒找到型號行，假設第 3 行是型號行
+        model_row_idx = 3
+
+    # 刪除舊的資料行（從型號行開始，保留表頭和備註行）
+    # 找備註行
+    note_row_idx = -1
+    for i in range(len(target_table.rows) - 1, model_row_idx, -1):
+        first_cell = target_table.rows[i].cells[0].text.strip()
+        if '備註' in first_cell or 'Supplementary' in first_cell.lower():
+            note_row_idx = i
+            break
+
+    # 刪除型號行到備註行之間的所有資料行
+    rows_to_keep_after_data = []
+    if note_row_idx > 0:
+        # 保留備註行
+        for i in range(note_row_idx, len(target_table.rows)):
+            rows_to_keep_after_data.append(i)
+
+    # 刪除舊資料行（從後往前刪除）
+    delete_start = model_row_idx
+    delete_end = note_row_idx if note_row_idx > 0 else len(target_table.rows)
+
+    for i in range(delete_end - 1, delete_start - 1, -1):
+        if i < len(target_table.rows):
+            target_table._tbl.remove(target_table.rows[i]._tr)
+
+    print(f"刪除 {delete_end - delete_start} 行舊資料")
+
+    # 添加型號行
+    model_name = models[0] if models else 'N/A'
+    model_row = target_table.add_row()
+    model_row.cells[0].text = f'型號: {model_name}'
+    # 合併型號行的所有儲存格（如果需要的話）
+
+    # 添加資料行
+    current_location = ''
+    for row_data in pdf_rows:
+        new_row = target_table.add_row()
+        cells = new_row.cells
+
+        # 處理 location（可能需要合併相同 location 的行）
+        location = row_data.get('location', '')
+        location_cn = translate_location(location)
+
+        # 只在 location 變化時顯示
+        if location != current_location:
+            current_location = location
+            location_display = location_cn
+        else:
+            location_display = ''
+
+        # 填入資料
+        if len(cells) >= 8:
+            # 供應電壓 - 只顯示一次
+            supply_voltage = row_data.get('supply_voltage', '').replace('\n', ' ')
+            cells[0].text = supply_voltage if row_data == pdf_rows[0] else ''
+
+            # 位置（電路標示）
+            cells[1].text = location_display
+
+            # 測試條件
+            test_cond = row_data.get('test_condition', '')
+            cells[2].text = translate_condition(test_cond)
+
+            # U (V)
+            cells[3].text = row_data.get('u_v', '--')
+
+            # I (mA)
+            cells[4].text = row_data.get('i_ma', '--')
+
+            # 形式
+            cells[5].text = row_data.get('type', '--')
+
+            # 附加資訊
+            cells[6].text = row_data.get('additional_info', '--')
+
+            # 電氣能量源分類 (ES Class)
+            cells[7].text = row_data.get('es_class', '')
+
+    # 添加備註行（如果有補充資訊）
+    supp_info = table_52_data.get('supplementary_info', '')
+    if supp_info:
+        note_row = target_table.add_row()
+        note_row.cells[0].text = f'備註: {supp_info}'
+
+    # 更新 verdict
+    if verdict:
+        # 找到 verdict 儲存格（通常在第一行最後一個儲存格）
+        verdict_cell = target_table.rows[0].cells[-1]
+        if verdict == 'P':
+            verdict_cell.text = '符合'
+        elif verdict == 'N/A':
+            verdict_cell.text = '不適用'
+        else:
+            verdict_cell.text = verdict
+
+    print(f"5.2 表格：已填入 {len(pdf_rows)} 行資料，型號: {model_name}")
 
 
 def fill_table_b25(doc: Document, table_b25_data: dict, special_tables: dict):
@@ -4849,6 +5075,10 @@ def main():
         print(f"安全防護總攬表：已從 CB p.12 資料填入 {rendered_count} 列")
     else:
         print("警告：overview_cb_p12_rows 不存在，無法填充安全防護總攬表")
+
+    # 填充 5.2 表格（電氣能量源之分級）
+    if special_tables.get('table_52'):
+        fill_table_52(docx, special_tables.get('table_52', {}))
 
     # 填充 5.5.2.2 表格
     if special_tables.get('table_5522'):

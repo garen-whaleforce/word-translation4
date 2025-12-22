@@ -60,7 +60,8 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
         from tools.extract_special_tables import (
             extract_overview_energy_sources,
             extract_table_5522,
-            extract_table_b25
+            extract_table_b25,
+            extract_table_52
         )
         import pdfplumber
 
@@ -93,10 +94,16 @@ def process_job(job: Job, storage: Optional[StorageClient] = None) -> Job:
             except ValueError as e:
                 table_b25 = {'error': str(e)}
 
+            try:
+                table_52 = extract_table_52(pdf)
+            except ValueError as e:
+                table_52 = {'error': str(e)}
+
         special_tables = {
             'overview': overview,
             'table_5522': table_5522,
-            'table_b25': table_b25
+            'table_b25': table_b25,
+            'table_52': table_52
         }
         special_tables_path = out_dir / "cb_special_tables.json"
         with open(special_tables_path, 'w', encoding='utf-8') as f:

@@ -300,6 +300,129 @@ def extract_table_b25(pdf) -> dict:
 
     return result
 
+
+def extract_table_52(pdf) -> dict:
+    """
+    抽取 5.2 TABLE: Classification of electrical energy sources 表格
+
+    這個表格包含電氣能量源分類的詳細測試結果，包括：
+    - Supply Voltage
+    - Location (circuit designation)
+    - Test conditions (Normal, Abnormal, Single fault)
+    - Parameters (U, I, Type, Additional Info)
+    - ES Class
+    """
+    result = {
+        'page': -1,
+        'verdict': '',
+        'rows': [],
+        'models': [],
+        'supplementary_info': ''
+    }
+
+    # 找包含 "5.2 TABLE: Classification of electrical energy sources" 的頁面
+    page_idx = find_page_by_content(pdf, 'Classification of electrical energy sources')
+    if page_idx < 0:
+        raise ValueError("無法找到 5.2 TABLE: Classification of electrical energy sources")
+
+    result['page'] = page_idx + 1
+    page = pdf.pages[page_idx]
+    tables = page.extract_tables()
+
+    # 找到 5.2 表格
+    target_table = None
+    for tbl in tables:
+        if not tbl or len(tbl) < 3:
+            continue
+        first_row_text = ' '.join([str(c) for c in tbl[0] if c])
+        if '5.2' in first_row_text and 'Classification' in first_row_text:
+            target_table = tbl
+            break
+
+    if not target_table:
+        raise ValueError("無法解析 5.2 表格結構")
+
+    # 解析表格內容
+    current_supply_voltage = ''
+    current_location = ''
+
+    for row in target_table:
+        if not row or len(row) < 2:
+            continue
+
+        row = [norm(str(c)) if c else '' for c in row]
+
+        # 跳過標題行
+        first_cell = row[0].lower()
+        if 'supply' in first_cell or 'location' in first_cell or 'test condition' in first_cell:
+            continue
+        if 'voltage' in first_cell and 'circuit' in ' '.join(row):
+            continue
+        if 'u (v)' in first_cell or 'i (ma)' in first_cell:
+            continue
+
+        # Verdict 行
+        if row[0] == '5.2' and 'TABLE' in row[1]:
+            # 找 verdict（通常在最後一個非空欄位）
+            for cell in reversed(row):
+                if cell in ['P', 'N/A', 'F']:
+                    result['verdict'] = cell
+                    break
+            continue
+
+        # Model 行
+        if row[0].startswith('Model:'):
+            model_name = row[0].replace('Model:', '').strip()
+            result['models'].append(model_name)
+            continue
+
+        # Supplementary information
+        if 'supplementary' in row[0].lower():
+            result['supplementary_info'] = ' '.join([c for c in row if c])
+            continue
+
+        # 資料行
+        # 格式: [Supply Voltage, Location, Test conditions, U(V), I(mA), Type, Additional Info, ?, ES Class]
+        supply_voltage = row[0] if row[0] else current_supply_voltage
+        if supply_voltage and 'v' in supply_voltage.lower():
+            current_supply_voltage = supply_voltage
+
+        location = row[1] if len(row) > 1 else ''
+        if location and location not in ['', '--', 'None']:
+            current_location = location
+        else:
+            location = current_location
+
+        test_condition = row[2] if len(row) > 2 else ''
+        u_v = row[3] if len(row) > 3 else ''
+        i_ma = row[4] if len(row) > 4 else ''
+        type_val = row[5] if len(row) > 5 else ''
+        additional_info = row[6] if len(row) > 6 else ''
+        es_class = row[-1] if len(row) > 1 else ''
+
+        # 清理 ES Class
+        if es_class and es_class not in ['ES1', 'ES2', 'ES3', '']:
+            es_class = ''
+
+        # 跳過空行或純標題行
+        if not test_condition or test_condition in ['', 'None']:
+            continue
+
+        data_row = {
+            'supply_voltage': supply_voltage,
+            'location': location,
+            'test_condition': test_condition,
+            'u_v': u_v,
+            'i_ma': i_ma,
+            'type': type_val,
+            'additional_info': additional_info,
+            'es_class': es_class
+        }
+        result['rows'].append(data_row)
+
+    return result
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf", required=True, help="CB PDF 路徑")
