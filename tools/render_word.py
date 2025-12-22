@@ -187,6 +187,11 @@ def translate_body_part(body_part: str, clause: int) -> str:
         'Internal wiring': '內部配線',
         'Connector': '輸出連接器',
         'Output connector': '輸出連接器',
+        'Input wire': '輸入配線',
+        'Output circuit': '輸出電路',
+        'Output circuit / port': '輸出電路/埠',
+        'Output port': '輸出埠',
+        'The other components/materials': '其他零組件/材料',
     }
 
     # 精確匹配
@@ -211,6 +216,12 @@ def translate_body_part(body_part: str, clause: int) -> str:
         return '輸出連接器'
     if 'other' in lower:
         return '其他零組件/材料'
+    if 'input wire' in lower:
+        return '輸入配線'
+    if 'output circuit' in lower or 'output port' in lower:
+        return '輸出電路/埠'
+    if 'wire' in lower:
+        return '配線'
 
     return body_part_oneline
 
@@ -226,6 +237,9 @@ def translate_safeguard(safeguard: str, clause: int) -> str:
         'N/A': '無',
         'Enclosure': '外殼',
         'See 6.3': '見條款6.3',
+        'See 6.4.5': '見條款6.4.5',
+        'See 6.4.6': '見條款6.4.6',
+        'See 6.5': '見條款6.5',
         'V-0': 'V-0',
         'V-1 or better': 'V-1或更佳',
         'V-2 or better': 'V-2或更佳',
@@ -253,6 +267,12 @@ def translate_safeguard(safeguard: str, clause: int) -> str:
         return '設備防護(無點燃發生)'
     if 'Equipment safeguard' in safeguard_oneline and 'control of fire' in safeguard_oneline:
         return '設備防護(控制火焰擴散)'
+
+    # 通用 "See X.X.X" 模式
+    import re
+    see_match = re.match(r'^See\s+(\d+(?:\.\d+)+)$', safeguard_oneline)
+    if see_match:
+        return f'見條款{see_match.group(1)}'
 
     return safeguard_oneline
 
@@ -3478,13 +3498,21 @@ def main():
     if remarks_filled:
         print(f"備註區塊：已填入")
 
-    # 使用 overview_cb_p12_rows 填充安全防護總攬表（方案A）
-    overview_cb_p12_rows = data.get('overview_cb_p12_rows', [])
+    # 使用 overview 資料填充安全防護總攬表
+    # 優先使用 special_tables['overview']['rows']，其次使用 data['overview_cb_p12_rows']
+    overview_cb_p12_rows = []
+    if special_tables.get('overview') and special_tables['overview'].get('rows'):
+        overview_cb_p12_rows = special_tables['overview']['rows']
+        print(f"安全防護總攬表：從 special_tables 讀取 {len(overview_cb_p12_rows)} 筆資料")
+    elif data.get('overview_cb_p12_rows'):
+        overview_cb_p12_rows = data.get('overview_cb_p12_rows', [])
+        print(f"安全防護總攬表：從 cns_report_data 讀取 {len(overview_cb_p12_rows)} 筆資料")
+
     if overview_cb_p12_rows:
         rendered_count = fill_overview_table_from_cb_p12(docx, overview_cb_p12_rows)
-        print(f"安全防護總攬表：已從 CB p.12 資料填入 {rendered_count} 列")
+        print(f"安全防護總攬表：已填入 {rendered_count} 列")
     else:
-        print("警告：overview_cb_p12_rows 不存在，無法填充安全防護總攬表")
+        print("警告：overview 資料不存在，無法填充安全防護總攬表")
 
     # 填充 5.2 表格（電氣能量源之分級）
     if special_tables.get('table_52'):
