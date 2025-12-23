@@ -466,5 +466,19 @@
   "Flame retardance test": "阻燃性試驗",
   "Ambient temperature T (C) ..................................................... : amb": "室溫溫度 T (C) ..................................................... : amb",
   "Class II with functional earthing marking .............. :  \nClass II 並具有功能接地標示 .............. :": "Class II 並具有功能接地標示 .............. :  \nClass II 並具有功能接地標示 .............. :",
-  "Fire enclosures and 防火屏障": "Fire enclosures and 防火外殼及防火屏障"
+  "Fire enclosures and 防火屏障": "Fire enclosures and 防火外殼及防火屏障",
+  "The circuit connected to AC mains (Except output circuits)": "連接至 AC mains 之電路（輸出電路除外）",
+  "All circuits except for output circuits - PCB": "除輸出電路外之所有電路 - PCB",
+  "Secondary part circuits - Plastic materials not part of PS3 circuit": "二次側部分電路 - 非 PS3 電路之塑膠材料",
+  "All circuits - The other components/materials": "所有電路 - 其他元件/材料",
+  "Secondary part circuits - The other components/materials": "二次側部分電路 - 其他元件/材料",
+  "All circuits except for output circuits - Enclosure": "除輸出電路外之所有電路 - 外殼",
+  "All circuits except for output circuits - Input wire": "除輸出電路外之所有電路 - 輸入線",
+  "Secondary part circuits - Output circuit / port": "二次側部分電路 - 輸出電路 / 連接埠",
+  "Edges and corners of enclosure": "外殼之邊緣與角部",
+  "Mass of the unit": "設備質量",
+  "Internal parts/circuits": "內部零件/電路",
+  "General classification\nLasers ..................................................................... : 雷射\nLamps and lamp systems ...................................... : 燈具及燈具系統\nImage projectors ..................................................... : 影像投影機\nX-Ray ...................................................................... : X 光\nPersonal music player ............................................ : 個人音樂播放器": "一般分類\nLasers ..................................................................... : 雷射\nLamps and lamp systems ...................................... : 燈具及燈具系統\nImage projectors ..................................................... : 影像投影機\nX-Ray ...................................................................... : X 光\nPersonal music player ............................................ : 個人音樂播放器",
+  "General requirements Type ....................................................................... : 一般要求 類型 ....................................................................... :": "一般要求\nType ....................................................................... : 類型 ....................................................................... :",
+  "Tests Smallest capacitance and smallest resistance specified by ICX manufacturer for impulse test ..... :  \n測試 由 ICX 製造商針對衝擊測試所規定之最小電容量與最小電阻 ..... :\n\nMains voltage that impulses to be superimposed on ............................................................................... :  \n施加衝擊疊加之市電電壓 ............................................................................... :\n\nLargest capacitance and smallest resistance for ICX tested by itself for 10000 cycles test .............. :  \nICX 本體進行 10000 週期測試時所使用之最大電容量與最小電阻 .............. :": "測試\nSmallest capacitance and smallest resistance specified by ICX manufacturer for impulse test ..... :  \n由 ICX 製造商針對衝擊測試所規定之最小電容量與最小電阻 ..... :\n\nMains voltage that impulses to be superimposed on ............................................................................... :  \n施加衝擊疊加之市電電壓 ............................................................................... :\n\nLargest capacitance and smallest resistance for ICX tested by itself for 10000 cycles test .............. :  \nICX 本體進行 10000 週期測試時所使用之最大電容量與最小電阻 .............. :"
 }

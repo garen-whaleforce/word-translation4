@@ -2,6 +2,7 @@ import json
 import argparse
 import re
 import sys
+import os
 from pathlib import Path
 from copy import deepcopy
 from docxtpl import DocxTemplate
@@ -9,6 +10,13 @@ from docx import Document
 
 # 添加 core 模組路徑
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# 載入 .env 環境變數
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent / '.env')
+except ImportError:
+    pass
 
 # 導入 LLM 翻譯器
 try:
@@ -100,180 +108,40 @@ def translate_verdict(verdict: str) -> str:
 
 
 def translate_energy_source(energy_source: str, clause: int) -> str:
-    """將英文 energy source 轉換為中文"""
+    """將英文 energy source 轉換為中文 - 純 LLM 翻譯"""
     energy_source_oneline = energy_source.replace('\n', ' ').strip()
+    if not energy_source_oneline or energy_source_oneline == 'N/A':
+        return '無' if energy_source_oneline == 'N/A' else energy_source_oneline
 
-    translations = {
-        # Clause 5 - Electrically-caused injury (依照人工檔案格式)
-        'ES3: Primary circuits supplied by a.c. mains supply': 'ES3: 所有連接到AC主電源的線路',
-        'ES3: The circuit connected to AC mains (Except output circuits)': 'ES3: 所有連接到AC主電源的線路',
-        'ES3: All circuits except output circuits': 'ES3: 所有連接到AC主電源的線路',
-        'ES3: Capacitor connected between L and N': 'ES3: X電容(於L與N之間)',
-        'ES1: Secondary output connector': 'ES1: 輸出電路(輸出連接器)',
-        'ES1: Output circuits': 'ES1: 輸出電路(輸出連接器)',
-        'ES1: Output connector': 'ES1: 輸出電路(輸出連接器)',
-        # Clause 6 - Electrically-caused fire (依照人工檔案格式)
-        'PS3: All primary circuits inside the equipment enclosure': 'PS3: 設備外殼內所有的主線路',
-        'PS3: All circuits except for output circuits': 'PS3: 設備外殼內所有的主線路',
-        'PS3: Primary circuits': 'PS3: 設備外殼內所有的主線路',
-        'PS2: Secondary output connector': 'PS2: 輸出電路(輸出連接器)',
-        'PS2: secondary part circuits': 'PS2: 輸出電路(輸出連接器)',
-        'PS2: Secondary circuits': 'PS2: 輸出電路(輸出連接器)',
-        # Clause 8 - Mechanically-caused injury (依照人工檔案格式)
-        'MS1: Mass of the unit': 'MS1: 設備質量',
-        'MS1: Edges and corners': 'MS1: 邊與角',
-        'MS1: Edges and corners of enclosure': 'MS1: 邊與角',
-        'MS1: Sharp edges': 'MS1: 邊與角',
-        # Clause 9 - Thermal burn (依照人工檔案格式)
-        'TS1: Plastic enclosure': 'TS1: 塑膠外殼',
-        'TS1: External surface': 'TS1: 塑膠外殼',
-        'TS1: Accessible surface': 'TS1: 塑膠外殼',
-        'TS3: Internal parts/circuits': 'TS3: 內部零件',
-        'TS3: Internal parts': 'TS3: 內部零件',
-        # N/A - 翻譯成「無」
-        'N/A': '無',
-    }
-
-    # 精確匹配
-    if energy_source_oneline in translations:
-        return translations[energy_source_oneline]
-
-    # 模糊匹配 - 依 prefix 分類
-    if energy_source_oneline.startswith('ES3'):
-        if 'Capacitor' in energy_source_oneline or 'capacitor' in energy_source_oneline:
-            return 'ES3: X電容(於L與N之間)'
-        return 'ES3: 所有連接到AC主電源的線路'
-    if energy_source_oneline.startswith('ES1'):
-        return 'ES1: 輸出電路(輸出連接器)'
-    if energy_source_oneline.startswith('PS3'):
-        return 'PS3: 設備外殼內所有的主線路'
-    if energy_source_oneline.startswith('PS2'):
-        return 'PS2: 輸出電路(輸出連接器)'
-    if energy_source_oneline.startswith('MS1'):
-        if 'Mass' in energy_source_oneline or 'mass' in energy_source_oneline:
-            return 'MS1: 設備質量'
-        return 'MS1: 邊與角'
-    if energy_source_oneline.startswith('TS1'):
-        return 'TS1: 塑膠外殼'
-    if energy_source_oneline.startswith('TS3'):
-        return 'TS3: 內部零件'
-
+    if HAS_LLM:
+        translated = llm_translate(energy_source_oneline)
+        if translated != energy_source_oneline:
+            return translated
     return energy_source_oneline
 
 def translate_body_part(body_part: str, clause: int) -> str:
-    """將英文 body part / material 轉換為中文"""
+    """將英文 body part / material 轉換為中文 - 純 LLM 翻譯"""
     body_part_oneline = body_part.replace('\n', ' ').strip()
+    if not body_part_oneline or body_part_oneline == 'N/A':
+        return '無' if body_part_oneline == 'N/A' else body_part_oneline
 
-    translations = {
-        # 人員類別 (Clause 5, 8, 9) - 依照人工檔案格式只顯示「普通人員」
-        'Ordinary': '普通人員',
-        'Instructed': '受指導人員',
-        'Skilled': '技術人員',
-        'Ordinary, Instructed, Skilled': '普通人員',  # 簡化為只顯示普通人員
-        'Ordinary Instructed Skilled': '普通人員',
-        'N/A': '無',
-        # Clause 6 materials (依照人工檔案格式)
-        'All combustible materials within equipment fire enclosure': '設備外殼內所有易燃材料',
-        'Connections of secondary equipment': '二次設備的接線處',
-        'PCB': '印刷電路板',
-        'Printed circuit board': '印刷電路板',
-        'Enclosure': '外殼',
-        'Plastic enclosure': '塑膠外殼',
-        'Plastic materials not part of PS3 circuit': '其他零組件/材料',
-        'Other components': '其他零組件/材料',
-        'Other materials': '其他零組件/材料',
-        'Wiring': '輸出配線',
-        'Output wiring': '輸出配線',
-        'Internal wiring': '內部配線',
-        'Connector': '輸出連接器',
-        'Output connector': '輸出連接器',
-        'Input wire': '輸入配線',
-        'Output circuit': '輸出電路',
-        'Output circuit / port': '輸出電路/埠',
-        'Output port': '輸出埠',
-        'The other components/materials': '其他零組件/材料',
-    }
-
-    # 精確匹配
-    if body_part_oneline in translations:
-        return translations[body_part_oneline]
-
-    # 模糊匹配
-    lower = body_part_oneline.lower()
-    if 'combustible' in lower or 'fire enclosure' in lower:
-        return '設備外殼內所有易燃材料'
-    if 'pcb' in lower or 'printed circuit' in lower:
-        return '印刷電路板'
-    if 'secondary' in lower and ('connect' in lower or 'equipment' in lower):
-        return '二次設備的接線處'
-    if 'enclosure' in lower or 'plastic' in lower:
-        if clause == 6:
-            return '塑膠外殼'
-        return '外殼'
-    if 'wiring' in lower:
-        return '輸出配線'
-    if 'connector' in lower:
-        return '輸出連接器'
-    if 'other' in lower:
-        return '其他零組件/材料'
-    if 'input wire' in lower:
-        return '輸入配線'
-    if 'output circuit' in lower or 'output port' in lower:
-        return '輸出電路/埠'
-    if 'wire' in lower:
-        return '配線'
-
+    if HAS_LLM:
+        translated = llm_translate(body_part_oneline)
+        if translated != body_part_oneline:
+            return translated
     return body_part_oneline
 
 def translate_safeguard(safeguard: str, clause: int) -> str:
-    """將英文 safeguard 轉換為中文"""
+    """將英文 safeguard 轉換為中文 - 純 LLM 翻譯"""
     if not safeguard or safeguard.strip() == 'N/A':
         return '無'
 
     safeguard_oneline = safeguard.replace('\n', ' ').strip()
 
-    # 精確匹配翻譯
-    translations = {
-        'N/A': '無',
-        'Enclosure': '外殼',
-        'See 6.3': '見條款6.3',
-        'See 6.4.5': '見條款6.4.5',
-        'See 6.4.6': '見條款6.4.6',
-        'See 6.5': '見條款6.5',
-        'V-0': 'V-0',
-        'V-1 or better': 'V-1或更佳',
-        'V-2 or better': 'V-2或更佳',
-    }
-
-    if safeguard_oneline in translations:
-        return translations[safeguard_oneline]
-
-    # 模式匹配處理
-    if 'Enclosure See' in safeguard_oneline or 'Enclosure, see' in safeguard_oneline:
-        # 提取條款號碼
-        import re
-        clauses = re.findall(r'[0-9]+\.[0-9]+(?:\.[0-9]+)?', safeguard_oneline)
-        if clauses:
-            # 使用「與」連接最後一個條款（依人工版本格式）
-            if len(clauses) > 1:
-                clause_str = ', '.join(clauses[:-1]) + '與' + clauses[-1]
-            else:
-                clause_str = clauses[0]
-            return f"外殼, 見條款{clause_str}"
-        return '外殼'
-    if 'See 5.5.2.2' in safeguard_oneline:
-        return '見條款5.5.2.2'
-    if 'Equipment safeguard' in safeguard_oneline and 'no ignition' in safeguard_oneline:
-        return '設備防護(無點燃發生)'
-    if 'Equipment safeguard' in safeguard_oneline and 'control of fire' in safeguard_oneline:
-        return '設備防護(控制火焰擴散)'
-
-    # 通用 "See X.X.X" 模式
-    import re
-    see_match = re.match(r'^See\s+(\d+(?:\.\d+)+)$', safeguard_oneline)
-    if see_match:
-        return f'見條款{see_match.group(1)}'
-
+    if HAS_LLM:
+        translated = llm_translate(safeguard_oneline)
+        if translated != safeguard_oneline:
+            return translated
     return safeguard_oneline
 
 def copy_row_style(source_row, target_row):
@@ -854,22 +722,12 @@ def rebuild_clause_tables(doc: Document, clauses: list) -> dict:
 
 
 def translate_req(req: str) -> str:
-    """翻譯 requirement 英文片語 - 使用 LLM 翻譯"""
+    """翻譯 requirement 英文片語 - 純 LLM 翻譯"""
     # 正規化：移除換行並壓縮多餘空白
     req_normalized = ' '.join(req.split())
 
     if not req_normalized:
         return req
-
-    # 處理 Single fault 開頭的文字（保留格式）
-    if req_normalized.startswith('Single fault'):
-        result = req_normalized
-        result = result.replace('Single fault', '單一故障')
-        result = result.replace(' – SC ', ' – 短路 ')
-        result = result.replace(' – OC ', ' – 開路 ')
-        result = result.replace(' pin ', ' 腳位 ')
-        result = result.replace(' to ', ' 至 ')
-        return result
 
     # 使用 LLM 翻譯
     if HAS_LLM:
@@ -879,7 +737,7 @@ def translate_req(req: str) -> str:
 
     return req_normalized
 def translate_remark(remark: str, clause_id: str) -> str:
-    """翻譯 remark 備註 - 使用 LLM 翻譯"""
+    """翻譯 remark 備註 - 純 LLM 翻譯"""
     # 正規化：移除換行並壓縮多餘空白（PDF 提取常有換行）
     remark_normalized = ' '.join(remark.split())
 
@@ -888,47 +746,6 @@ def translate_remark(remark: str, clause_id: str) -> str:
 
     if not remark_normalized or remark_normalized.strip() in ('', '-', '--'):
         return remark_normalized
-
-    # 處理 (See appended table X) 格式
-    table_match = re.match(r'^\(See appended table ([A-Z0-9.]+(?:\s+and\s+[A-Z0-9.]+)?)\)(.*)$', remark_normalized)
-    if table_match:
-        table_ref = table_match.group(1).replace(' and ', ' 及 ')
-        rest = table_match.group(2) or ''
-        return f'(見附表 {table_ref}){rest}'
-
-    # 處理 (See appended Tables X and Y) 格式
-    tables_match = re.match(r'^\(See appended Tables? ([A-Z0-9., ]+(?:\s+and\s+[A-Z0-9.]+)?)\)$', remark_normalized)
-    if tables_match:
-        table_ref = tables_match.group(1).replace(' and ', ' 及 ')
-        return f'(見附表 {table_ref})'
-
-    # 處理 (See Test Item Particulars...) 格式
-    if remark_normalized.startswith('(See Test Item Particulars'):
-        return remark_normalized.replace('See Test Item Particulars', '見試驗項目詳情').replace('and appended test tables', '及附加試驗表')
-
-    # 處理 (See Annex X) 格式
-    annex_match = re.match(r'^\(See Annex ([A-Z0-9.]+)\)(.*)$', remark_normalized)
-    if annex_match:
-        annex_ref = annex_match.group(1)
-        rest = annex_match.group(2) or ''
-        return f'(見附錄 {annex_ref}){rest}'
-
-    # 處理 (See Clause X) 格式
-    clause_match = re.match(r'^\(See [Cc]lause ([0-9.]+)\)(.*)$', remark_normalized)
-    if clause_match:
-        clause_ref = clause_match.group(1)
-        rest = clause_match.group(2) or ''
-        return f'(見條款 {clause_ref}){rest}'
-
-    # 處理 Single fault 開頭的備註（保留格式）
-    if remark_normalized.startswith('Single fault'):
-        result = remark_normalized
-        result = result.replace('Single fault', '單一故障')
-        result = result.replace(' – SC ', ' – 短路 ')
-        result = result.replace(' – OC ', ' – 開路 ')
-        result = result.replace(' pin ', ' 腳位 ')
-        result = result.replace(' to ', ' 至 ')
-        return result
 
     # 使用 LLM 翻譯
     if HAS_LLM:
@@ -1023,137 +840,42 @@ def fill_table_5522(doc: Document, table_5522_data: dict):
                 break
 
 def translate_component_part(part: str) -> str:
-    """翻譯 4.1.2 零件名稱"""
-    # 正規化換行
+    """翻譯 4.1.2 零件名稱 - 純 LLM 翻譯"""
+    if not part:
+        return part
+
     part_norm = ' '.join(part.split())
-
-    translations = {
-        # 插頭相關
-        'For fixed plug model': '針對固定式插頭型號',
-        'For replaceable plug model': '針對可替換式插頭型號',
-        'For desktop type model': '針對桌上型型號',
-        'For all model': '針對所有型號',
-        'Fixed EU plug portion': '固定式歐規插頭',
-        'Fixed UK plug portion': '固定式英規插頭',
-        'Fixed AU plug portion': '固定式澳規插頭',
-        'Fixed JP plug portion': '固定式日規插頭',
-        'Replaceable EU plug portion': '可替換式歐規插頭',
-        'Replaceable UK plug portion': '可替換式英規插頭',
-        'Replaceable AU plug portion': '可替換式澳規插頭',
-        'Replaceable JP plug portion': '可替換式日規插頭',
-        'Plug holder': '插頭座',
-        'pin sleeving material': '插銷套材料',
-        'Appliance inlet': '器具插座',
-        # 材料相關
-        'Plastic enclosure and plug holder': '塑膠外殼及插頭座',
-        'Plastic enclosure': '塑膠外殼',
-        'Material of AC connector': 'AC連接器材料',
-        'Insulation Sheet': '絕緣片',
-        'Insulation barrier': '絕緣屏障',
-        # 電子元件
-        'PCB': 'PCB',
-        'Primary wire': '一次側配線',
-        'Output wire': '輸出配線',
-        'Input wire': '輸入配線',
-        'Fuse': '保險絲',
-        'Heat shrinkable tube': '熱縮套管',
-        'Line choke': '電感',
-        'Line chock': '電感',
-        'Thermistor': '熱敏電阻',
-        'Electrolytic Capacitors': '電解電容',
-        'Bridging Rectifier diode': '橋式整流器',
-        'Current sensor resistor': '限流電阻',
-        'Varistor': '變阻器',
-        'X-Capacitor': 'X電容',
-        'Y-Capacitor': 'Y電容',
-        'Opto-coupler': '光耦合器',
-        'Transformer': '變壓器',
-        'Bobbin': '線架',
-        'Magnet wire': '漆包線',
-        'Triple insulation wire': '三層絕緣線',
-        'Insulation tape': '絕緣膠帶',
-        'Coil': '線圈',
-        'Insulation system': '絕緣系統',
-        # 其他
-        '(Alternative)': '(替代)',
-        '(Optional)': '(選配)',
-        'Interchangeable': '可互換',
-        'inside EUT': '(EUT內部)',
-    }
-
-    result = part_norm
-    for eng, chn in translations.items():
-        if eng.lower() in result.lower():
-            result = re.sub(re.escape(eng), chn, result, flags=re.IGNORECASE)
-
-    return result
+    if HAS_LLM:
+        translated = llm_translate(part_norm)
+        if translated != part_norm:
+            return translated
+    return part_norm
 
 
 def translate_component_mark(mark: str) -> str:
-    """翻譯 4.1.2 認證標誌欄位"""
+    """翻譯 4.1.2 認證標誌欄位 - 純 LLM 翻譯"""
     if not mark:
         return mark
 
-    # 正規化換行
     mark_norm = ' '.join(mark.split())
-
-    translations = {
-        'Test with appliance': '隨機測試',
-        'Tested with appliance': '隨機測試',
-        'Same as applicant': '與申請者相同',
-        'See appended table': '見附表',
-        'Interchangeable': '可互換',
-    }
-
-    for eng, chn in translations.items():
-        if eng.lower() in mark_norm.lower():
-            mark_norm = re.sub(re.escape(eng), chn, mark_norm, flags=re.IGNORECASE)
-
+    if HAS_LLM:
+        translated = llm_translate(mark_norm)
+        if translated != mark_norm:
+            return translated
     return mark_norm
 
 
 def translate_test_observation(obs: str) -> str:
-    """翻譯 B.3/B.4 表格的觀察結果欄位"""
+    """翻譯 B.3/B.4 表格的觀察結果欄位 - 純 LLM 翻譯"""
     if not obs:
         return obs
 
-    # 正規化換行
-    result = obs
-
-    # 詞組翻譯（保持量測值）
-    phrase_translations = [
-        ('The maximum output current was', '最大輸出電流為'),
-        ('The transformer maximum output current was', '變壓器最大輸出電流為'),
-        ('when load to', '當負載至'),
-        ('the unit shut down immediately', '本機立即關機'),
-        ('shut down immediately', '立即關機'),
-        ('Recoverable', '可恢復'),
-        ('NT, NC, NB', 'NT, NC, NB'),  # 保持縮寫
-        ('Prospective Touch Voltage:', '預期接觸電壓:'),
-        ('Prospective Touch Voltage', '預期接觸電壓'),
-        ('Touch current (output +/- to earth):', '接觸電流 (輸出 +/- 對地):'),
-        ('Touch current', '接觸電流'),
-        ('Plastic enclosure to earth:', '塑膠外殼對地:'),
-        ('Plastic enclosure to earth', '塑膠外殼對地'),
-        ('Maximum measured temperature:', '最高量測溫度:'),
-        ('Maximum measured temperature', '最高量測溫度'),
-        ('open immediately', '立即熔斷'),
-        ('F1 open immediately', 'F1 立即熔斷'),
-        ('Output port normal load,', '輸出埠正常負載,'),
-        ('Output port normal load', '輸出埠正常負載'),
-        ('Enclosure outside near', '外殼外部近'),
-        ('Plug holder outside', '插頭座外部'),
-        ('All safeguards remained effectively', '所有安全防護維持有效'),
-        ('ASRE', 'ASRE'),  # 保持縮寫
-        ('No insulation breakdown', '無絕緣擊穿'),
-        ('Immediately following the humidity conditioning', '濕度調節後立即'),
-    ]
-
-    for eng, chn in phrase_translations:
-        if eng in result:
-            result = result.replace(eng, chn)
-
-    return result
+    obs_norm = ' '.join(obs.split())
+    if HAS_LLM:
+        translated = llm_translate(obs_norm)
+        if translated != obs_norm:
+            return translated
+    return obs_norm
 
 
 def translate_b34_observations(doc: Document):
@@ -1204,7 +926,7 @@ def translate_b34_observations(doc: Document):
 
 
 def translate_summary_table(doc: Document):
-    """翻譯總覽表格（Table 48）的備註欄位中的英文短語"""
+    """翻譯總覽表格（Table 48）的備註欄位 - 純 LLM 翻譯"""
     # 找出總覽表格（特徵：第一列是 Clause | Title | Verdict | Remark）
     target_table = None
     target_table_idx = -1
@@ -1220,46 +942,6 @@ def translate_summary_table(doc: Document):
     if not target_table:
         return
 
-    # 常見英文短語翻譯
-    phrase_translations = [
-        ('See appended table', '見附表'),
-        ('See copy of marking plate', '見標示標籤'),
-        ('Test method and compliance', '試驗方法及符合性'),
-        ('Reinforced insulation', '強化絕緣'),
-        ('Reinforced safeguard', '強化安全防護'),
-        ('Basic insulation', '基本絕緣'),
-        ('Supplementary insulation', '補充絕緣'),
-        ('Double insulation', '雙重絕緣'),
-        ('Functional insulation', '功能絕緣'),
-        ('Instructional safeguard', '指示型安全防護'),
-        ('Instructional Safeguard', '指示型安全防護'),
-        ('Steady force test', '穩定力試驗'),
-        ('Control of fire spread in PS', 'PS 火災蔓延控制'),
-        ('Control of fire spread', '火災蔓延控制'),
-        ('fire enclosure used', '使用防火外殼'),
-        ('fire enclosure', '防火外殼'),
-        ('fire barrier', '防火屏障'),
-        ('Triple insulation wire', '三重絕緣線'),
-        ('All circuits except for output circuits', '除輸出電路外之所有電路'),
-        ('secondary part circuits', '二次側電路'),
-        ('Overload test', '過載試驗'),
-        ('No openings', '無開口'),
-        ('No opening', '無開口'),
-        ('Components which are certified to IEC and/or national standards are used correctly within their ratings',
-         '符合 IEC 及/或國家標準認證之組件在其額定值內正確使用'),
-        ('See also Annex G', '另見附錄 G'),
-        ('Components not covered by IEC standards are tested under the conditions present in the equipment',
-         '未涵蓋於 IEC 標準之組件在設備實際條件下測試'),
-        ('Printed board:', '印刷電路板:'),
-        ('Components other than PCB and wires are:', 'PCB 及導線以外之組件為:'),
-        ('Compliance detailed as follows:', '符合性詳述如下:'),
-        ('Flammability test for', '可燃性試驗用於'),
-        ('fire enclosures and fire barrier materials of equipment', '設備防火外殼及防火屏障材料'),
-        ('materials of equipment', '設備材料'),
-        ('Same as applicant', '與申請者相同'),
-        ('Dti', 'Dti'),  # 保持 Dti 不變
-    ]
-
     translated_count = 0
     for row in target_table.rows[1:]:  # 跳過表頭
         for cell in row.cells:
@@ -1267,15 +949,11 @@ def translate_summary_table(doc: Document):
             if not original_text or len(original_text) < 5:
                 continue
 
-            # 檢查是否有英文需要翻譯
-            modified_text = original_text
-            for eng, chn in phrase_translations:
-                if eng in modified_text:
-                    modified_text = modified_text.replace(eng, chn)
-
-            if modified_text != original_text:
-                cell.text = modified_text
-                translated_count += 1
+            if HAS_LLM:
+                translated = llm_translate(original_text)
+                if translated != original_text:
+                    cell.text = translated
+                    translated_count += 1
 
     if translated_count > 0:
         print(f"總覽表格 (Table {target_table_idx + 1})：已翻譯 {translated_count} 個儲存格")
@@ -1809,13 +1487,27 @@ def _add_factory_nested_table(cell, factory_locations: list):
 
 def translate_product_remarks(remarks: str) -> str:
     """
-    翻譯產品說明
+    翻譯產品說明 - 純 LLM 翻譯
 
     Args:
         remarks: 英文產品說明
 
     Returns:
         翻譯後的中文說明
+    """
+    if not remarks:
+        return ""
+
+    if HAS_LLM:
+        translated = llm_translate(remarks)
+        if translated != remarks:
+            return translated
+    return remarks
+
+
+def _translate_product_remarks_old(remarks: str) -> str:
+    """
+    翻譯產品說明（舊版規則式，保留備用）
     """
     if not remarks:
         return ""
@@ -1903,7 +1595,7 @@ def translate_product_remarks(remarks: str) -> str:
 
 def translate_model_differences(diff: str) -> str:
     """
-    翻譯型號差異說明
+    翻譯型號差異說明 - 純 LLM 翻譯
 
     Args:
         diff: 英文型號差異說明
@@ -1914,22 +1606,10 @@ def translate_model_differences(diff: str) -> str:
     if not diff:
         return ""
 
-    # 常見翻譯
-    if 'All models are identical' in diff or 'identical to each other' in diff:
-        return "所有型號都相同除了型號命名不同外。"
-
-    if 'except for model number' in diff.lower():
-        return "所有型號都相同除了型號命名不同外。"
-
-    # 其他型號差異說明 - 嘗試 LLM 翻譯
     if HAS_LLM:
-        import re
-        # 檢查是否有英文
-        if re.search(r'[a-zA-Z]{3,}', diff):
-            translated = llm_translate(diff)
-            if translated != diff:
-                return translated
-
+        translated = llm_translate(diff)
+        if translated != diff:
+            return translated
     return diff
 
 
@@ -2018,121 +1698,20 @@ def fill_annex_model_rows(doc: Document, annex_model_rows: list):
 
 def translate_model_text(model_text: str) -> str:
     """
-    翻譯 PDF 中的 Model 行文字
-    Model: MC-601 (output: 20.0Vdc, 3.0A) → 型號: MC-601 (輸出: 20.0 Vdc, 3.0 A)
-    Model: MC-601 (load with 20.0Vdc, 3.0A for...) → 型號: MC-601 (負載 20.0 Vdc, 3.0 A ...)
+    翻譯 PDF 中的 Model 行文字 - 純 LLM 翻譯
     """
     if not model_text:
         return model_text
 
-    # 替換基本格式
-    result = model_text.replace('Model:', '型號:')
-
-    # output: X.XVdc, Y.YA → 輸出: X.X Vdc, Y.Y A
-    output_match = re.search(r'\(output:\s*(\d+\.?\d*)Vdc,\s*(\d+\.?\d*)A\)', result)
-    if output_match:
-        voltage = output_match.group(1)
-        current = output_match.group(2)
-        result = re.sub(r'\(output:\s*\d+\.?\d*Vdc,\s*\d+\.?\d*A\)',
-                       f'(輸出: {voltage} Vdc, {current} A)', result)
-        return result
-
-    # load with X.XVdc, Y.YA for... → 負載 X.X Vdc, Y.Y A ...
-    load_match = re.search(r'\(load with\s*(\d+\.?\d*)Vdc,\s*(\d+\.?\d*)A\s*(.*?)\)', result, re.IGNORECASE)
-    if load_match:
-        voltage = load_match.group(1)
-        current = load_match.group(2)
-        extra = load_match.group(3).strip()
-        # 翻譯常見的附加描述
-        extra = extra.replace('for long working', '長時間工作')
-        extra = extra.replace('for 5 minutes', '持續5分鐘')
-        extra = extra.replace('then reduced to', '然後降至')
-        extra = extra.replace('long working as specification', '依規格長時間工作')
-        if extra:
-            result = f"型號: {result.split('型號:')[1].split('(')[0].strip()}\n(負載{voltage} Vdc, {current}A{extra})"
-        else:
-            result = f"型號: {result.split('型號:')[1].split('(')[0].strip()} (負載{voltage} Vdc, {current}A)"
-        return result
-
-    return result
+    if HAS_LLM:
+        translated = llm_translate(model_text)
+        if translated != model_text:
+            return translated
+    return model_text
 
 
 def translate_all_tables(doc: Document):
-    """翻譯所有表格中的通用英文短語"""
-    # 通用英文短語翻譯（適用於所有表格）
-    phrase_translations = [
-        ('Same as applicant', '與申請者相同'),
-        ('Test with appliance', '隨機測試'),
-        ('Tested with appliance', '隨機測試'),
-        ('See appended table', '見附表'),
-        ('See copy of marking plate', '見標示標籤'),
-        ('Interchangeable', '可互換'),
-        ('Interchangeabl e', '可互換'),  # 處理斷字
-        ('Interchangeabl\ne', '可互換'),  # 處理換行斷字
-        ('T of part/at:', '元件溫度/位置:'),
-        ('T of part', '元件溫度'),
-        ('All circuits except for output circuits', '除輸出電路外之所有電路'),
-        ('secondary part circuits', '二次側電路'),
-        ('The circuit connected to AC mains', '連接 AC 主電源之電路'),
-        ('Operating surface temperature', '操作表面溫度'),
-        ('Current sensor resistor', '電流感測電阻'),
-        ('Heat shrinkable tube', '熱縮套管'),
-        ('outside triple insulation wire', '三重絕緣線外部'),
-        ('Stress relief test', '應力消除試驗'),
-        ('Thermal cycling test', '熱循環試驗'),
-        ('Voltage surge test', '電壓突波試驗'),
-        ('Electric strength test', '耐電壓試驗'),
-        ('Capacitors and RC units', '電容器及 RC 單元'),
-        ('Prospective touch voltage and touch current', '預期接觸電壓及接觸電流'),
-        ('Reduction of the likelihood of ignition', '降低點火可能性'),
-        ('for determining clearance', '用於測定間隙'),
-        ('mains transient voltage', '主電源暫態電壓'),
-        ('See Clause', '見條款'),
-        ('See Attachment No', '見附件編號'),
-        ('The US plug according to UL', '美規插頭符合 UL'),
-        ('Japan plug according to JIS', '日規插頭符合 JIS'),
-        ('Mechanical Requirements on blades Only', '僅插刀機械要求'),
-        ('The blade dimension was evaluated to', '插刀尺寸經評估為'),
-        # 常見單詞翻譯
-        ('General requirements', '一般要求'),
-        ('General requirement', '一般要求'),
-        ('Test method', '試驗方法'),
-        ('Compliance', '符合性'),
-        ('Requirements', '要求'),
-        ('General', '一般'),
-        ('Conditioning', '調節'),
-        # 處理帶換行的情況
-        ('-Triple insulation\nwire', '-三重絕緣線'),
-        ('Triple insulation\nwire', '三重絕緣線'),
-        # 材料規格翻譯
-        ('Double protection', '雙重保護'),
-        ('thickness', '厚度'),
-        ('Reinforced\ninsulation', '強化\n絕緣'),
-        # 條件與輸出
-        ('Conditioning (\uf0b0C)', '調節 (°C)'),
-        ('Conditioning (°C)', '調節 (°C)'),
-        ('Output circuits', '輸出電路'),
-        ('Output connector with a shape\nthat insertion into a mains\nconnector or socket is', '輸出連接器之形狀使其插入主電源連接器或插座'),
-        ('Output', '輸出'),
-        # 元件與試驗術語
-        ('Transformers', '變壓器'),
-        ('Optocouplers', '光耦合器'),
-        ('Relays', '繼電器'),
-        ('Resistors', '電阻器'),
-        ('Supplementary safeguards', '補充性安全防護'),
-        ('Audio amplifier abnormal operating conditions', '音頻放大器異常工作條件'),
-        ('Endurance test', '耐久性試驗'),
-        ('Tested in the unit', '於本機測試'),
-        ('Alternative method', '替代方法'),
-        ('- Insulation\nsystem', '- 絕緣\n系統'),
-        ('Insulation system', '絕緣系統'),
-        ('Tests', '試驗'),
-        ('Operating surface\ntemperature:', '操作表面\n溫度:'),
-        # 時間與條件
-        ('10 mins', '10 分鐘'),
-        ('Conditioning (\uf0b0C)', '調節 (°C)'),
-    ]
-
+    """翻譯所有表格中的英文內容 - 純 LLM 翻譯"""
     translated_count = 0
     llm_candidates = []  # 收集需要 LLM 翻譯的候選項 [(tbl_idx, row_idx, cell_idx, text)]
 
@@ -2148,70 +1727,29 @@ def translate_all_tables(doc: Document):
                 if 'FORMCHECKBOX' in cell_xml:
                     continue
 
-                modified_text = original_text
-
-                # 1. 使用常規短語翻譯（快速處理常見術語）
-                for eng, chn in phrase_translations:
-                    if eng in modified_text:
-                        modified_text = modified_text.replace(eng, chn)
-
-                # 處理帶有可變長度點號的 Conditioning
-                if 'Conditioning (\uf0b0C)' in modified_text:
-                    modified_text = re.sub(r'Conditioning \(\uf0b0C\)\s*\.+\s*:?', '調節 (°C) :', modified_text)
-
-                # 3. 處理附表中的「型號」行 - 將完整規格替換成簡潔格式
-                # 匹配: 型號: MC-601 (5.0V 3.0A 15.0W or 9.0V ...) → 型號: MC-601 (輸出: 20.0 Vdc, 3.0 A)
-                model_match = re.match(r'^(型號:\s*\S+)\s*\(([^)]+or[^)]+)\)$', modified_text.strip())
-                if model_match:
-                    model_name = model_match.group(1)  # 型號: MC-601
-                    full_spec = model_match.group(2)   # 5.0V 3.0A 15.0W or 9.0V ...
-                    # 抽取最後一個電壓規格（通常是最大功率的）
-                    # 格式: 20.0V 3.0A 60.0W 或 5.0-20.0V 3.0A 60.0W MAX
-                    last_spec_match = re.search(r'(\d+\.?\d*)V\s+(\d+\.?\d*)A\s*(?:\d+\.?\d*W)?\s*(?:MAX)?$', full_spec)
-                    if last_spec_match:
-                        voltage = last_spec_match.group(1)
-                        current = last_spec_match.group(2)
-                        modified_text = f"{model_name} (輸出: {voltage} Vdc, {current} A)"
-
-                # 4. 格式正規化
-                modified_text = normalize_text_format(modified_text)
-
-                if modified_text != original_text:
-                    cell.text = modified_text
-                    translated_count += 1
-
-                # 4. 檢查是否仍有大量英文（需要 LLM 翻譯）
-                if HAS_LLM and _needs_llm_translation(modified_text):
-                    llm_candidates.append((tbl_idx, row_idx, cell_idx, modified_text))
+                # 檢查是否需要 LLM 翻譯
+                if HAS_LLM and _needs_llm_translation(original_text):
+                    llm_candidates.append((tbl_idx, row_idx, cell_idx, original_text))
 
     if translated_count > 0:
         print(f"全文件表格：已翻譯 {translated_count} 個儲存格")
 
-    # 5. 使用 LLM 批次翻譯剩餘英文內容
+    # 使用 LLM 批次翻譯英文內容
     if HAS_LLM and llm_candidates:
         _apply_llm_translations(doc, llm_candidates)
 
 
 def translate_component_spec(spec: str) -> str:
-    """翻譯 4.1.2 技術規格欄位"""
+    """翻譯 4.1.2 技術規格欄位 - 純 LLM 翻譯"""
     if not spec:
         return spec
 
-    # 正規化換行
-    result = ' '.join(spec.split())
-
-    translations = [
-        ('min. thickness', '最小厚度'),
-        ('min thickness', '最小厚度'),
-        ('thickness', '厚度'),
-        ('min.', '至少'),
-        ('max.', '最大'),
-    ]
-
-    for eng, chn in translations:
-        result = re.sub(re.escape(eng), chn, result, flags=re.IGNORECASE)
-
-    return result
+    spec_norm = ' '.join(spec.split())
+    if HAS_LLM:
+        translated = llm_translate(spec_norm)
+        if translated != spec_norm:
+            return translated
+    return spec_norm
 
 
 def fill_table_412(doc: Document, table_412_data: list):
@@ -2633,122 +2171,19 @@ def fill_appendix_table(doc: Document, clause_id: str, pdf_table_data: dict, tra
 
 def translate_appendix_cell(text: str) -> str:
     """
-    翻譯附表儲存格中的常用術語
+    翻譯附表儲存格內容 - 純 LLM 翻譯
     """
-    import re
-
-    # 處理 Model: 前綴
-    if text.startswith('Model:'):
-        model_name = text.replace('Model:', '').strip()
-        return f'型號：{model_name}'
-
-    translations = {
-        # 測試條件 (更精確的匹配)
-        'Normal operation': '正常',
-        'Normal': '正常',
-        'Abnormal (see table B.3)': '異常（見表 B.3）',
-        'Abnormal (see\ntable B.3)': '異常（見表 B.3）',
-        'Abnormal': '異常',
-        'Single fault (see table B.4)': '單一故障（見表 B.4）',
-        'Single fault (see\ntable B.4)': '單一故障（見表 B.4）',
-        'Single fault': '單一故障',
-        'Overload': '過載',
-        'over load': '過載',
-        'Normal condition': '正常條件',
-
-        # 電路位置
-        'Primary circuits supplied by a.c. mains supply': '由交流電源供電的主電路',
-        'Primary circuits\nsupplied by a.c.\nmains supply': '由交流電源供電的主電路',
-        'Primary circuits': '主電路',
-        'Primary circuit': '主電路',
-        'Secondary circuit': '二次側電路',
-        'Output "+" to "-"': '輸出"+"到"-"',
-        'Output': '輸出',
-        'Input': '輸入',
-        'Between "L" to "N"': '於"L"與"N"之間',
-        'Between "L"\nto "N"': '於"L"與"N"之間',
-
-        # 絕緣相關
-        'Basic insulation': '基本絕緣',
-        'Supplementary insulation': '補充絕緣',
-        'Reinforced insulation': '強化絕緣',
-        'Reinforced': '強化絕緣',
-        'Functional insulation': '功能絕緣',
-
-        # 元件
-        'Transformer pin': '變壓器腳位',
-        'Transformer': '變壓器',
-        'Opto-coupler': '光耦合器',
-        'Optocoupler': '光耦合器',
-        'Capacitor': '電容',
-        'Resistor': '電阻',
-        'Fuse': '保險絲',
-        'Bobbin': '線架',
-        'Enclosure': '外殼',
-        'YC1 primary to secondary': 'YC1 一次側到二次側',
-        'primary to secondary': '一次側到二次側',
-        'pin': '腳位',
-
-        # 其他
-        'short circuit': '短路',
-        'open circuit': '開路',
-        'Declaration': '宣告',
-        'See below': '見下表',
-        'See table': '見附表',
-        'Min.': '最小',
-        'Max.': '最大',
-        'Measured': '量測值',
-        'Required': '要求值',
-        'Allowed': '允許值',
-        'Supplementary information': '補充資料',
-    }
-
-    result = text
+    if not text or not text.strip():
+        return text
 
     # 正規化換行符
-    result = result.replace('\n', ' ')
-    result = ' '.join(result.split())
+    text_norm = ' '.join(text.split())
 
-    # 按長度排序，優先替換較長的短語
-    sorted_translations = sorted(translations.items(), key=lambda x: len(x[0]), reverse=True)
-
-    for eng, chn in sorted_translations:
-        eng_normalized = ' '.join(eng.split())
-        pattern = re.compile(re.escape(eng_normalized), re.IGNORECASE)
-        result = pattern.sub(chn, result)
-
-    # 處理獨立的 Yes/No（使用 word boundary 避免誤翻 Phenolic, Innovative 等）
-    # 注意：不翻譯 "No." 因為這是 "Number" 的縮寫
-    result = re.sub(r'\bYes\b', '是', result, flags=re.IGNORECASE)
-    result = re.sub(r'\bNo\b(?!\.)', '否', result, flags=re.IGNORECASE)
-
-    # 處理 "S (R1 OC)" 或 "SC" / "OC" 縮寫
-    # SC = 短路, OC = 開路
-    result = re.sub(r'\bSC\b', '短路', result)
-    result = re.sub(r'\bOC\b', '開路', result)
-
-    # 處理複合故障條件如 "U2 pin 1-2 SC"
-    result = re.sub(r'(U\d+)\s*pin\s*(\d+-?\d*)\s*短路', r'\1 腳位\2 短路', result)
-    result = re.sub(r'(U\d+)\s*pin\s*(\d+-?\d*)\s*開路', r'\1 腳位\2 開路', result)
-    result = re.sub(r'(R\d+)\s*短路', r'\1短路', result)
-    result = re.sub(r'(R\d+)\s*開路', r'\1開路', result)
-
-    # 處理電壓格式 "264Va.c, 60Hz" -> "264 V, 60 Hz"
-    result = re.sub(r'(\d+)Va\.c\.,?\s*(\d+)Hz', r'\1 V, \2 Hz', result)
-    result = re.sub(r'(\d+)Va\.c,\s*(\d+)Hz', r'\1 V, \2 Hz', result)
-    result = re.sub(r'(\d+)Vac,\s*(\d+)Hz', r'\1 V, \2 Hz', result)
-
-    # 如果還有大量英文內容，使用 LLM 翻譯
-    if HAS_LLM and result and re.search(r'[a-zA-Z]{3,}', result):
-        # 檢查是否主要是英文
-        english_chars = len(re.findall(r'[a-zA-Z]', result))
-        total_chars = len(result.replace(' ', ''))
-        if total_chars > 0 and english_chars / total_chars > 0.3:
-            translated = llm_translate(result)
-            if translated != result:
-                return translated
-
-    return result
+    if HAS_LLM:
+        translated = llm_translate(text_norm)
+        if translated != text_norm:
+            return translated
+    return text_norm
 
 
 def fill_all_appendix_tables(doc: Document, cb_tables: list):
