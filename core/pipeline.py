@@ -247,9 +247,14 @@ def _render_word_v2(
     2. 填充封面資訊 (page 1-4)
     3. 插入翻譯後的表格 (page 5 開始)
     4. 儲存
+
+    表格格式對齊人工版：
+    - 固定 4 欄: 條款 | 要求 | 結果/備註 | 判定
+    - 欄寬比例: 1330:4790:2559:910 twips
+    - 判定欄: P→符合, N/A→不適用, F→不符合
     """
     from docx import Document
-    from docx.shared import Pt
+    from docx.shared import Pt, Twips
     from docx.oxml.ns import qn
     from docx.oxml import OxmlElement
 
@@ -268,6 +273,20 @@ def _render_word_v2(
     else:
         insert_element = doc.element.body[-1]
 
+    # 標準 4 欄寬度 (twips) - 對齊人工版
+    STANDARD_COL_WIDTHS = [1330, 4790, 2559, 910]  # 條款, 要求, 結果, 判定
+    TOTAL_WIDTH = sum(STANDARD_COL_WIDTHS)  # 9589 twips
+
+    # 判定值映射
+    VERDICT_MAP = {
+        'P': '符合',
+        'PASS': '符合',
+        'N/A': '不適用',
+        'NA': '不適用',
+        'F': '不符合',
+        'FAIL': '不符合',
+    }
+
     # 逐個插入表格
     for t_idx, table_data in enumerate(translated_tables):
         rows = table_data['rows']
@@ -276,23 +295,36 @@ def _render_word_v2(
         if not rows:
             continue
 
-        # 建立新表格
-        new_table = doc.add_table(rows=len(rows), cols=col_count)
+        # 標準化為 4 欄（如果原本不是 4 欄）
+        target_cols = 4
+        normalized_rows = _normalize_table_rows(rows, col_count, target_cols)
+
+        # 建立新表格（固定 4 欄）
+        new_table = doc.add_table(rows=len(normalized_rows), cols=target_cols)
+
+        # 設定表格寬度和欄寬
+        _set_table_width(new_table, TOTAL_WIDTH)
+        _set_column_widths(new_table, STANDARD_COL_WIDTHS)
 
         # 設定表格框線
         _set_table_borders(new_table)
 
         # 填入資料
-        for r_idx, row in enumerate(rows):
+        for r_idx, row in enumerate(normalized_rows):
             for c_idx, cell_text in enumerate(row):
                 if c_idx < len(new_table.rows[r_idx].cells):
                     cell = new_table.rows[r_idx].cells[c_idx]
+
+                    # 判定欄（最後一欄）轉換
+                    if c_idx == target_cols - 1:
+                        cell_text = VERDICT_MAP.get(cell_text.strip().upper(), cell_text) if cell_text else ""
+
                     cell.text = cell_text or ""
 
                     # 設定字型
                     for paragraph in cell.paragraphs:
                         for run in paragraph.runs:
-                            run.font.size = Pt(10)
+                            run.font.size = Pt(11)
                             run.font.name = '標楷體'
                             run._element.rPr.rFonts.set(qn('w:eastAsia'), '標楷體')
 
@@ -306,6 +338,97 @@ def _render_word_v2(
     # 儲存
     doc.save(output_path)
     print(f"[完成] 輸出: {output_path}")
+
+
+def _normalize_table_rows(rows: list, original_cols: int, target_cols: int) -> list:
+    """
+    標準化表格行到目標欄數
+
+    策略：
+    - 如果原本 < 4 欄：合併到前幾欄，最後一欄留給判定
+    - 如果原本 > 4 欄：合併中間欄位
+    - 如果原本 = 4 欄：直接使用
+    """
+    if original_cols == target_cols:
+        return rows
+
+    normalized = []
+    for row in rows:
+        if len(row) == target_cols:
+            normalized.append(row)
+        elif len(row) < target_cols:
+            # 補空欄
+            new_row = row + [''] * (target_cols - len(row))
+            normalized.append(new_row)
+        else:
+            # 合併多餘欄位（保留第一欄和最後一欄，中間合併）
+            first_col = row[0]
+            last_col = row[-1]
+            middle_cols = row[1:-1]
+
+            # 根據內容分配到 3 個中間位置
+            if len(middle_cols) >= 2:
+                col1 = middle_cols[0]
+                col2 = ' '.join(middle_cols[1:])
+            else:
+                col1 = ' '.join(middle_cols)
+                col2 = ''
+
+            normalized.append([first_col, col1, col2, last_col])
+
+    return normalized
+
+
+def _set_table_width(table, width_twips: int):
+    """設定表格總寬度"""
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+
+    tbl = table._tbl
+    tblPr = tbl.tblPr if tbl.tblPr is not None else OxmlElement('w:tblPr')
+
+    tblW = OxmlElement('w:tblW')
+    tblW.set(qn('w:w'), str(width_twips))
+    tblW.set(qn('w:type'), 'dxa')
+    tblPr.append(tblW)
+
+    if tbl.tblPr is None:
+        tbl.insert(0, tblPr)
+
+
+def _set_column_widths(table, widths: list):
+    """設定各欄寬度"""
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+
+    tbl = table._tbl
+
+    # 建立或取得 tblGrid
+    tblGrid = tbl.find(qn('w:tblGrid'))
+    if tblGrid is None:
+        tblGrid = OxmlElement('w:tblGrid')
+        tbl.insert(0, tblGrid)
+    else:
+        # 清除現有的 gridCol
+        for child in list(tblGrid):
+            tblGrid.remove(child)
+
+    # 加入欄寬定義
+    for width in widths:
+        gridCol = OxmlElement('w:gridCol')
+        gridCol.set(qn('w:w'), str(width))
+        tblGrid.append(gridCol)
+
+    # 設定每個 cell 的寬度
+    for row in table.rows:
+        for idx, cell in enumerate(row.cells):
+            if idx < len(widths):
+                tc = cell._tc
+                tcPr = tc.get_or_add_tcPr()
+                tcW = OxmlElement('w:tcW')
+                tcW.set(qn('w:w'), str(widths[idx]))
+                tcW.set(qn('w:type'), 'dxa')
+                tcPr.append(tcW)
 
 
 def _fill_cover_fields(doc, meta: dict, cover_fields: dict):
