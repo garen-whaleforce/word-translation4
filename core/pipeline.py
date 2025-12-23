@@ -592,6 +592,24 @@ def _fill_cover_fields(doc, meta: dict, cover_fields: dict):
                     cell.text = text.replace('{{ cover_report_no }}',
                                             cover_fields.get('report_no', ''))
 
+    replacements = {
+        '{{ meta.cb_report_no }}': meta.get('cb_report_no', ''),
+        '{{ cover_report_no }}': cover_fields.get('report_no', ''),
+    }
+    for section in doc.sections:
+        for paragraph in section.header.paragraphs:
+            for run in paragraph.runs:
+                for key, value in replacements.items():
+                    if key in run.text:
+                        run.text = run.text.replace(key, value)
+        for table in section.header.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            for key, value in replacements.items():
+                                if key in run.text:
+                                    run.text = run.text.replace(key, value)
                 if '{{ cover_applicant_name }}' in text:
                     cell.text = text.replace('{{ cover_applicant_name }}',
                                             cover_fields.get('applicant_name', ''))

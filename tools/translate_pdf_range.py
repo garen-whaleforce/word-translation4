@@ -684,6 +684,9 @@ def _is_section_start(rows: List[List[str]]) -> bool:
     if re.fullmatch(r"\d+", first_row[0].strip()):
         if len(first_row) > 1 and re.search(r"[A-Z]", first_row[1]):
             return True
+    if re.fullmatch(r"\d+(?:\.\d+)+", first_row[0].strip()):
+        if len(first_row) > 1 and re.search(r"\bTABLE\b|表", first_row[1], re.IGNORECASE):
+            return True
     if re.fullmatch(r"[A-Z]", first_row[0].strip()):
         if len(first_row) > 1 and first_row[1].strip():
             return True
