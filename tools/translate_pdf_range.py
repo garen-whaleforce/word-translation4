@@ -96,7 +96,12 @@ def find_translation_range(pdf_path: str) -> Tuple[int, int]:
 
 def extract_tables_from_range(pdf_path: str, start_page: int, end_page: int) -> List[Dict]:
     """
-    從 PDF 指定範圍抽取所有表格，包含合併儲存格資訊
+    從 PDF 指定範圍抽取所有表格，包含合併儲存格和背景色資訊
+
+    完全保留 PDF 原始格式：
+    - 欄位數量：按 PDF 原有結構
+    - 合併儲存格：分析空白欄位推斷
+    - 背景色：從 PDF 矩形物件讀取
 
     Returns:
         list of dict: [
@@ -105,9 +110,10 @@ def extract_tables_from_range(pdf_path: str, start_page: int, end_page: int) -> 
                 'rows': [[cell1, cell2, ...], ...],
                 'col_count': 4,
                 'merge_info': [  # 合併儲存格資訊
-                    {'row': 0, 'col': 0, 'colspan': 5},  # 第 0 行第 0 欄橫跨 5 欄
+                    {'row': 0, 'col': 0, 'colspan': 5},
                     ...
-                ]
+                ],
+                'row_backgrounds': [True, False, True, ...]  # 每行是否有背景色
             }, ...
         ]
     """
@@ -117,6 +123,9 @@ def extract_tables_from_range(pdf_path: str, start_page: int, end_page: int) -> 
         for page_idx in range(start_page, end_page):
             page = pdf.pages[page_idx]
             page_num = page_idx + 1  # 1-indexed for display
+
+            # 抽取頁面上所有灰色背景矩形
+            filled_rects = _extract_filled_rects(page)
 
             try:
                 # 使用 find_tables 來取得表格物件（包含 cells 位置資訊）
@@ -168,22 +177,96 @@ def extract_tables_from_range(pdf_path: str, start_page: int, end_page: int) -> 
                 # 分析合併儲存格
                 merge_info = _analyze_merged_cells(table_obj, rows, max_cols)
 
+                # 分析每行的背景色
+                row_backgrounds = _analyze_row_backgrounds(table_obj, rows, max_cols, filled_rects)
+
                 tables.append({
                     'page': page_num,
                     'rows': rows,
                     'col_count': max_cols,
-                    'merge_info': merge_info
+                    'merge_info': merge_info,
+                    'row_backgrounds': row_backgrounds
                 })
 
     print(f"[抽取] 共抽取 {len(tables)} 個表格")
     return tables
 
 
+def _extract_filled_rects(page) -> List[Dict]:
+    """
+    抽取頁面上所有灰色背景矩形
+
+    Returns:
+        list of dict: [{'x0': ..., 'top': ..., 'x1': ..., 'bottom': ..., 'color': 0.898}, ...]
+    """
+    filled_rects = []
+
+    for rect in page.rects:
+        # 檢查是否為填充矩形
+        if not rect.get('fill'):
+            continue
+
+        color = rect.get('non_stroking_color')
+        if color is None:
+            continue
+
+        # 只保留灰色背景 (約 0.7-0.99，排除白色 1.0 和黑色 0.0)
+        if isinstance(color, (int, float)) and 0.7 < color < 1.0:
+            filled_rects.append({
+                'x0': rect['x0'],
+                'top': rect['top'],
+                'x1': rect['x1'],
+                'bottom': rect['bottom'],
+                'color': color,
+            })
+
+    return filled_rects
+
+
+def _analyze_row_backgrounds(table_obj, rows: List[List[str]], col_count: int, filled_rects: List[Dict]) -> List[bool]:
+    """
+    分析表格每行是否有背景色
+
+    透過檢查每行第一個 cell 是否被灰色矩形覆蓋來判斷
+
+    Returns:
+        list of bool: [True, False, True, ...] 每行是否有背景色
+    """
+    row_backgrounds = []
+    cells = table_obj.cells  # 每個 cell 的座標 (x0, top, x1, bottom)
+    tolerance = 5  # 座標容差
+
+    for r_idx in range(len(rows)):
+        # 找到此行第一個 cell 的座標
+        cell_idx = r_idx * col_count
+        if cell_idx >= len(cells):
+            row_backgrounds.append(False)
+            continue
+
+        cx0, ctop, cx1, cbottom = cells[cell_idx]
+
+        # 檢查是否有灰色矩形覆蓋此 cell
+        has_background = False
+        for rect in filled_rects:
+            if (rect['x0'] <= cx0 + tolerance and
+                rect['x1'] >= cx1 - tolerance and
+                rect['top'] <= ctop + tolerance and
+                rect['bottom'] >= cbottom - tolerance):
+                has_background = True
+                break
+
+        row_backgrounds.append(has_background)
+
+    return row_backgrounds
+
+
 def _analyze_merged_cells(table_obj, rows: List[List[str]], col_count: int) -> List[Dict]:
     """
     分析表格的合併儲存格
 
-    透過分析每行的空白欄位模式來判斷合併儲存格
+    使用內容模式來判斷合併：
+    如果一個 cell 有內容，且後面連續多個 cell 都是空的，可能是合併
+    但只在 row 0（標題行）才應用橫跨整行的合併
 
     Returns:
         list of dict: [{'row': 0, 'col': 0, 'colspan': 5}, ...]
@@ -198,33 +281,23 @@ def _analyze_merged_cells(table_obj, rows: List[List[str]], col_count: int) -> L
         if not row:
             continue
 
-        # 找出連續空白欄位，推斷合併
-        c_idx = 0
-        while c_idx < len(row):
-            cell_text = row[c_idx]
-
-            # 如果此欄有內容，檢查後面有多少連續空白欄
-            if cell_text and cell_text.strip():
-                colspan = 1
-                for next_c in range(c_idx + 1, len(row)):
-                    next_text = row[next_c]
-                    if not next_text or not next_text.strip():
-                        colspan += 1
-                    else:
-                        break
-
-                # 只記錄 colspan > 1 的情況
-                if colspan > 1:
+        # 只對第一行（標題行）進行特殊處理
+        if r_idx == 0:
+            # 檢查是否整行只有一個有內容的 cell
+            non_empty = [(c_idx, cell) for c_idx, cell in enumerate(row) if cell and cell.strip()]
+            if len(non_empty) == 1 and non_empty[0][0] == 0:
+                # 第一行只有 Col 0 有內容，且是標題類型 → 整行合併
+                first_content = non_empty[0][1]
+                if any(kw in first_content.upper() for kw in ['OVERVIEW', 'ENERGY', 'DIAGRAM', 'SOURCE']):
                     merge_info.append({
                         'row': r_idx,
-                        'col': c_idx,
-                        'colspan': colspan
+                        'col': 0,
+                        'colspan': col_count
                     })
-                    c_idx += colspan
-                else:
-                    c_idx += 1
-            else:
-                c_idx += 1
+                    continue
+
+        # 對其他行不做合併處理
+        # PDF 中的「空白 cell」不代表合併，只是沒有內容
 
     return merge_info
 

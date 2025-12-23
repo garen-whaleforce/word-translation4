@@ -298,84 +298,6 @@ def _render_word_v2(
         '2nd': '第二',
     }
 
-    # 需要灰色背景的行類型判斷
-    def should_have_gray_background(row: list, row_idx: int, all_rows: list) -> bool:
-        """
-        判斷該行是否需要灰色背景
-
-        PDF 原始格式中，以下行需要反灰：
-        1. 表格標題行（如 OVERVIEW OF ENERGY SOURCES...）
-        2. 章節標題行（第一欄為純數字 4, 5, 6 或字母 B, G, M）
-        3. 子標題行（如 Class and Energy Source, Safeguards, Clause 等）
-        4. 欄位標題行（包含 B, S, R 或 1st S, 2nd S 或 e.g.）
-        5. 純空白行後的標題行
-        """
-        if not row:
-            return False
-
-        first_col = (row[0] or "").strip()
-        second_col = (row[1] if len(row) > 1 else "") or ""
-        second_col = second_col.strip()
-        row_text = ' '.join([str(c or '') for c in row]).strip()
-        row_text_upper = row_text.upper()
-
-        # 統計非空欄位
-        non_empty_cells = [c for c in row if c and str(c).strip()]
-        non_empty_count = len(non_empty_cells)
-
-        # 1. 表格標題行（通常是第一行，且內容較長或包含特定關鍵字）
-        title_keywords = [
-            'OVERVIEW', 'ENERGY SOURCES', 'SAFEGUARDS', '能源來源', '防護措施', '總覽',
-            '安全防護總覽', 'ENERGY SOURCE'
-        ]
-        for kw in title_keywords:
-            if kw.upper() in row_text_upper:
-                return True
-
-        # 2. 章節標題行（第一欄為純數字或單一大寫字母）
-        # 主章節：純數字（4, 5, 6...10）
-        if re.match(r'^[4-9]$|^10$|^[1-9][0-9]$', first_col):
-            return True
-        # 附錄章節：單一大寫字母（B, G, M, etc.）但不是 B, S, R 欄位標題
-        if re.match(r'^[A-Z]$', first_col) and first_col not in ['B', 'S', 'R']:
-            return True
-
-        # 3. Clause / Possible Hazard 標題行
-        if first_col.upper() == 'CLAUSE' or '條款' in first_col:
-            return True
-        if 'POSSIBLE HAZARD' in row_text_upper or '可能危險' in row_text or '可能的危險' in row_text:
-            return True
-
-        # 4. 子標題行（包含特定標題關鍵字）
-        subtitle_keywords = [
-            # 英文
-            'Class and Energy Source', 'Body Part', 'Safeguards',
-            'Material part',
-            # 中文
-            '等級與能源來源', '類別和能量來源', '類別和能源來源', '身體部位', '防護措施',
-            '材料部位', '材料元件'
-        ]
-        for kw in subtitle_keywords:
-            if kw.lower() in row_text.lower():
-                # 但排除純數據行（如 ES3: xxx, PS3: xxx）
-                if not first_col.startswith('ES') and not first_col.startswith('PS') and not first_col.startswith('MS') and not first_col.startswith('TS') and not first_col.startswith('RS'):
-                    return True
-
-        # 5. 欄位標題行（包含 B, S, R 或 1st S, 2nd S）
-        short_headers = ['B', 'S', 'R', '1st S', '2nd S', '1st', '2nd', '基本', '補充', '強化', '第一防護', '第二防護']
-        # 檢查後面幾欄是否包含這些短標題
-        if len(row) >= 3:
-            last_cols = row[-3:]  # 檢查最後 3 欄
-            for cell in last_cols:
-                if cell and str(cell).strip() in short_headers:
-                    return True
-
-        # 6. 包含 "(e.g." 或 "（例如" 的說明行（通常緊接在標題行下方）
-        if '(e.g.' in row_text or '（例如' in row_text or '(例如' in row_text:
-            return True
-
-        return False
-
     # 判定欄判斷：檢查內容是否為判定值
     def is_verdict_cell(cell_text: str) -> bool:
         if not cell_text:
@@ -388,11 +310,12 @@ def _render_word_v2(
         rows = table_data['rows']
         col_count = table_data['col_count']
         merge_info = table_data.get('merge_info', [])
+        row_backgrounds = table_data.get('row_backgrounds', [])  # 從 PDF 抽取的背景色資訊
 
         if not rows:
             continue
 
-        # 保留原始欄位數
+        # 保留原始欄位數（完全按照 PDF）
         actual_cols = col_count
 
         # 建立新表格（使用 PDF 原有的欄位數）
@@ -414,7 +337,7 @@ def _render_word_v2(
             key = (m['row'], m['col'])
             merge_lookup[key] = m['colspan']
 
-        # 先處理合併儲存格
+        # 先處理合併儲存格（完全按照 PDF）
         for m in merge_info:
             r_idx = m['row']
             c_idx = m['col']
@@ -434,16 +357,12 @@ def _render_word_v2(
 
         # 填入資料
         for r_idx, row in enumerate(rows):
-            # 判斷是否需要灰色背景
-            needs_gray_bg = should_have_gray_background(row, r_idx, rows)
+            # 從 PDF 抽取的背景色資訊判斷是否需要灰色背景
+            needs_gray_bg = row_backgrounds[r_idx] if r_idx < len(row_backgrounds) else False
 
             for c_idx, cell_text in enumerate(row):
                 if c_idx < len(new_table.rows[r_idx].cells):
                     cell = new_table.rows[r_idx].cells[c_idx]
-
-                    # 如果是被合併的儲存格（不是起始儲存格），跳過
-                    # 檢查此 cell 是否為某個合併範圍的起始點
-                    is_merge_start = (r_idx, c_idx) in merge_lookup
 
                     # 判定欄（最後一欄或內容為判定值）轉換
                     if cell_text and is_verdict_cell(cell_text):
@@ -453,7 +372,7 @@ def _render_word_v2(
                     if cell_text and cell_text.strip() in HEADER_MAP:
                         cell_text = HEADER_MAP.get(cell_text.strip(), cell_text)
 
-                    # 只在起始儲存格或非合併儲存格填入內容
+                    # 填入內容
                     if cell_text:
                         cell.text = cell_text
 
@@ -464,8 +383,8 @@ def _render_word_v2(
                             run.font.name = '標楷體'
                             run._element.rPr.rFonts.set(qn('w:eastAsia'), '標楷體')
 
-                    # 需要灰色背景的行：除了最後一欄（判定欄）外都加灰色背景
-                    if needs_gray_bg and c_idx < actual_cols - 1:
+                    # 按照 PDF 原始格式套用灰色背景
+                    if needs_gray_bg:
                         _set_cell_shading(cell, "D9D9D9")
 
         # 移動表格到正確位置
