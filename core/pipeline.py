@@ -287,17 +287,68 @@ def _render_word_v2(
         'FAIL': '不符合',
     }
 
-    # 章節標題判斷：第一欄為純數字（如 4, 5, 6, 7, 8, 9, 10）或帶附錄字母（如 B, G, M）
-    def is_section_header(first_col_text: str) -> bool:
-        if not first_col_text:
+    # 需要灰色背景的行類型判斷
+    def should_have_gray_background(row: list, row_idx: int, all_rows: list) -> bool:
+        """
+        判斷該行是否需要灰色背景
+
+        PDF 原始格式中，以下行需要反灰：
+        1. 表格標題行（如 OVERVIEW OF ENERGY SOURCES...）
+        2. 章節標題行（第一欄為純數字 4, 5, 6 或字母 B, G, M）
+        3. 子標題行（如 Class and Energy Source, Safeguards 等）
+        4. 欄位標題行（如 B, S, R 或 1st S, 2nd S）
+        """
+        if not row:
             return False
-        text = first_col_text.strip()
-        # 主章節：純數字（4, 5, 6...）
-        if re.match(r'^[4-9]$|^10$|^[1-9][0-9]$', text):
+
+        first_col = (row[0] or "").strip()
+        row_text = ' '.join([str(c or '') for c in row]).strip()
+        row_text_upper = row_text.upper()
+
+        # 1. 表格標題行（通常是第一行，且內容較長或包含特定關鍵字）
+        if row_idx == 0:
+            title_keywords = [
+                'OVERVIEW', 'ENERGY SOURCES', 'SAFEGUARDS', '能源', '防護', '總覽',
+                '安全防護', 'ENERGY SOURCE'
+            ]
+            for kw in title_keywords:
+                if kw.upper() in row_text_upper or kw in row_text:
+                    return True
+
+        # 2. 章節標題行（第一欄為純數字或單一大寫字母）
+        # 主章節：純數字（4, 5, 6...10）
+        if re.match(r'^[4-9]$|^10$|^[1-9][0-9]$', first_col):
             return True
         # 附錄章節：單一大寫字母（B, G, M, etc.）
-        if re.match(r'^[A-Z]$', text):
+        if re.match(r'^[A-Z]$', first_col):
             return True
+
+        # 3. 子標題行（包含特定標題關鍵字）
+        subtitle_keywords = [
+            # 英文
+            'Class and Energy Source', 'Body Part', 'Safeguards',
+            'Material part', 'Possible Hazard', 'Clause',
+            # 中文
+            '等級與能源來源', '類別和能量來源', '身體部位', '防護措施',
+            '材料部位', '可能的危險', '條款', '安全防護'
+        ]
+        for kw in subtitle_keywords:
+            if kw.lower() in row_text.lower() or kw in row_text:
+                # 但排除純數據行（如 ES3: xxx）
+                if not first_col.startswith('ES') and not first_col.startswith('PS'):
+                    return True
+
+        # 4. 欄位標題行（短標題如 B, S, R）
+        # 檢查是否所有非空欄位都是短標題（1-3 個字元）
+        non_empty_cells = [c for c in row if c and str(c).strip()]
+        if len(non_empty_cells) >= 2:
+            short_headers = ['B', 'S', 'R', '1st S', '2nd S', '1st', '2nd', '基本', '補充', '強化']
+            if any(str(c).strip() in short_headers for c in non_empty_cells):
+                # 如果大部分欄位都是短標題，則為標題行
+                short_count = sum(1 for c in non_empty_cells if str(c).strip() in short_headers or len(str(c).strip()) <= 3)
+                if short_count >= len(non_empty_cells) // 2:
+                    return True
+
         return False
 
     # 判定欄判斷：檢查內容是否為判定值
@@ -311,6 +362,7 @@ def _render_word_v2(
     for t_idx, table_data in enumerate(translated_tables):
         rows = table_data['rows']
         col_count = table_data['col_count']
+        merge_info = table_data.get('merge_info', [])
 
         if not rows:
             continue
@@ -331,21 +383,50 @@ def _render_word_v2(
         # 設定表格框線
         _set_table_borders(new_table)
 
+        # 建立合併資訊的快速查詢表
+        merge_lookup = {}
+        for m in merge_info:
+            key = (m['row'], m['col'])
+            merge_lookup[key] = m['colspan']
+
+        # 先處理合併儲存格
+        for m in merge_info:
+            r_idx = m['row']
+            c_idx = m['col']
+            colspan = m['colspan']
+
+            if r_idx < len(new_table.rows) and c_idx < len(new_table.rows[r_idx].cells):
+                try:
+                    # 合併儲存格：從 c_idx 到 c_idx + colspan - 1
+                    start_cell = new_table.rows[r_idx].cells[c_idx]
+                    end_col = min(c_idx + colspan - 1, len(new_table.rows[r_idx].cells) - 1)
+                    if end_col > c_idx:
+                        end_cell = new_table.rows[r_idx].cells[end_col]
+                        start_cell.merge(end_cell)
+                except Exception as e:
+                    # 合併失敗時繼續（可能是範圍超出）
+                    pass
+
         # 填入資料
         for r_idx, row in enumerate(rows):
-            # 判斷是否為章節標題行
-            first_col = row[0] if row else ""
-            is_header_row = is_section_header(first_col)
+            # 判斷是否需要灰色背景
+            needs_gray_bg = should_have_gray_background(row, r_idx, rows)
 
             for c_idx, cell_text in enumerate(row):
                 if c_idx < len(new_table.rows[r_idx].cells):
                     cell = new_table.rows[r_idx].cells[c_idx]
 
+                    # 如果是被合併的儲存格（不是起始儲存格），跳過
+                    # 檢查此 cell 是否為某個合併範圍的起始點
+                    is_merge_start = (r_idx, c_idx) in merge_lookup
+
                     # 判定欄（最後一欄或內容為判定值）轉換
                     if cell_text and is_verdict_cell(cell_text):
                         cell_text = VERDICT_MAP.get(cell_text.strip().upper(), cell_text)
 
-                    cell.text = cell_text or ""
+                    # 只在起始儲存格或非合併儲存格填入內容
+                    if cell_text:
+                        cell.text = cell_text
 
                     # 設定字型
                     for paragraph in cell.paragraphs:
@@ -354,8 +435,8 @@ def _render_word_v2(
                             run.font.name = '標楷體'
                             run._element.rPr.rFonts.set(qn('w:eastAsia'), '標楷體')
 
-                    # 章節標題行：除了最後一欄（判定欄）外都加灰色背景
-                    if is_header_row and c_idx < actual_cols - 1:
+                    # 需要灰色背景的行：除了最後一欄（判定欄）外都加灰色背景
+                    if needs_gray_bg and c_idx < actual_cols - 1:
                         _set_cell_shading(cell, "D9D9D9")
 
         # 移動表格到正確位置

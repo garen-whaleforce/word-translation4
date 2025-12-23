@@ -96,14 +96,18 @@ def find_translation_range(pdf_path: str) -> Tuple[int, int]:
 
 def extract_tables_from_range(pdf_path: str, start_page: int, end_page: int) -> List[Dict]:
     """
-    從 PDF 指定範圍抽取所有表格
+    從 PDF 指定範圍抽取所有表格，包含合併儲存格資訊
 
     Returns:
         list of dict: [
             {
                 'page': 9,
                 'rows': [[cell1, cell2, ...], ...],
-                'col_count': 4
+                'col_count': 4,
+                'merge_info': [  # 合併儲存格資訊
+                    {'row': 0, 'col': 0, 'colspan': 5},  # 第 0 行第 0 欄橫跨 5 欄
+                    ...
+                ]
             }, ...
         ]
     """
@@ -115,7 +119,8 @@ def extract_tables_from_range(pdf_path: str, start_page: int, end_page: int) -> 
             page_num = page_idx + 1  # 1-indexed for display
 
             try:
-                page_tables = page.extract_tables({
+                # 使用 find_tables 來取得表格物件（包含 cells 位置資訊）
+                page_table_objs = page.find_tables({
                     'vertical_strategy': 'lines',
                     'horizontal_strategy': 'lines',
                     'intersection_tolerance': 3,
@@ -126,7 +131,12 @@ def extract_tables_from_range(pdf_path: str, start_page: int, end_page: int) -> 
                 print(f"[警告] Page {page_num} 表格抽取失敗: {e}")
                 continue
 
-            for tbl in page_tables:
+            for table_obj in page_table_objs:
+                if not table_obj:
+                    continue
+
+                # 抽取表格資料
+                tbl = table_obj.extract()
                 if not tbl:
                     continue
 
@@ -139,26 +149,84 @@ def extract_tables_from_range(pdf_path: str, start_page: int, end_page: int) -> 
                         rows.append(normalized_row)
                         max_cols = max(max_cols, len(normalized_row))
 
-                if rows:
-                    # 過濾掉 PDF 頁眉表格（通常只有 1-2 行且包含特定關鍵字）
-                    first_row_text = ' '.join(rows[0]) if rows else ''
-                    is_header_table = (
-                        len(rows) <= 2 and
-                        ('IEC 62368-1' in first_row_text or
-                         'Requirement + Test' in first_row_text or
-                         'Result - Remark' in first_row_text or
-                         'Clause' in first_row_text and 'Verdict' in first_row_text)
-                    )
+                if not rows:
+                    continue
 
-                    if not is_header_table:
-                        tables.append({
-                            'page': page_num,
-                            'rows': rows,
-                            'col_count': max_cols
-                        })
+                # 過濾掉 PDF 頁眉表格（通常只有 1-2 行且包含特定關鍵字）
+                first_row_text = ' '.join(rows[0]) if rows else ''
+                is_header_table = (
+                    len(rows) <= 2 and
+                    ('IEC 62368-1' in first_row_text or
+                     'Requirement + Test' in first_row_text or
+                     'Result - Remark' in first_row_text or
+                     'Clause' in first_row_text and 'Verdict' in first_row_text)
+                )
+
+                if is_header_table:
+                    continue
+
+                # 分析合併儲存格
+                merge_info = _analyze_merged_cells(table_obj, rows, max_cols)
+
+                tables.append({
+                    'page': page_num,
+                    'rows': rows,
+                    'col_count': max_cols,
+                    'merge_info': merge_info
+                })
 
     print(f"[抽取] 共抽取 {len(tables)} 個表格")
     return tables
+
+
+def _analyze_merged_cells(table_obj, rows: List[List[str]], col_count: int) -> List[Dict]:
+    """
+    分析表格的合併儲存格
+
+    透過分析每行的空白欄位模式來判斷合併儲存格
+
+    Returns:
+        list of dict: [{'row': 0, 'col': 0, 'colspan': 5}, ...]
+    """
+    merge_info = []
+
+    if not rows or col_count == 0:
+        return merge_info
+
+    # 分析每行的合併模式
+    for r_idx, row in enumerate(rows):
+        if not row:
+            continue
+
+        # 找出連續空白欄位，推斷合併
+        c_idx = 0
+        while c_idx < len(row):
+            cell_text = row[c_idx]
+
+            # 如果此欄有內容，檢查後面有多少連續空白欄
+            if cell_text and cell_text.strip():
+                colspan = 1
+                for next_c in range(c_idx + 1, len(row)):
+                    next_text = row[next_c]
+                    if not next_text or not next_text.strip():
+                        colspan += 1
+                    else:
+                        break
+
+                # 只記錄 colspan > 1 的情況
+                if colspan > 1:
+                    merge_info.append({
+                        'row': r_idx,
+                        'col': c_idx,
+                        'colspan': colspan
+                    })
+                    c_idx += colspan
+                else:
+                    c_idx += 1
+            else:
+                c_idx += 1
+
+    return merge_info
 
 
 def _normalize_cell(cell) -> str:
