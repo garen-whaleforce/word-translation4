@@ -115,6 +115,7 @@ MANDATORY_GLOSSARY = {
 # 特殊翻譯映射 - 直接映射不經過 LLM
 SPECIAL_TRANSLATIONS = {
     'P': '符合',
+    'p': '符合',
     'N/A': '不適用',
     '--': '--',
     'F': '不符合',
@@ -596,6 +597,46 @@ class LLMTranslator:
                         return text
 
         # LLM 未啟用時，保留原文（不使用字典）
+        return text
+
+    def translate_no_cache(self, text: str) -> str:
+        """
+        翻譯單個文本（不使用/寫入快取）
+        用於避免快取污染或需強制重翻的情境
+        """
+        if not text or len(text.strip()) < 1:
+            return text
+
+        special = self._apply_special_translation(text)
+        if special is not None:
+            return special
+
+        if self._is_chinese(text):
+            return text
+
+        if self.enabled and self._has_significant_english(text):
+            for retry in range(MAX_RETRIES):
+                try:
+                    response = self.client.chat.completions.create(
+                        model=self.deployment,
+                        messages=[
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": f"翻譯以下內容：\n{text}"}
+                        ],
+                        max_completion_tokens=500,
+                        temperature=0.1,
+                    )
+                    llm_result = response.choices[0].message.content.strip()
+                    llm_result = self._filter_refusal(llm_result)
+                    return llm_result
+                except Exception as e:
+                    if retry < MAX_RETRIES - 1:
+                        print(f"[LLM] 翻譯失敗 (重試 {retry + 1}/{MAX_RETRIES}): {e}")
+                        time.sleep(RETRY_DELAY)
+                    else:
+                        print(f"[LLM] 翻譯失敗，保留原文: {e}")
+                        return text
+
         return text
 
     def _translate_single_for_batch(self, text: str, idx: int) -> tuple:

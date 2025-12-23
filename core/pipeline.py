@@ -316,14 +316,36 @@ def _render_word_v2(
         return text in VERDICT_MAP
 
     # 逐個插入表格
+    prev_page = None
+    prev_bbox = None
+    has_inserted = False
     for t_idx, table_data in enumerate(translated_tables):
         rows = table_data['rows']
         col_count = table_data['col_count']
         merge_info = table_data.get('merge_info', [])
         row_backgrounds = table_data.get('row_backgrounds', [])  # 從 PDF 抽取的背景色資訊
+        cell_backgrounds = table_data.get('cell_backgrounds', [])
+        table_page = table_data.get('page')
+        table_bbox = table_data.get('bbox')
 
         if not rows:
             continue
+
+        # 強制換頁（僅在需要的章節開頭）
+        if has_inserted and table_data.get('page_break_before'):
+            page_break_para = OxmlElement('w:p')
+            page_break_run = OxmlElement('w:r')
+            page_break = OxmlElement('w:br')
+            page_break.set(qn('w:type'), 'page')
+            page_break_run.append(page_break)
+            page_break_para.append(page_break_run)
+            insert_element.addnext(page_break_para)
+            insert_element = page_break_para
+            prev_bbox = None
+        elif prev_page is not None and table_page == prev_page and prev_bbox and table_bbox:
+            gap = table_bbox[1] - prev_bbox[3]
+            if gap >= 10:
+                insert_element = _insert_gap_paragraph(insert_element)
 
         # 保留原始欄位數（完全按照 PDF）
         actual_cols = col_count
@@ -331,12 +353,27 @@ def _render_word_v2(
         # 建立新表格（使用 PDF 原有的欄位數）
         new_table = doc.add_table(rows=len(rows), cols=actual_cols)
 
-        # 計算平均欄寬
-        col_widths = [TOTAL_WIDTH // actual_cols] * actual_cols
+        # 計算欄寬（優先使用 PDF 原始欄位比例）
+        col_widths = None
+        pdf_col_widths = table_data.get('col_widths', [])
+        if pdf_col_widths and len(pdf_col_widths) == actual_cols:
+            total_pdf_width = sum(pdf_col_widths)
+            if total_pdf_width > 0:
+                scale = TOTAL_WIDTH / total_pdf_width
+                col_widths = [max(1, int(round(w * scale))) for w in pdf_col_widths]
+                diff = TOTAL_WIDTH - sum(col_widths)
+                if col_widths:
+                    col_widths[-1] += diff
+
+        if not col_widths:
+            col_widths = [TOTAL_WIDTH // actual_cols] * actual_cols
+
+        new_table.autofit = False
 
         # 設定表格寬度和欄寬
         _set_table_width(new_table, TOTAL_WIDTH)
         _set_column_widths(new_table, col_widths)
+        _clear_cell_widths(new_table)
 
         # 設定表格框線
         _set_table_borders(new_table)
@@ -366,11 +403,12 @@ def _render_word_v2(
             tr = tr_list[r_idx]
             tc_list = tr.findall(qn('w:tc'))
 
-            # 從 PDF 抽取的背景色資訊判斷是否需要灰色背景
-            needs_gray_bg = row_backgrounds[r_idx] if r_idx < len(row_backgrounds) else False
-
             for c_idx, cell_text in enumerate(row):
                 if c_idx >= len(tc_list):
+                    continue
+
+                # Skip cells that will be covered by a merged cell
+                if (r_idx, c_idx) in merged_cells:
                     continue
 
                 # 使用 python-docx 的 _Cell 包裝來設定文字和格式
@@ -396,7 +434,13 @@ def _render_word_v2(
                         run.font.name = '標楷體'
                         run._element.rPr.rFonts.set(qn('w:eastAsia'), '標楷體')
 
-                # 按照 PDF 原始格式套用灰色背景
+                # 按照 PDF 原始格式套用灰色背景（優先使用 per-cell 資訊）
+                needs_gray_bg = False
+                if cell_backgrounds and r_idx < len(cell_backgrounds) and c_idx < len(cell_backgrounds[r_idx]):
+                    needs_gray_bg = cell_backgrounds[r_idx][c_idx]
+                elif row_backgrounds:
+                    needs_gray_bg = row_backgrounds[r_idx] if r_idx < len(row_backgrounds) else False
+
                 if needs_gray_bg:
                     _set_cell_shading(cell, "D9D9D9")
 
@@ -406,6 +450,10 @@ def _render_word_v2(
         # 移動表格到正確位置
         insert_element.addnext(new_table._tbl)
         insert_element = new_table._tbl
+        if table_page is not None:
+            prev_page = table_page
+            prev_bbox = table_bbox
+        has_inserted = True
 
         if (t_idx + 1) % 20 == 0:
             print(f"  已插入 {t_idx + 1}/{len(translated_tables)} 個表格...")
@@ -462,10 +510,20 @@ def _set_table_width(table, width_twips: int):
     tbl = table._tbl
     tblPr = tbl.tblPr if tbl.tblPr is not None else OxmlElement('w:tblPr')
 
+    # 移除既有設定避免重複
+    for elem in list(tblPr):
+        if elem.tag in (qn('w:tblW'), qn('w:tblLayout')):
+            tblPr.remove(elem)
+
     tblW = OxmlElement('w:tblW')
     tblW.set(qn('w:w'), str(width_twips))
     tblW.set(qn('w:type'), 'dxa')
     tblPr.append(tblW)
+
+    # 固定欄寬，避免 Word 自動調整
+    tblLayout = OxmlElement('w:tblLayout')
+    tblLayout.set(qn('w:type'), 'fixed')
+    tblPr.append(tblLayout)
 
     if tbl.tblPr is None:
         tbl.insert(0, tblPr)
@@ -494,16 +552,17 @@ def _set_column_widths(table, widths: list):
         gridCol.set(qn('w:w'), str(width))
         tblGrid.append(gridCol)
 
-    # 設定每個 cell 的寬度
+
+def _clear_cell_widths(table):
+    """清除每格的寬度設定，避免覆蓋合併欄位的寬度"""
+    from docx.oxml.ns import qn
+
     for row in table.rows:
-        for idx, cell in enumerate(row.cells):
-            if idx < len(widths):
-                tc = cell._tc
-                tcPr = tc.get_or_add_tcPr()
-                tcW = OxmlElement('w:tcW')
-                tcW.set(qn('w:w'), str(widths[idx]))
-                tcW.set(qn('w:type'), 'dxa')
-                tcPr.append(tcW)
+        for cell in row.cells:
+            tcPr = cell._tc.get_or_add_tcPr()
+            tcW = tcPr.find(qn('w:tcW'))
+            if tcW is not None:
+                tcPr.remove(tcW)
 
 
 def _fill_cover_fields(doc, meta: dict, cover_fields: dict):
@@ -604,6 +663,21 @@ def _apply_merge_to_table(table, merge_info: list, merged_cells: set = None):
     tbl = table._tbl
     tr_list = tbl.findall(qn('w:tr'))
 
+    # 紀錄每列需要移除的水平合併覆蓋欄位
+    remove_map = {}
+    for m in merge_info:
+        r_idx = m['row']
+        c_idx = m['col']
+        colspan = m.get('colspan', 1)
+        rowspan = m.get('rowspan', 1)
+
+        if colspan > 1:
+            for dr in range(rowspan):
+                row_idx = r_idx + dr
+                cols = remove_map.setdefault(row_idx, set())
+                for dc in range(1, colspan):
+                    cols.add(c_idx + dc)
+
     for m in merge_info:
         r_idx = m['row']
         c_idx = m['col']
@@ -661,6 +735,42 @@ def _apply_merge_to_table(table, merge_info: list, merged_cells: set = None):
                     v_merge.set(qn('w:val'), 'restart')
                 # 其他行：不設定 val 屬性（繼續合併）
                 tcPr.append(v_merge)
+
+    # 移除被水平合併覆蓋的 cell（由右到左移除避免索引錯位）
+    for row_idx, cols in remove_map.items():
+        if row_idx >= len(tr_list):
+            continue
+        tr = tr_list[row_idx]
+        tc_list = tr.findall(qn('w:tc'))
+        for col_idx in sorted(cols, reverse=True):
+            if col_idx < len(tc_list):
+                tr.remove(tc_list[col_idx])
+
+
+def _insert_gap_paragraph(insert_element):
+    """插入單行空白段落（固定行高，避免過大間距）"""
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+
+    gap_para = OxmlElement('w:p')
+    ppr = OxmlElement('w:pPr')
+    spacing = OxmlElement('w:spacing')
+    spacing.set(qn('w:before'), '0')
+    spacing.set(qn('w:after'), '0')
+    spacing.set(qn('w:line'), '240')
+    spacing.set(qn('w:lineRule'), 'auto')
+    ppr.append(spacing)
+    gap_para.append(ppr)
+
+    run = OxmlElement('w:r')
+    text = OxmlElement('w:t')
+    text.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+    text.text = ' '
+    run.append(text)
+    gap_para.append(run)
+
+    insert_element.addnext(gap_para)
+    return gap_para
 
 
 # ============================================================
