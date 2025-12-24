@@ -1180,14 +1180,12 @@ def _insert_section_spacers(table: Dict) -> Dict:
 def _merge_clause_header_tables(tables: List[Dict]) -> List[Dict]:
     """合併主條款表格，並將標準表頭列作為重複表頭"""
     merged = []
-    pending_header = None
     header_template = None
     pending_break = False
     active_clause_idx = None
 
     for table in tables:
         if table.get('is_header_table') and table.get('col_count') == 4:
-            pending_header = table
             if header_template is None:
                 header_template = table
             if table.get('page_break_before'):
@@ -1195,11 +1193,10 @@ def _merge_clause_header_tables(tables: List[Dict]) -> List[Dict]:
             continue
 
         is_clause_table = _is_clause_table_candidate(table)
-        needs_break = pending_break or table.get('page_break_before')
+        needs_break = bool(pending_break or table.get('page_break_before'))
 
         if is_clause_table:
-            header_source = pending_header or header_template
-            pending_header = None
+            header_source = header_template
 
             if active_clause_idx is not None and needs_break:
                 merged_table = _prepend_header_rows(table, header_source) if header_source else dict(table)
@@ -1220,18 +1217,12 @@ def _merge_clause_header_tables(tables: List[Dict]) -> List[Dict]:
             pending_break = False
             continue
 
-        if pending_header:
-            pending_header = None
-
         if needs_break:
             table = dict(table)
             table['page_break_before'] = True
         merged.append(table)
         active_clause_idx = None
         pending_break = False
-
-    if pending_header:
-        pending_header = None
 
     for idx, table in enumerate(merged):
         if _is_clause_table_candidate(table):
