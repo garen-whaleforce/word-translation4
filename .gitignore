@@ -20,12 +20,11 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
-.env
-.venv
-env/
+# Virtual Environment
 venv/
 ENV/
+env/
+.venv/
 
 # IDE
 .idea/
@@ -34,19 +33,34 @@ ENV/
 *.swo
 *~
 
+# Environment
+.env
+.env.local
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Logs
+*.log
+logs/
+
+# Temp files
+/tmp/
+*.tmp
+*.temp
+
 # OS
 .DS_Store
 Thumbs.db
 
-# Project specific
+# Output
 output/
-storage/
 *.docx
 !templates/*.docx
 
-# Logs
-*.log
-
-# Temporary files
-tmp/
-temp/
+# Uploads
+uploads/

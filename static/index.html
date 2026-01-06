@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CB PDF to Word Translation Service</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #444;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background: #e7f1ff;
+        }
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        .upload-icon {
+            font-size: 48px;
+            color: #aaa;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .status {
+            padding: 16px;
+            border-radius: 4px;
+            margin-top: 16px;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .result-label {
+            color: #666;
+        }
+        .result-value {
+            font-weight: 500;
+            color: #333;
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .tag-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .tag-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .tag-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .hidden {
+            display: none;
+        }
+        .file-info {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .issues-list {
+            margin-top: 12px;
+            padding-left: 20px;
+        }
+        .issues-list li {
+            color: #666;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CB PDF to Word Translation Service</h1>
+
+        <!-- Upload Card -->
+        <div class="card">
+            <h2>1. 上傳 CB PDF</h2>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <p>點擊或拖拽 PDF 檔案到此處</p>
+                <input type="file" id="pdfInput" accept=".pdf">
+            </div>
+            <div class="file-info hidden" id="fileInfo"></div>
+        </div>
+
+        <!-- Options Card -->
+        <div class="card">
+            <h2>2. 選擇選項</h2>
+            <div class="form-group">
+                <label for="template">模板</label>
+                <select id="template">
+                    <option value="">自動選擇</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="dryRun">
+                    <label for="dryRun">乾跑模式（不呼叫 LLM）</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="card">
+            <button class="btn btn-primary" id="generateBtn" disabled>
+                生成 Word 文件
+            </button>
+            <div class="status hidden" id="status"></div>
+        </div>
+
+        <!-- Result Card -->
+        <div class="card hidden" id="resultCard">
+            <h2>3. 處理結果</h2>
+            <div class="result" id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const pdfInput = document.getElementById('pdfInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const templateSelect = document.getElementById('template');
+        const dryRunCheckbox = document.getElementById('dryRun');
+        const generateBtn = document.getElementById('generateBtn');
+        const status = document.getElementById('status');
+        const resultCard = document.getElementById('resultCard');
+        const result = document.getElementById('result');
+
+        let selectedFile = null;
+
+        // Load templates
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/templates');
+                const data = await response.json();
+                data.templates.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t.id;
+                    option.textContent = t.name;
+                    templateSelect.appendChild(option);
+                });
+            } catch (e) {
+                console.error('Failed to load templates:', e);
+            }
+        }
+
+        // Upload area events
+        uploadArea.addEventListener('click', () => pdfInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.pdf')) {
+                handleFile(files[0]);
+            }
+        });
+
+        pdfInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            fileInfo.innerHTML = `
+                <strong>已選擇:</strong> ${file.name}<br>
+                <strong>大小:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB
+            `;
+            fileInfo.classList.remove('hidden');
+            generateBtn.disabled = false;
+        }
+
+        // Generate
+        generateBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            generateBtn.disabled = true;
+            status.className = 'status loading';
+            status.textContent = '處理中，請稍候...';
+            status.classList.remove('hidden');
+            resultCard.classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const template = templateSelect.value;
+            const dryRun = dryRunCheckbox.checked;
+
+            let url = `/generate?dry_run=${dryRun}`;
+            if (template) {
+                url += `&template=${template}`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult(data);
+                    status.className = 'status success';
+                    status.textContent = '處理完成！';
+                } else {
+                    status.className = 'status error';
+                    status.textContent = `錯誤: ${data.detail || '處理失敗'}`;
+                }
+            } catch (e) {
+                status.className = 'status error';
+                status.textContent = `錯誤: ${e.message}`;
+            }
+
+            generateBtn.disabled = false;
+        });
+
+        function showResult(data) {
+            let html = `
+                <div class="result-item">
+                    <span class="result-label">狀態</span>
+                    <span class="tag ${data.status === 'success' ? 'tag-success' : 'tag-warning'}">${data.status}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">條款數量</span>
+                    <span class="result-value">${data.total_clauses}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">翻譯段落</span>
+                    <span class="result-value">${data.translated_segments}</span>
+                </div>
+            `;
+
+            if (data.download_url) {
+                html += `
+                    <div class="result-item">
+                        <span class="result-label">下載</span>
+                        <a href="${data.download_url}" class="btn btn-success" download>下載 Word 文件</a>
+                    </div>
+                `;
+            }
+
+            if (data.errors && data.errors.length > 0) {
+                html += `
+                    <div class="result-item">
+                        <span class="result-label">錯誤</span>
+                        <span class="tag tag-error">${data.errors.length} 個錯誤</span>
+                    </div>
+                    <ul class="issues-list">
+                        ${data.errors.map(e => `<li>${e}</li>`).join('')}
+                    </ul>
+                `;
+            }
+
+            if (data.warnings && data.warnings.length > 0) {
+                html += `
+                    <div class="result-item">
+                        <span class="result-label">警告</span>
+                        <span class="tag tag-warning">${data.warnings.length} 個警告</span>
+                    </div>
+                    <ul class="issues-list">
+                        ${data.warnings.slice(0, 5).map(w => `<li>${w}</li>`).join('')}
+                        ${data.warnings.length > 5 ? `<li>...還有 ${data.warnings.length - 5} 個警告</li>` : ''}
+                    </ul>
+                `;
+            }
+
+            result.innerHTML = html;
+            resultCard.classList.remove('hidden');
+        }
+
+        // Initialize
+        loadTemplates();
+    </script>
+</body>
+</html>
