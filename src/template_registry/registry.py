@@ -79,19 +79,29 @@ class TemplateRegistry:
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
 
+            self.default_template_id = config.get("default_template", None)
+
             for item in config.get("templates", []):
+                # 支援 filename 或 path
+                template_file = item.get("filename") or item.get("path")
                 template = TemplateInfo(
                     id=item["id"],
                     name=item.get("name", item["id"]),
-                    path=self.templates_dir / item["path"],
+                    path=self.templates_dir / template_file,
                     description=item.get("description", ""),
                     trf_patterns=item.get("trf_patterns", []),
                     expected_clauses=set(item.get("expected_clauses", [])),
                     anchors=item.get("anchors", [])
                 )
+                # 儲存 signature 資訊
+                if "signature" in item:
+                    template.signature = item["signature"]
+
                 if template.path.exists():
                     self.templates[template.id] = template
-                    logger.info(f"Loaded template: {template.id}")
+                    logger.info(f"Loaded template: {template.id} ({template.path.name})")
+                else:
+                    logger.warning(f"Template file not found: {template.path}")
 
         except Exception as e:
             logger.error(f"Failed to load templates config: {e}")

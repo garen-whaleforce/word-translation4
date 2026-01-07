@@ -48,6 +48,12 @@ class ParseResultV2:
     overview_items: List[OverviewItem] = field(default_factory=list)
     clauses: List[ClauseItem] = field(default_factory=list)
 
+    # 章節分群的條款表 (key: "4", "5", "6", ..., "B", "M", "T" 等)
+    clause_tables: Dict[str, List[ClauseItem]] = field(default_factory=dict)
+
+    # 附表 (key: "M.3", "M.4.2", "T.7", "X", "4.1.2" 等)
+    appendix_tables: Dict[str, List[List[str]]] = field(default_factory=dict)
+
     errors: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
 
@@ -59,7 +65,11 @@ class ParseResultV2:
             "model": self.model,
             "overview_items": [asdict(item) for item in self.overview_items],
             "clauses": [asdict(item) for item in self.clauses],
+            "clause_tables": {k: [asdict(c) for c in v] for k, v in self.clause_tables.items()},
+            "appendix_tables": self.appendix_tables,
             "total_clauses": len(self.clauses),
+            "chapter_count": len(self.clause_tables),
+            "appendix_count": len(self.appendix_tables),
             "errors": self.errors,
             "warnings": self.warnings
         }
@@ -69,10 +79,13 @@ class CBParserV2:
     """CB PDF 解析器 v2"""
 
     # Clause ID 模式
-    CLAUSE_ID_PATTERN = re.compile(r'^([A-Z]\.)?(\d+)(\.\d+)*$')
+    # 必須有子章節 (如 4.1, 5.2.3) 或字母前綴 (如 B.1, G.5)
+    # 純數字 (4, 5, 6) 是章節標題，不是條款
+    CLAUSE_ID_PATTERN = re.compile(r'^([A-Z]\.\d+(\.\d+)*|\d+\.\d+(\.\d+)*)$')
 
     # Verdict 模式
-    VERDICT_VALUES = {'P', 'N/A', 'NA', 'N.A.', 'Fail', 'F', '--', '-', '⎯', '—'}
+    # 包含 WingDings dash 符號 \uf0be
+    VERDICT_VALUES = {'P', 'N/A', 'NA', 'N.A.', 'Fail', 'F', '--', '-', '⎯', '—', '\uf0be'}
 
     def __init__(self, pdf_path: Union[str, Path]):
         self.pdf_path = Path(pdf_path)
@@ -143,21 +156,24 @@ class CBParserV2:
         """檢查是否為 Verdict 值"""
         if not value:
             return False
-        value = value.strip().upper()
-        return value in {'P', 'N/A', 'NA', 'N.A.', 'FAIL', 'F', '--', '-', '⎯', '—', ''}
+        value = value.strip()
+        value_upper = value.upper()
+        # 包含 WingDings dash 符號 \uf0be
+        return value_upper in {'P', 'N/A', 'NA', 'N.A.', 'FAIL', 'F', '--', '-', '⎯', '—', ''} or value == '\uf0be'
 
     def _normalize_verdict(self, value: str) -> str:
         """標準化 Verdict"""
         if not value:
             return ""
-        value = value.strip().upper()
+        original = value.strip()
+        value = original.upper()
         if value == 'P':
             return 'P'
         elif value in {'N/A', 'NA', 'N.A.'}:
             return 'N/A'
         elif value in {'F', 'FAIL'}:
             return 'Fail'
-        elif value in {'--', '-', '⎯', '—'}:
+        elif value in {'--', '-', '⎯', '—'} or original == '\uf0be':
             return '--'
         return value
 
@@ -187,16 +203,22 @@ class CBParserV2:
                         # 如果最後一欄是 Verdict
                         if self._is_verdict(last_cell) or last_cell == '':
                             clause_id = first_cell
+                            verdict = self._normalize_verdict(last_cell)
 
-                            # 避免重複
+                            # 如果已存在且新 verdict 非空，更新 verdict
                             if clause_id in seen_clauses:
+                                if verdict and verdict not in ('', '--'):
+                                    # 找到現有條款並更新
+                                    for c in self.result.clauses:
+                                        if c.clause_id == clause_id and c.verdict in ('', '--'):
+                                            c.verdict = verdict
+                                            break
                                 continue
                             seen_clauses.add(clause_id)
 
                             # 解析其他欄位
                             requirement = ""
                             result_remark = ""
-                            verdict = self._normalize_verdict(last_cell)
 
                             if len(row) >= 4:
                                 requirement = str(row[1]).strip() if row[1] else ""
@@ -223,6 +245,33 @@ class CBParserV2:
 
         # 依照 Clause ID 排序
         self.result.clauses.sort(key=lambda c: self._clause_sort_key(c.clause_id))
+
+        # 按章節分群
+        self._group_clauses_by_chapter()
+
+    def _group_clauses_by_chapter(self):
+        """將條款按章節分群"""
+        for clause in self.result.clauses:
+            chapter = self._get_chapter(clause.clause_id)
+            if chapter not in self.result.clause_tables:
+                self.result.clause_tables[chapter] = []
+            self.result.clause_tables[chapter].append(clause)
+
+        logger.info(f"章節分群: {list(self.result.clause_tables.keys())}")
+
+    def _get_chapter(self, clause_id: str) -> str:
+        """取得條款的章節"""
+        # 先檢查是否有字母前綴 (B.1, G.5, M.3, T.7 等)
+        match = re.match(r'^([A-Z])\.', clause_id)
+        if match:
+            return match.group(1)
+
+        # 純數字條款 (4.1.1, 5.2.3 等)
+        match = re.match(r'^(\d+)', clause_id)
+        if match:
+            return match.group(1)
+
+        return "other"
 
     def _clause_sort_key(self, clause_id: str) -> Tuple:
         """產生排序用的 key"""

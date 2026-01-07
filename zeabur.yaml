@@ -1,0 +1,40 @@
+# Zeabur 部署配置
+# CB PDF to Word Translation Service v2
+
+runtime: docker
+
+# 環境變數
+env:
+  # API Settings
+  APP_NAME: "CB PDF to Word Translation Service"
+  DEBUG: "false"
+  HOST: "0.0.0.0"
+  PORT: "8000"
+
+  # File Storage (使用 /tmp 暫存)
+  UPLOAD_DIR: "/tmp/cb-uploads"
+  OUTPUT_DIR: "/tmp/cb-outputs"
+  MAX_UPLOAD_SIZE_MB: "50"
+
+  # LiteLLM Settings (可選 - 用於翻譯)
+  # LITELLM_API_BASE: "https://litellm.whaleforce.dev"
+  # LITELLM_API_KEY: ""
+
+  # Template Settings
+  TEMPLATES_DIR: "templates"
+  DEFAULT_TEMPLATE: "AST-B"
+
+# 健康檢查
+healthCheck:
+  path: /health
+  interval: 30s
+  timeout: 10s
+
+# 資源配置
+resources:
+  cpu: 0.5
+  memory: 512Mi
+
+# 網域設定 (可選)
+# domain:
+#   - cb-translator.zeabur.app

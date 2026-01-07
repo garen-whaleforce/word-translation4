@@ -1,0 +1,45 @@
+{
+  "templates": [
+    {
+      "id": "AST-B",
+      "name": "AST-B IEC 62368-1 Template",
+      "filename": "AST-B.docx",
+      "description": "Full AST-B template with 45 tables for IEC 62368-1 TRF",
+      "trf_patterns": [
+        "IEC62368_1E",
+        "IEC 62368-1",
+        "62368",
+        "IEC62368"
+      ],
+      "anchors": [
+        "安全防護總攬表",
+        "能量源圖"
+      ],
+      "signature": {
+        "table_count": 45,
+        "paragraph_count": 48,
+        "chapter_tables": ["4", "5", "6", "7", "8", "9", "10", "B"],
+        "appendix_tables": ["M.3", "M.4.2", "Q.1", "T.2, T.3, T.4, T.5", "T.6, T.9", "T.7", "T.8", "X", "4.1.2"],
+        "data_tables": ["5.2", "5.4.1.8", "5.4.1.10.2", "5.4.1.10.3", "5.4.2, 5.4.3", "5.4.4.2", "5.4.4.9", "5.4.9", "5.5.2.2", "5.6.6", "5.7.4", "5.7.5", "5.8", "6.2.2", "6.2.3.1", "6.2.3.2", "6.4.8.3.3, 6.4.8.3.4, 6.4.8.3.5, P.2.2, P.2.3", "8.5.5", "9.6", "5.4.1.4, 9.3, B.1.5, B.2.6", "B.2.5", "B.3, B.4"]
+      }
+    },
+    {
+      "id": "Generic-CB",
+      "name": "Generic CB Template (Simplified)",
+      "filename": "Generic-CB.docx",
+      "description": "Simplified template with 2 tables - for testing only",
+      "trf_patterns": [],
+      "anchors": [
+        "Source",
+        "Clause"
+      ],
+      "signature": {
+        "table_count": 2,
+        "paragraph_count": 7,
+        "chapter_tables": [],
+        "appendix_tables": []
+      }
+    }
+  ],
+  "default_template": "AST-B"
+}
