@@ -1,0 +1,9 @@
+{
+  "rules": [
+    {"pattern": "激光器", "replacement": "雷射器"},
+    {"pattern": "激光", "replacement": "雷射"},
+    {"pattern": "外殼", "replacement": "機殼"},
+    {"pattern": "外壳", "replacement": "機殼"},
+    {"pattern": "机壳", "replacement": "機殼"}
+  ]
+}

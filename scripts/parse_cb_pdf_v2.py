@@ -74,18 +74,34 @@ class ParseResultV2:
             "warnings": self.warnings
         }
 
+    def get_chapter_verdict(self, chapter_id: str) -> Optional[str]:
+        """取得章節表頭的 verdict"""
+        if not chapter_id:
+            return None
+        normalized = chapter_id.strip().rstrip('.')
+        for clause in self.clauses:
+            clause_key = clause.clause_id.strip().rstrip('.')
+            if clause_key == normalized:
+                return clause.verdict or None
+        return None
+
 
 class CBParserV2:
     """CB PDF 解析器 v2"""
 
     # Clause ID 模式
-    # 必須有子章節 (如 4.1, 5.2.3) 或字母前綴 (如 B.1, G.5)
-    # 純數字 (4, 5, 6) 是章節標題，不是條款
-    CLAUSE_ID_PATTERN = re.compile(r'^([A-Z]\.\d+(\.\d+)*|\d+\.\d+(\.\d+)*)$')
+    # 包含章節表頭 (4, 5, 6, B) 以及子章節 (4.1, 5.2.3, B.1)
+    CLAUSE_ID_PATTERN = re.compile(r'^([A-Z]\.?|[A-Z]\.\d+(\.\d+)*|\d+(\.\d+)*)$')
+    CHAPTER_ID_PATTERN = re.compile(r'^([A-Z]\.?|\d+)$')
 
     # Verdict 模式
     # 包含 WingDings dash 符號 \uf0be
     VERDICT_VALUES = {'P', 'N/A', 'NA', 'N.A.', 'Fail', 'F', '--', '-', '⎯', '—', '\uf0be'}
+
+    # 座標分欄參數
+    LINE_MERGE_TOLERANCE = 3.0
+    CLAUSE_COL_MAX_RATIO = 0.35
+    VERDICT_COL_MIN_RATIO = 0.75
 
     def __init__(self, pdf_path: Union[str, Path]):
         self.pdf_path = Path(pdf_path)
@@ -179,8 +195,74 @@ class CBParserV2:
 
     def _extract_all_clauses(self, pdf: pdfplumber.PDF):
         """提取所有條款"""
-        seen_clauses = set()
+        clauses_by_id: Dict[str, ClauseItem] = {}
 
+        # 1) 優先用座標分欄法抽取 clause_id + verdict
+        self._extract_clauses_from_words(pdf, clauses_by_id)
+        words_count = len(clauses_by_id)
+        logger.info(f"座標抽取條款: {words_count} 個")
+
+        # 2) 用表格抽取作為補充/回填 requirement/result
+        self._extract_clauses_from_tables(pdf, clauses_by_id)
+
+        self.result.clauses = list(clauses_by_id.values())
+
+        # 依照 Clause ID 排序
+        self.result.clauses.sort(key=lambda c: self._clause_sort_key(c.clause_id))
+
+        # 按章節分群
+        self._group_clauses_by_chapter()
+
+    def _extract_clauses_from_words(
+        self,
+        pdf: pdfplumber.PDF,
+        clauses_by_id: Dict[str, ClauseItem]
+    ):
+        """用座標分欄抽取 clause_id + verdict"""
+        for page_num, page in enumerate(pdf.pages):
+            words = page.extract_words(use_text_flow=True, keep_blank_chars=False)
+            if not words:
+                continue
+
+            page_width = page.width or 1
+            lines = self._group_words_by_line(words, tolerance=self.LINE_MERGE_TOLERANCE)
+            page_has_verdict = any(self._is_verdict(w.get("text", "")) for w in words)
+
+            for line in lines:
+                line_words = sorted(line, key=lambda w: w.get("x0", 0))
+                verdict_raw = self._find_verdict_in_line(line_words, page_width)
+                clause_id = self._find_clause_id_in_line(
+                    line_words,
+                    page_width,
+                    allow_chapter=bool(verdict_raw)
+                )
+                if not clause_id:
+                    continue
+
+                if not verdict_raw and not page_has_verdict:
+                    continue
+
+                verdict = self._normalize_verdict(verdict_raw) if verdict_raw else ""
+                existing = clauses_by_id.get(clause_id)
+                if existing:
+                    if verdict and existing.verdict in ("", "--"):
+                        existing.verdict = verdict
+                    continue
+
+                clauses_by_id[clause_id] = ClauseItem(
+                    clause_id=clause_id,
+                    requirement="",
+                    result_remark="",
+                    verdict=verdict,
+                    page_number=page_num + 1,
+                )
+
+    def _extract_clauses_from_tables(
+        self,
+        pdf: pdfplumber.PDF,
+        clauses_by_id: Dict[str, ClauseItem]
+    ):
+        """用表格抽取補充 requirement/result"""
         for page_num, page in enumerate(pdf.pages):
             tables = page.extract_tables()
 
@@ -195,28 +277,17 @@ class CBParserV2:
                     # 檢查第一欄是否為 Clause ID
                     first_cell = str(row[0]).strip() if row[0] else ""
 
-                    # Clause ID 格式: 4, 4.1, 4.1.1, B.1, G.5.3.4.2 等
                     if self.CLAUSE_ID_PATTERN.match(first_cell):
-                        # 檢查最後一欄是否為 Verdict
                         last_cell = str(row[-1]).strip() if row[-1] else ""
+                        is_chapter = bool(self.CHAPTER_ID_PATTERN.match(first_cell))
 
-                        # 如果最後一欄是 Verdict
+                        if is_chapter and not self._is_verdict(last_cell):
+                            continue
+
                         if self._is_verdict(last_cell) or last_cell == '':
                             clause_id = first_cell
                             verdict = self._normalize_verdict(last_cell)
 
-                            # 如果已存在且新 verdict 非空，更新 verdict
-                            if clause_id in seen_clauses:
-                                if verdict and verdict not in ('', '--'):
-                                    # 找到現有條款並更新
-                                    for c in self.result.clauses:
-                                        if c.clause_id == clause_id and c.verdict in ('', '--'):
-                                            c.verdict = verdict
-                                            break
-                                continue
-                            seen_clauses.add(clause_id)
-
-                            # 解析其他欄位
                             requirement = ""
                             result_remark = ""
 
@@ -225,7 +296,6 @@ class CBParserV2:
                                 result_remark = str(row[2]).strip() if row[2] else ""
                             elif len(row) >= 3:
                                 requirement = str(row[1]).strip() if row[1] else ""
-                                # 判斷第三欄是結果還是 verdict
                                 third = str(row[2]).strip() if row[2] else ""
                                 if self._is_verdict(third):
                                     verdict = self._normalize_verdict(third)
@@ -234,20 +304,97 @@ class CBParserV2:
                             elif len(row) >= 2:
                                 requirement = str(row[1]).strip() if row[1] else ""
 
-                            clause = ClauseItem(
+                            existing = clauses_by_id.get(clause_id)
+                            if existing:
+                                if verdict and existing.verdict in ("", "--"):
+                                    existing.verdict = verdict
+                                if requirement and not existing.requirement:
+                                    existing.requirement = requirement
+                                if result_remark and not existing.result_remark:
+                                    existing.result_remark = result_remark
+                                continue
+
+                            clauses_by_id[clause_id] = ClauseItem(
                                 clause_id=clause_id,
                                 requirement=requirement,
                                 result_remark=result_remark,
                                 verdict=verdict,
-                                page_number=page_num + 1
+                                page_number=page_num + 1,
                             )
-                            self.result.clauses.append(clause)
 
-        # 依照 Clause ID 排序
-        self.result.clauses.sort(key=lambda c: self._clause_sort_key(c.clause_id))
+    def _group_words_by_line(self, words: List[Dict[str, Any]], tolerance: float) -> List[List[Dict[str, Any]]]:
+        """將 words 依 y 座標分群為行"""
+        if not words:
+            return []
 
-        # 按章節分群
-        self._group_clauses_by_chapter()
+        sorted_words = sorted(words, key=lambda w: (w.get("top", 0), w.get("x0", 0)))
+        lines: List[List[Dict[str, Any]]] = []
+        current_line: List[Dict[str, Any]] = []
+        current_top: Optional[float] = None
+
+        for word in sorted_words:
+            top = word.get("top", 0)
+            if current_top is None or abs(top - current_top) <= tolerance:
+                current_line.append(word)
+                if current_top is None:
+                    current_top = top
+            else:
+                lines.append(current_line)
+                current_line = [word]
+                current_top = top
+
+        if current_line:
+            lines.append(current_line)
+
+        return lines
+
+    def _find_clause_id_in_line(
+        self,
+        line_words: List[Dict[str, Any]],
+        page_width: float,
+        allow_chapter: bool
+    ) -> str:
+        """從單行 words 中找 clause_id"""
+        for word in line_words:
+            text = self._clean_clause_token(word.get("text", ""))
+            if not text:
+                continue
+            if word.get("x0", page_width) > page_width * self.CLAUSE_COL_MAX_RATIO:
+                continue
+            if not allow_chapter and self.CHAPTER_ID_PATTERN.match(text):
+                continue
+            if self.CLAUSE_ID_PATTERN.match(text):
+                return text
+        return ""
+
+    def _find_verdict_in_line(self, line_words: List[Dict[str, Any]], page_width: float) -> str:
+        """從單行 words 中找 verdict"""
+        candidates = [w for w in line_words if w.get("text")]
+        if not candidates:
+            return ""
+
+        right_zone = [
+            w for w in candidates
+            if w.get("x0", 0) >= page_width * self.VERDICT_COL_MIN_RATIO
+        ]
+
+        for word in sorted(right_zone, key=lambda w: w.get("x0", 0), reverse=True):
+            text = word.get("text", "").strip()
+            if self._is_verdict(text):
+                return text
+
+        for word in sorted(candidates, key=lambda w: w.get("x0", 0), reverse=True):
+            text = word.get("text", "").strip()
+            if self._is_verdict(text):
+                return text
+
+        return ""
+
+    def _clean_clause_token(self, token: str) -> str:
+        """清理 clause token"""
+        if not token:
+            return ""
+        return token.strip().strip(":;").rstrip(".")
 
     def _group_clauses_by_chapter(self):
         """將條款按章節分群"""
@@ -261,8 +408,8 @@ class CBParserV2:
 
     def _get_chapter(self, clause_id: str) -> str:
         """取得條款的章節"""
-        # 先檢查是否有字母前綴 (B.1, G.5, M.3, T.7 等)
-        match = re.match(r'^([A-Z])\.', clause_id)
+        # 先檢查是否有字母前綴 (B, B.1, G.5, M.3, T.7 等)
+        match = re.match(r'^([A-Z])(?:\.|$)', clause_id)
         if match:
             return match.group(1)
 
@@ -272,6 +419,17 @@ class CBParserV2:
             return match.group(1)
 
         return "other"
+
+    def get_chapter_verdict(self, chapter_id: str) -> Optional[str]:
+        """取得章節表頭的 verdict"""
+        if not chapter_id:
+            return None
+        normalized = chapter_id.strip().rstrip('.')
+        for clause in self.result.clauses:
+            clause_key = clause.clause_id.strip().rstrip('.')
+            if clause_key == normalized:
+                return clause.verdict or None
+        return None
 
     def _clause_sort_key(self, clause_id: str) -> Tuple:
         """產生排序用的 key"""

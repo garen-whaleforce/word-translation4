@@ -117,6 +117,18 @@ curl -X POST "http://localhost:8000/generate" \
 2. **翻譯記憶庫** (`rules/en_zh_translation_memory.csv`)：歷史翻譯參考
 3. **翻譯指南** (`rules/IEC62368_EN2ZH_translation_guideline.md`)：IEC 標準翻譯規範
 
+## 模板管理
+
+新增模板時請確保以下資訊完整，避免回填失敗：
+
+1. **模板檔案**：放在 `templates/`，並在 `templates/templates.json` 註冊
+2. **章節表頭**：章節表第一格需為章節 ID（例如 `4`, `5`, `6`, `7`, `8`, `9`, `10`, `B`）
+3. **附表 ID**：附表第一格需有可辨識 ID（例如 `5.7.4`, `M.3`, `T.7`, `X`）
+4. **錨點文字**：至少包含 `安全防護總攬表`、`能量源圖` 以利 TemplateBlueprint 辨識
+5. **Signature**：在 `templates/templates.json` 中提供 `table_count`、`chapter_tables`、`appendix_tables` 等特徵
+
+系統會使用 `TemplateBlueprint` 掃描表格結構，並由 `TemplateRegistry.classify_from_pdf()` 根據 PDF 文字特徵挑選模板。
+
 ## 開發
 
 ### 執行測試

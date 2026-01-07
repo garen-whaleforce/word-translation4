@@ -492,8 +492,9 @@
 
             const template = templateSelect.value;
             const asyncMode = modeSelect.value === 'async';
+            const dryRun = dryRunCheckbox.checked;
 
-            let url = `/api/v2/process?template=${template}&async_mode=${asyncMode}`;
+            let url = `/api/v2/process?template=${template}&async_mode=${asyncMode}&dry_run=${dryRun}`;
 
             try {
                 const response = await fetch(url, {

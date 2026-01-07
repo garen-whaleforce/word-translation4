@@ -55,6 +55,12 @@ class QAMetrics:
     tables_filled: int = 0
     clauses_filled: int = 0
 
+    # 比對與覆蓋率
+    table_count_diff: int = 0
+    clause_coverage_rate: float = 0.0
+    verdict_match_rate: float = 0.0
+    appended_table_filled_rate: float = 0.0
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -76,6 +82,8 @@ class QAReport:
     # 比對結果 (與參考 DOC 比較)
     similarity_score: float = 0.0
     diff_items: List[Dict[str, Any]] = field(default_factory=list)
+    comparison: Optional[Dict[str, Any]] = None
+    gating: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -86,7 +94,9 @@ class QAReport:
             "errors": self.errors,
             "warnings": self.warnings,
             "similarity_score": self.similarity_score,
-            "diff_items": self.diff_items
+            "diff_items": self.diff_items,
+            "comparison": self.comparison,
+            "gating": self.gating
         }
 
 
@@ -146,7 +156,8 @@ class PipelineV2:
         self,
         template_path: Optional[Path] = None,
         translate_func: Optional[Callable[[str], str]] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
+        reference_docx: Optional[Path] = None
     ):
         """
         初始化 Pipeline
@@ -159,6 +170,7 @@ class PipelineV2:
         self.template_path = Path(template_path) if template_path else None
         self.translate_func = translate_func
         self.dry_run = dry_run
+        self.reference_docx = Path(reference_docx) if reference_docx else None
 
     def process(
         self,
@@ -307,9 +319,80 @@ class PipelineV2:
             metrics.tables_filled = result.fill_result.tables_filled
             metrics.clauses_filled = result.fill_result.clauses_filled
 
+            if metrics.appended_table_count > 0:
+                filled_appended = len(result.fill_result.appended_tables_filled)
+                metrics.appended_table_filled_rate = filled_appended / metrics.appended_table_count
+
         # 錯誤與警告
         report.errors = result.errors.copy()
         report.warnings = result.warnings.copy()
+
+        comparison_report = None
+        if self.reference_docx and result.output_docx:
+            try:
+                from scripts.compare_structure import compare_structure
+                comparison_report = compare_structure(Path(result.output_docx), self.reference_docx)
+                report.comparison = comparison_report.to_dict()
+
+                metrics.table_count_diff = abs(
+                    comparison_report.auto_tables - comparison_report.human_tables
+                )
+                metrics.clause_coverage_rate = comparison_report.coverage_rate
+                metrics.verdict_match_rate = comparison_report.verdict_match_rate
+            except Exception as e:
+                report.warnings.append(f"Comparison failed: {e}")
+
+        thresholds = {
+            "clause_coverage_rate": 0.99,
+            "verdict_match_rate": 0.995,
+            "appended_table_filled_rate": 0.9
+        }
+        values = {
+            "clause_coverage_rate": metrics.clause_coverage_rate if comparison_report else None,
+            "verdict_match_rate": metrics.verdict_match_rate if comparison_report else None,
+            "appended_table_filled_rate": metrics.appended_table_filled_rate if metrics.appended_table_count else None
+        }
+        results = {}
+        for key, threshold in thresholds.items():
+            value = values.get(key)
+            results[key] = value >= threshold if value is not None else None
+
+        enabled_results = [v for v in results.values() if v is not None]
+        report.gating = {
+            "enabled": bool(enabled_results),
+            "thresholds": thresholds,
+            "results": results,
+            "passed": all(enabled_results) if enabled_results else None
+        }
+
+        diff_items: List[Dict[str, Any]] = []
+        if comparison_report:
+            for clause_id in comparison_report.missing_in_auto[:20]:
+                diff_items.append({
+                    "type": "missing_clause",
+                    "clause_id": clause_id
+                })
+            for diff in comparison_report.verdict_diffs[:20]:
+                diff_items.append({
+                    "type": "verdict_mismatch",
+                    "clause_id": diff.get("clause_id"),
+                    "auto": diff.get("auto"),
+                    "human": diff.get("human")
+                })
+
+        if result.appended_tables and result.fill_result:
+            missing_tables = sorted(
+                set(result.appended_tables.tables.keys())
+                - set(result.fill_result.appended_tables_filled)
+            )
+            for table_id in missing_tables[:20]:
+                diff_items.append({
+                    "type": "missing_table",
+                    "table_id": table_id
+                })
+
+        if report.gating.get("passed") is False and diff_items:
+            report.diff_items = diff_items[:20]
 
         return report
 
@@ -319,7 +402,8 @@ def run_pipeline_v2(
     output_dir: Path,
     template_path: Optional[Path] = None,
     translate_func: Optional[Callable[[str], str]] = None,
-    dry_run: bool = False
+    dry_run: bool = False,
+    reference_docx: Optional[Path] = None
 ) -> PipelineV2Result:
     """
     便捷函數：執行 Pipeline v2
@@ -330,6 +414,7 @@ def run_pipeline_v2(
         template_path: Word 模板路徑
         translate_func: 翻譯函數
         dry_run: 乾跑模式
+        reference_docx: 參考人工 DOCX (可選)
 
     Returns:
         PipelineV2Result
@@ -337,7 +422,8 @@ def run_pipeline_v2(
     pipeline = PipelineV2(
         template_path=template_path,
         translate_func=translate_func,
-        dry_run=dry_run
+        dry_run=dry_run,
+        reference_docx=reference_docx
     )
     return pipeline.process(pdf_path, output_dir)
 
@@ -352,12 +438,14 @@ def main():
     parser.add_argument('--output', '-o', default='output', help='輸出目錄')
     parser.add_argument('--translate', action='store_true', help='啟用翻譯')
     parser.add_argument('--dry-run', action='store_true', help='乾跑模式')
+    parser.add_argument('--reference', help='人工 DOCX 參考檔 (可選)')
 
     args = parser.parse_args()
 
     pdf_path = Path(args.pdf)
     template_path = Path(args.template) if args.template else None
     output_dir = Path(args.output) / pdf_path.stem
+    reference_docx = Path(args.reference) if args.reference else None
 
     # 翻譯函數
     translate_func = None
@@ -379,7 +467,8 @@ def main():
         output_dir=output_dir,
         template_path=template_path,
         translate_func=translate_func,
-        dry_run=args.dry_run
+        dry_run=args.dry_run,
+        reference_docx=reference_docx
     )
 
     print(f"\n{'='*60}")

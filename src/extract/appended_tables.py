@@ -23,8 +23,10 @@ class AppendedTable:
     title: str  # 完整標題
     page_number: int
     headers: List[str] = field(default_factory=list)
+    columns: List[str] = field(default_factory=list)
     rows: List[List[str]] = field(default_factory=list)
     verdict: str = ""  # 該表的整體判定 (P/N/A/Fail)
+    supplementary_info: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -44,12 +46,42 @@ class AppendedTablesResult:
         }
 
 
+@dataclass
+class TableHeader:
+    """附表標題行資訊"""
+    table_id: Optional[str]
+    title: str
+    verdict: str
+    page_number: int
+    top: float
+    bottom: float
+
+
+@dataclass
+class LineInfo:
+    """文字行資訊"""
+    text: str
+    top: float
+    bottom: float
+    words: List[Dict[str, Any]]
+
+
 class AppendedTablesExtractor:
     """附表提取器"""
 
-    # TABLE: 模式
-    TABLE_PATTERN = re.compile(
-        r"(?:TABLE|Table):\s*([^\n]+)",
+    # TABLE: 標題行模式
+    TABLE_HEADER_LINE_PATTERN = re.compile(r'\bTABLE\s*:', re.IGNORECASE)
+    TABLE_HEADER_WITH_ID_PATTERN = re.compile(
+        r'^(?P<table_id>(?:[A-Z]\.)?\d+(?:\.\d+)*|[A-Z])\s+TABLE\s*:\s*(?P<title>.+)$',
+        re.IGNORECASE
+    )
+
+    # 座標分欄參數
+    LINE_MERGE_TOLERANCE = 3.0
+    HEADER_WORD_GAP = 6.0
+    HEADER_MIN_WIDTH_RATIO = 0.3
+    SUPPLEMENTARY_PATTERN = re.compile(
+        r'^(Supplementary\s+information|Note|Remarks?)\b[:\s]',
         re.IGNORECASE
     )
 
@@ -127,52 +159,280 @@ class AppendedTablesExtractor:
         logger.info(f"提取附表: {self.pdf_path.name}")
 
         with pdfplumber.open(self.pdf_path) as pdf:
-            current_table_info = None
+            words_by_page = [
+                page.extract_words(use_text_flow=True, keep_blank_chars=False)
+                for page in pdf.pages
+            ]
+            headers = self._find_table_headers(pdf, words_by_page)
 
-            for page_num, page in enumerate(pdf.pages):
-                page_number = page_num + 1
-                text = page.extract_text() or ""
+            for idx, header in enumerate(headers):
+                next_header = headers[idx + 1] if idx + 1 < len(headers) else None
+                table_id = header.table_id or self._match_table_id(header.title) or header.title
 
-                # 找 TABLE: 標題
-                matches = self.TABLE_PATTERN.findall(text)
+                columns, rows, supplementary_info = self._extract_table_segment(
+                    pdf,
+                    words_by_page,
+                    header,
+                    next_header
+                )
 
-                for title in matches:
-                    title = title.strip()
-                    if not title:
-                        continue
+                if not rows and not columns:
+                    fallback = self._extract_table_near_title(
+                        pdf.pages[header.page_number - 1],
+                        header.title
+                    )
+                    columns = fallback.get("headers", [])
+                    rows = fallback.get("rows", [])
 
-                    # 提取 verdict
-                    verdict_match = self.VERDICT_PATTERN.search(title)
-                    verdict = verdict_match.group(1).upper() if verdict_match else ""
-                    if verdict == "N/A" or verdict == "NA":
-                        verdict = "N/A"
+                appended_table = AppendedTable(
+                    table_id=table_id,
+                    title=header.title,
+                    page_number=header.page_number,
+                    verdict=header.verdict,
+                    headers=columns,
+                    columns=columns,
+                    rows=rows,
+                    supplementary_info=supplementary_info,
+                )
 
-                    # 清理標題
-                    clean_title = self.VERDICT_PATTERN.sub("", title).strip()
-                    clean_title = re.sub(r'\s+', ' ', clean_title)
-
-                    # 對映到 Word 表格 ID
-                    table_id = self._match_table_id(clean_title)
-
-                    if table_id:
-                        # 提取表格資料
-                        table_data = self._extract_table_near_title(page, title)
-
-                        appended_table = AppendedTable(
-                            table_id=table_id,
-                            title=clean_title,
-                            page_number=page_number,
-                            verdict=verdict,
-                            headers=table_data.get("headers", []),
-                            rows=table_data.get("rows", [])
-                        )
-
-                        # 避免重複 (保留第一個)
-                        if table_id not in self.result.tables:
-                            self.result.tables[table_id] = appended_table
+                if table_id not in self.result.tables:
+                    self.result.tables[table_id] = appended_table
 
         logger.info(f"提取完成: {len(self.result.tables)} 個附表")
         return self.result
+
+    def _find_table_headers(
+        self,
+        pdf: pdfplumber.PDF,
+        words_by_page: List[List[Dict[str, Any]]]
+    ) -> List[TableHeader]:
+        headers: List[TableHeader] = []
+
+        for page_num, page in enumerate(pdf.pages):
+            words = words_by_page[page_num]
+            lines = self._build_line_infos(words, tolerance=self.LINE_MERGE_TOLERANCE)
+            for line in lines:
+                if not self.TABLE_HEADER_LINE_PATTERN.search(line.text):
+                    continue
+
+                table_id, title, verdict = self._parse_table_header_line(line.text)
+                if not title:
+                    continue
+
+                headers.append(TableHeader(
+                    table_id=table_id,
+                    title=title,
+                    verdict=verdict,
+                    page_number=page_num + 1,
+                    top=line.top,
+                    bottom=line.bottom,
+                ))
+
+        headers.sort(key=lambda h: (h.page_number, h.top))
+        return headers
+
+    def _parse_table_header_line(self, line_text: str) -> Tuple[Optional[str], str, str]:
+        """解析 TABLE: 標題行"""
+        verdict = ""
+        verdict_match = self.VERDICT_PATTERN.search(line_text)
+        if verdict_match:
+            verdict = self._normalize_verdict(verdict_match.group(1))
+
+        clean_text = self.VERDICT_PATTERN.sub("", line_text).strip()
+        clean_text = re.sub(r'\s+', ' ', clean_text)
+
+        table_id = None
+        title = ""
+        match = self.TABLE_HEADER_WITH_ID_PATTERN.match(clean_text)
+        if match:
+            table_id = match.group("table_id").strip()
+            title = match.group("title").strip()
+        else:
+            parts = self.TABLE_HEADER_LINE_PATTERN.split(clean_text, 1)
+            if len(parts) == 2:
+                title = parts[1].strip()
+            else:
+                title = clean_text
+
+        title = re.sub(r'\s+', ' ', title).strip()
+        return table_id, title, verdict
+
+    def _extract_table_segment(
+        self,
+        pdf: pdfplumber.PDF,
+        words_by_page: List[List[Dict[str, Any]]],
+        header: TableHeader,
+        next_header: Optional[TableHeader],
+    ) -> Tuple[List[str], List[List[str]], List[str]]:
+        """以 TABLE 標題切段，抽取欄位與資料列"""
+        start_page_idx = header.page_number - 1
+        end_page_idx = next_header.page_number - 1 if next_header else len(pdf.pages) - 1
+
+        segment_words: List[Dict[str, Any]] = []
+        for page_idx in range(start_page_idx, end_page_idx + 1):
+            for word in words_by_page[page_idx]:
+                top = word.get("top", 0)
+                if page_idx == start_page_idx and top <= header.bottom + 1:
+                    continue
+                if next_header and page_idx == end_page_idx and top >= next_header.top - 1:
+                    continue
+                segment_words.append(word)
+
+        if not segment_words:
+            return [], [], []
+
+        page_width = pdf.pages[start_page_idx].width or 1
+        lines = self._build_line_infos(segment_words, tolerance=self.LINE_MERGE_TOLERANCE)
+        header_index = self._find_header_line_index(lines, page_width)
+        if header_index is None:
+            return [], [], []
+
+        header_line = lines[header_index]
+        columns, column_bounds = self._build_columns_from_header(header_line.words, page_width)
+        if not columns:
+            return [], [], []
+
+        data_lines = lines[header_index + 1:]
+        rows, supplementary_info = self._build_rows_from_lines(data_lines, column_bounds)
+
+        return columns, rows, supplementary_info
+
+    def _build_line_infos(self, words: List[Dict[str, Any]], tolerance: float) -> List[LineInfo]:
+        lines: List[LineInfo] = []
+        if not words:
+            return lines
+
+        sorted_words = sorted(words, key=lambda w: (w.get("top", 0), w.get("x0", 0)))
+        current: List[Dict[str, Any]] = []
+        current_top: Optional[float] = None
+
+        for word in sorted_words:
+            top = word.get("top", 0)
+            if current_top is None or abs(top - current_top) <= tolerance:
+                current.append(word)
+                if current_top is None:
+                    current_top = top
+            else:
+                lines.append(self._line_from_words(current))
+                current = [word]
+                current_top = top
+
+        if current:
+            lines.append(self._line_from_words(current))
+
+        return lines
+
+    def _line_from_words(self, words: List[Dict[str, Any]]) -> LineInfo:
+        sorted_words = sorted(words, key=lambda w: w.get("x0", 0))
+        text = " ".join(w.get("text", "") for w in sorted_words).strip()
+        top = min(w.get("top", 0) for w in words)
+        bottom = max(w.get("bottom", 0) for w in words)
+        return LineInfo(text=text, top=top, bottom=bottom, words=sorted_words)
+
+    def _find_header_line_index(self, lines: List[LineInfo], page_width: float) -> Optional[int]:
+        for idx, line in enumerate(lines):
+            if not line.text:
+                continue
+            if self.TABLE_HEADER_LINE_PATTERN.search(line.text):
+                continue
+            if len(line.words) < 2:
+                continue
+            min_x = min(w.get("x0", 0) for w in line.words)
+            max_x = max(w.get("x1", 0) for w in line.words)
+            if (max_x - min_x) < page_width * self.HEADER_MIN_WIDTH_RATIO:
+                continue
+            return idx
+        return None
+
+    def _build_columns_from_header(
+        self,
+        header_words: List[Dict[str, Any]],
+        page_width: float
+    ) -> Tuple[List[str], List[Tuple[float, float]]]:
+        if not header_words:
+            return [], []
+
+        sorted_words = sorted(header_words, key=lambda w: w.get("x0", 0))
+        grouped = []
+        current = None
+
+        for word in sorted_words:
+            text = word.get("text", "").strip()
+            if not text:
+                continue
+            if current is None:
+                current = {"text": text, "x0": word.get("x0", 0), "x1": word.get("x1", 0)}
+                continue
+            if word.get("x0", 0) - current["x1"] <= self.HEADER_WORD_GAP:
+                current["text"] = f"{current['text']} {text}".strip()
+                current["x1"] = max(current["x1"], word.get("x1", 0))
+            else:
+                grouped.append(current)
+                current = {"text": text, "x0": word.get("x0", 0), "x1": word.get("x1", 0)}
+
+        if current:
+            grouped.append(current)
+
+        columns = [g["text"] for g in grouped if g["text"]]
+        bounds = []
+        for i, col in enumerate(grouped):
+            if i == 0:
+                start = 0
+            else:
+                start = (grouped[i - 1]["x1"] + col["x0"]) / 2
+            if i == len(grouped) - 1:
+                end = page_width
+            else:
+                end = (col["x1"] + grouped[i + 1]["x0"]) / 2
+            bounds.append((start, end))
+
+        return columns, bounds
+
+    def _build_rows_from_lines(
+        self,
+        lines: List[LineInfo],
+        column_bounds: List[Tuple[float, float]]
+    ) -> Tuple[List[List[str]], List[str]]:
+        rows: List[List[str]] = []
+        supplementary: List[str] = []
+
+        for line in lines:
+            text = line.text.strip()
+            if not text:
+                continue
+            if self.SUPPLEMENTARY_PATTERN.search(text):
+                supplementary.append(text)
+                continue
+            if self.TABLE_HEADER_LINE_PATTERN.search(text):
+                continue
+
+            row = [""] * len(column_bounds)
+            for word in line.words:
+                word_text = word.get("text", "").strip()
+                if not word_text:
+                    continue
+                center = (word.get("x0", 0) + word.get("x1", 0)) / 2
+                for idx, (start, end) in enumerate(column_bounds):
+                    if start <= center < end:
+                        row[idx] = f"{row[idx]} {word_text}".strip()
+                        break
+
+            if any(cell for cell in row):
+                rows.append(row)
+
+        return rows, supplementary
+
+    def _normalize_verdict(self, value: str) -> str:
+        if not value:
+            return ""
+        value = value.strip().upper()
+        if value in {"P"}:
+            return "P"
+        if value in {"N/A", "NA", "N.A."}:
+            return "N/A"
+        if value in {"F", "FAIL"}:
+            return "Fail"
+        return value
 
     def _match_table_id(self, title: str) -> Optional[str]:
         """根據標題對映 Word 表格 ID"""

@@ -9,6 +9,7 @@ Translation Service - 使用 LiteLLM 進行英中翻譯
 """
 from __future__ import annotations
 import re
+import json
 import logging
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
@@ -101,6 +102,15 @@ class TranslationService:
 
 請只修正有問題的部分，保持其他內容不變。輸出修正後的完整翻譯:"""
 
+    NORMALIZATION_RULES = [
+        (re.compile(r'\bSee appended table\s+([A-Z0-9\.]+)\b', re.IGNORECASE), r'參見附表 \1'),
+        (re.compile(r'\bSee appended table\b', re.IGNORECASE), '參見附表'),
+        (re.compile(r'\bSee table\s+([A-Z0-9\.]+)\b', re.IGNORECASE), r'參見表 \1'),
+        (re.compile(r'\bSupplementary information\b', re.IGNORECASE), '補充資訊'),
+        (re.compile(r'\bAbbreviation\b', re.IGNORECASE), '縮寫'),
+    ]
+    STYLE_RULES_PATH = Path(__file__).resolve().parents[2] / "rules" / "style_normalization.json"
+
     def __init__(
         self,
         termbase: Optional[Termbase] = None,
@@ -128,6 +138,7 @@ class TranslationService:
         self.api_key = api_key or settings.litellm_api_key
         self.dry_run = dry_run
         self._litellm = None
+        self._style_rules = None
 
     def _get_litellm(self):
         """Lazy load litellm module."""
@@ -168,6 +179,9 @@ class TranslationService:
                 model_used="none"
             )
 
+        original_text = text
+        text = self._normalize_source_text(text)
+
         # 累計 token 和成本
         total_prompt_tokens = 0
         total_completion_tokens = 0
@@ -190,8 +204,11 @@ class TranslationService:
         # 3. 還原術語
         translated = self.termbase.restore_terms(translated, protection.mapping)
 
+        # 3.1 風格正規化
+        translated = self._apply_style_normalization(translated)
+
         # 4. QA 檢查
-        issues = self._check_quality(text, translated)
+        issues = self._check_quality(original_text, translated)
 
         # 5. Refinement (如果需要)
         was_refined = False
@@ -208,7 +225,7 @@ class TranslationService:
                 total_cost += ref_cost
 
         return TranslationResult(
-            original_text=text,
+            original_text=original_text,
             translated_text=translated,
             model_used=bulk_model,
             was_refined=was_refined,
@@ -223,6 +240,47 @@ class TranslationService:
             total_tokens=total_prompt_tokens + total_completion_tokens,
             cost=total_cost
         )
+
+    def _normalize_source_text(self, text: str) -> str:
+        """翻譯前規則正規化"""
+        normalized = text
+        for pattern, replacement in self.NORMALIZATION_RULES:
+            normalized = pattern.sub(replacement, normalized)
+        return normalized
+
+    def _load_style_rules(self) -> List[tuple]:
+        """載入風格正規化規則"""
+        if self._style_rules is not None:
+            return self._style_rules
+
+        if not self.STYLE_RULES_PATH.exists():
+            self._style_rules = []
+            return self._style_rules
+
+        try:
+            data = json.loads(self.STYLE_RULES_PATH.read_text(encoding="utf-8"))
+            rules = []
+            for item in data.get("rules", []):
+                pattern_text = item.get("pattern")
+                replacement = item.get("replacement", "")
+                flags_text = item.get("flags", "")
+                if not pattern_text:
+                    continue
+                flags = re.IGNORECASE if "i" in flags_text.lower() else 0
+                rules.append((re.compile(pattern_text, flags), replacement))
+            self._style_rules = rules
+        except Exception as e:
+            logger.warning(f"Failed to load style rules: {e}")
+            self._style_rules = []
+
+        return self._style_rules
+
+    def _apply_style_normalization(self, text: str) -> str:
+        """翻譯後風格正規化"""
+        normalized = text
+        for pattern, replacement in self._load_style_rules():
+            normalized = pattern.sub(replacement, normalized)
+        return normalized
 
     def translate_batch(
         self,
@@ -357,6 +415,16 @@ class TranslationService:
         # 2. 檢查數字/條款是否保留
         number_issues = self._check_numbers(original, translated)
         issues.extend(number_issues)
+
+        # 3. 術語違規檢查
+        term_violations = self.termbase.validate_terms(translated)
+        for violation in term_violations:
+            issues.append({
+                "type": violation.violation_type,
+                "value": violation.term,
+                "expected": violation.expected,
+                "found": violation.found
+            })
 
         return issues
 

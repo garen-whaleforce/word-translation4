@@ -4,7 +4,7 @@ import uuid
 import json
 import logging
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 
@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 from .config import settings
 from .cb_parser import CBParser
-from .termbase import Termbase, load_termbase_from_json
+from .termbase import Termbase, create_combined_termbase
 from .translation_service import TranslationService, TranslationResult
 from .pipeline import Pipeline, PipelineConfig, PipelineResult
 from .template_registry import TemplateRegistry
@@ -185,13 +185,34 @@ def get_termbase() -> Termbase:
     global _termbase
     if _termbase is None:
         glossary_path = Path("rules/en_zh_glossary_preferred.json")
-        if glossary_path.exists():
-            _termbase = load_termbase_from_json(glossary_path)
+        tm_path = Path("rules/en_zh_translation_memory.csv")
+        _termbase = create_combined_termbase(glossary_path, tm_path)
+        if len(_termbase) > 0:
             logger.info(f"Loaded termbase with {len(_termbase)} terms")
         else:
-            _termbase = Termbase()
-            logger.warning("Termbase file not found, using empty termbase")
+            logger.warning("Termbase files not found, using empty termbase")
     return _termbase
+
+
+def build_translate_func(dry_run: bool) -> Callable[[str], str]:
+    """建立翻譯函數"""
+    effective_dry_run = dry_run or not settings.litellm_api_key
+    if effective_dry_run and not settings.litellm_api_key:
+        logger.warning("LITELLM_API_KEY not set, using dry_run translation")
+
+    service = TranslationService(
+        termbase=get_termbase(),
+        dry_run=effective_dry_run
+    )
+
+    def translate_func(text: str) -> str:
+        result = service.translate(
+            text=text,
+            enable_refinement=settings.enable_refinement
+        )
+        return result.translated_text
+
+    return translate_func
 
 
 @app.post("/translate", response_model=TranslateResponse, tags=["Translation"])
@@ -386,19 +407,26 @@ class JobStatus(BaseModel):
     completed_at: Optional[str] = None
 
 
-def _run_pipeline_v2_job(job_id: str, pdf_path: Path, output_dir: Path, template_path: Optional[Path]):
+def _run_pipeline_v2_job(
+    job_id: str,
+    pdf_path: Path,
+    output_dir: Path,
+    template_path: Optional[Path],
+    dry_run: bool
+):
     """背景執行 Pipeline v2"""
     try:
         _job_status[job_id]["status"] = "processing"
         _job_status[job_id]["progress"] = 10
         _job_status[job_id]["message"] = "解析 PDF..."
 
+        translate_func = build_translate_func(dry_run)
         result = run_pipeline_v2(
             pdf_path=pdf_path,
             output_dir=output_dir,
             template_path=template_path,
-            translate_func=None,  # TODO: 加入翻譯函數
-            dry_run=False
+            translate_func=translate_func,
+            dry_run=dry_run
         )
 
         _job_status[job_id]["status"] = "completed"
@@ -427,7 +455,8 @@ async def process_pdf_v2(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     template: Optional[str] = Query("AST-B", description="模板 ID (AST-B, Generic-CB)"),
-    async_mode: bool = Query(False, description="非同步模式 (背景執行)")
+    async_mode: bool = Query(False, description="非同步模式 (背景執行)"),
+    dry_run: bool = Query(False, description="乾跑模式 (不呼叫 LLM)")
 ):
     """
     V2 API: 處理 CB PDF
@@ -467,6 +496,8 @@ async def process_pdf_v2(
                 template_path = candidate
                 break
 
+    effective_dry_run = dry_run or not settings.litellm_api_key
+
     if async_mode:
         # 非同步模式 - 背景執行
         job_id = file_id
@@ -484,7 +515,7 @@ async def process_pdf_v2(
 
         background_tasks.add_task(
             _run_pipeline_v2_job,
-            job_id, pdf_path, output_dir, template_path
+            job_id, pdf_path, output_dir, template_path, effective_dry_run
         )
 
         return {
@@ -497,12 +528,13 @@ async def process_pdf_v2(
     else:
         # 同步模式 - 直接執行
         try:
+            translate_func = build_translate_func(effective_dry_run)
             result = run_pipeline_v2(
                 pdf_path=pdf_path,
                 output_dir=output_dir,
                 template_path=template_path,
-                translate_func=None,
-                dry_run=False
+                translate_func=translate_func,
+                dry_run=effective_dry_run
             )
 
             response_data = {

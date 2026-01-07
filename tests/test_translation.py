@@ -85,6 +85,17 @@ class TestTranslationService:
         # Should not have issues if numbers are preserved
         # (depends on exact matching logic)
 
+    def test_style_normalization(self, termbase):
+        """Test deterministic style normalization."""
+        service = TranslationService(termbase=termbase, dry_run=True)
+
+        text = "激光器安裝在外殼內，外壳與机壳需一致"
+        normalized = service._apply_style_normalization(text)
+
+        assert "雷射器" in normalized
+        assert "機殼" in normalized
+        assert "激光" not in normalized
+
 
 class TestTranslateAPI:
     """Tests for /translate API endpoint."""

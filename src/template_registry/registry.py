@@ -55,6 +55,7 @@ class TemplateRegistry:
         """
         self.templates_dir = templates_dir or Path("templates")
         self.templates: Dict[str, TemplateInfo] = {}
+        self.default_template_id: Optional[str] = None
         self._load_templates()
 
     def _load_templates(self):
@@ -128,6 +129,24 @@ class TemplateRegistry:
     def list_templates(self) -> List[TemplateInfo]:
         """列出所有模板"""
         return list(self.templates.values())
+
+    def classify_from_pdf(self, text: str) -> Optional[TemplateInfo]:
+        """
+        從 PDF 文字內容判斷模板
+
+        規則:
+        - IEC 62368-1 + TRF IEC62368_1E => AST-B
+        """
+        if not text:
+            return self.get(self.default_template_id) if hasattr(self, "default_template_id") else None
+
+        text_upper = text.upper()
+        if "IEC 62368-1" in text_upper or "IEC62368-1" in text_upper or "IEC62368" in text_upper:
+            if "IEC62368_1E" in text_upper or "IEC 62368-1E" in text_upper:
+                return self.templates.get("AST-B") or self.get(self.default_template_id)
+
+        # TODO: 如需更進一步分類可接 LLM
+        return self.get(self.default_template_id) if hasattr(self, "default_template_id") else None
 
     def select_best_template(
         self,

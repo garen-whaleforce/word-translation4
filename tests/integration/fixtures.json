@@ -1,0 +1,19 @@
+{
+  "fixtures": [
+    {
+      "name": "MC-601",
+      "pdf_env": "WT4_MC601_PDF",
+      "human_doc_env": "WT4_MC601_HUMAN_DOCX"
+    },
+    {
+      "name": "DYS830",
+      "pdf_env": "WT4_DYS830_PDF",
+      "human_doc_env": "WT4_DYS830_HUMAN_DOCX"
+    },
+    {
+      "name": "E135-1B",
+      "pdf_env": "WT4_E135_1B_PDF",
+      "human_doc_env": "WT4_E135_1B_HUMAN_DOCX"
+    }
+  ]
+}

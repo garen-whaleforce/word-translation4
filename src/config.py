@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     litellm_api_base: str = "https://litellm.whaleforce.dev"
     litellm_api_key: str = ""
     bulk_model: str = "gemini-2.5-flash"  # 快速翻譯
-    refine_model: str = "gemini-2.5-flash"  # 精修翻譯 (統一使用)
+    refine_model: str = "gpt-5.2"  # 精修翻譯
 
     # Template Settings
     templates_dir: Path = Path("templates")

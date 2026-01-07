@@ -23,6 +23,7 @@ from docx.oxml.ns import qn
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from scripts.parse_cb_pdf_v2 import CBParserV2, ParseResultV2, ClauseItem
 from src.extract.appended_tables import extract_appended_tables, AppendedTable
+from src.template_registry.blueprint import TemplateBlueprint
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
@@ -31,13 +32,13 @@ logger = logging.getLogger(__name__)
 # Verdict 映射表 (英文 -> 中文)
 # 注意: '--' 在人工翻譯中通常是空白，所以映射為空字串
 VERDICT_MAP = {
-    'P': 'P',           # 保留原始值，讓 compare 腳本正規化
-    'N/A': 'N/A',
-    'NA': 'N/A',
-    'N.A.': 'N/A',
-    'Fail': 'Fail',
-    'F': 'Fail',
-    '--': '',           # 改為空字串，與人工翻譯一致
+    'P': '符合',
+    'N/A': '不適用',
+    'NA': '不適用',
+    'N.A.': '不適用',
+    'Fail': '不符合',
+    'F': '不符合',
+    '--': '',
     '-': '',
     '': '',
 }
@@ -86,28 +87,12 @@ class ASTBWordFiller:
     def _build_table_index(self) -> Dict[str, Table]:
         """建立表格索引"""
         index = {}
+        self.blueprint = TemplateBlueprint.from_document(self.doc)
 
-        for table in self.doc.tables:
-            if not table.rows:
+        for table_info in self.blueprint.tables:
+            if table_info.table_id in index:
                 continue
-
-            # 取得第一個 cell 的文字作為 table_id
-            try:
-                first_cell = table.cell(0, 0).text.strip()
-
-                # 處理多行的情況 (只取第一行)
-                if '\n' in first_cell:
-                    first_cell = first_cell.split('\n')[0].strip()
-
-                # 正規化 table_id
-                table_id = self._normalize_table_id(first_cell)
-
-                if table_id:
-                    index[table_id] = table
-                    logger.debug(f"  索引表格: {table_id}")
-
-            except Exception as e:
-                logger.warning(f"無法索引表格: {e}")
+            index[table_info.table_id] = self.doc.tables[table_info.table_index]
 
         logger.info(f"建立表格索引: {len(index)} 個表格")
         return index
@@ -144,6 +129,11 @@ class ASTBWordFiller:
     # 主要章節 (4-10, B) 和 附錄章節 (C-Y)
     MAIN_CHAPTERS = {'4', '5', '6', '7', '8', '9', '10', 'B'}
     APPENDIX_CHAPTERS = {'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'Y'}
+    PLACEHOLDER_VALUES = {"", "--", "-", "—", "⎯"}
+
+    def _is_placeholder_text(self, text: str) -> bool:
+        """判斷是否為空白/占位值"""
+        return text.strip() in self.PLACEHOLDER_VALUES
 
     def fill(
         self,
@@ -174,7 +164,8 @@ class ASTBWordFiller:
             for chapter, clauses in parse_result.clause_tables.items():
                 if chapter in self.MAIN_CHAPTERS:
                     if chapter in self.table_index:
-                        self._fill_chapter_table(chapter, clauses, translate_func)
+                        chapter_verdict = parse_result.get_chapter_verdict(chapter)
+                        self._fill_chapter_table(chapter, clauses, translate_func, chapter_verdict)
                     else:
                         self.result.warnings.append(f"找不到章節表: {chapter}")
                 elif chapter in self.APPENDIX_CHAPTERS:
@@ -254,67 +245,80 @@ class ASTBWordFiller:
         self,
         chapter: str,
         clauses: List[ClauseItem],
-        translate_func=None
+        translate_func=None,
+        chapter_verdict: Optional[str] = None
     ):
-        """填充章節表"""
+        """填充章節表（就地填值，不重建結構）"""
         table = self.table_index.get(chapter)
         if not table:
             return
 
         logger.info(f"填充章節 {chapter}: {len(clauses)} 個條款")
 
-        # 保留表頭 (第一行)
-        header_rows = 1
+        clause_map = {c.clause_id: c for c in clauses}
+        filled_any = False
 
-        # 清空現有數據行
-        while len(table.rows) > header_rows:
-            table._tbl.remove(table.rows[-1]._tr)
+        # 表頭 verdict（最後一格）
+        if table.rows and chapter_verdict:
+            header_cells = table.rows[0].cells
+            verdict_zh = VERDICT_MAP.get(chapter_verdict, chapter_verdict)
+            if header_cells and self._is_placeholder_text(header_cells[-1].text):
+                header_cells[-1].text = verdict_zh
+                filled_any = True
 
-        # 添加章節標題行 (如 5.1 電氣導致之傷害)
-        if chapter in self.CHAPTER_TITLES and chapter not in ('4',):  # 4 章通常不需要
-            title_row = table.add_row()
-            cells = title_row.cells
-            chapter_title = self.CHAPTER_TITLES[chapter]
-            if len(cells) >= 4:
-                cells[0].text = f"{chapter}.1"
-                cells[1].text = chapter_title
-                cells[2].text = chapter_title
-                cells[3].text = chapter_title
-            elif len(cells) >= 2:
-                cells[0].text = f"{chapter}.1"
-                cells[1].text = chapter_title
-            self.result.clauses_filled += 1
-
-        # 填充數據
-        for clause in clauses:
-            row = table.add_row()
+        # 逐列回填
+        for row in table.rows[1:]:
             cells = row.cells
+            if not cells:
+                continue
 
-            # 翻譯 requirement
+            first_cell = cells[0].text.strip()
+            if '\n' in first_cell:
+                first_cell = first_cell.split('\n')[0].strip()
+            if not first_cell:
+                continue
+
+            clause = clause_map.get(first_cell)
+            if not clause:
+                continue
+
+            row_filled = False
+
             requirement = clause.requirement
-            if translate_func:
+            if translate_func and requirement:
                 requirement = translate_func(requirement) or requirement
 
-            # 映射 verdict
             verdict_zh = VERDICT_MAP.get(clause.verdict, clause.verdict)
 
             if len(cells) >= 4:
-                cells[0].text = clause.clause_id
-                cells[1].text = requirement
-                cells[2].text = clause.result_remark
-                cells[3].text = verdict_zh
+                if requirement and self._is_placeholder_text(cells[1].text):
+                    cells[1].text = requirement
+                    row_filled = True
+                if clause.result_remark and self._is_placeholder_text(cells[2].text):
+                    cells[2].text = clause.result_remark
+                    row_filled = True
+                if verdict_zh and self._is_placeholder_text(cells[3].text):
+                    cells[3].text = verdict_zh
+                    row_filled = True
             elif len(cells) >= 3:
-                cells[0].text = clause.clause_id
-                cells[1].text = requirement
-                cells[2].text = verdict_zh
+                if requirement and self._is_placeholder_text(cells[1].text):
+                    cells[1].text = requirement
+                    row_filled = True
+                if verdict_zh and self._is_placeholder_text(cells[2].text):
+                    cells[2].text = verdict_zh
+                    row_filled = True
             elif len(cells) >= 2:
-                cells[0].text = clause.clause_id
-                cells[1].text = verdict_zh
+                if verdict_zh and self._is_placeholder_text(cells[1].text):
+                    cells[1].text = verdict_zh
+                    row_filled = True
 
-            self.result.clauses_filled += 1
+            if row_filled:
+                filled_any = True
+                self.result.clauses_filled += 1
 
-        self.result.tables_filled += 1
-        self.result.chapters_filled.append(chapter)
+        if filled_any:
+            self.result.tables_filled += 1
+            self.result.chapters_filled.append(chapter)
 
     def _append_to_b_table(
         self,
@@ -364,6 +368,29 @@ class ASTBWordFiller:
 
         self.result.chapters_filled.append("C-Y (appended to B)")
 
+    def _append_cloned_row(self, table: Table, template_row):
+        """複製樣式列並追加"""
+        new_row = copy.deepcopy(template_row._tr)
+        table._tbl.append(new_row)
+        return table.rows[-1]
+
+    def _detect_appended_header_rows(self, word_table: Table, appended_table: AppendedTable) -> int:
+        """判斷附表表頭列數"""
+        if not word_table.rows:
+            return 0
+
+        header_rows = 1
+        columns = [c.lower() for c in appended_table.columns if c]
+        if not columns:
+            return header_rows
+
+        max_scan = min(3, len(word_table.rows))
+        for idx in range(max_scan):
+            row_text = " ".join(cell.text.lower() for cell in word_table.rows[idx].cells)
+            if any(col in row_text for col in columns):
+                header_rows = idx + 1
+        return header_rows
+
     def _fill_appended_tables(self, appended_tables: Dict[str, AppendedTable]):
         """填充附表"""
         logger.info(f"填充附表: {len(appended_tables)} 個")
@@ -373,9 +400,9 @@ class ASTBWordFiller:
             word_table = self._find_appended_table(table_id)
 
             if word_table:
-                self._fill_single_appended_table(word_table, appended_table)
-                self.result.appended_tables_filled.append(table_id)
-                self.result.tables_filled += 1
+                if self._fill_single_appended_table(word_table, appended_table):
+                    self.result.appended_tables_filled.append(table_id)
+                    self.result.tables_filled += 1
             else:
                 # 記錄但不警告 (因為不是所有附表都存在於模板中)
                 logger.debug(f"  找不到附表: {table_id}")
@@ -398,29 +425,66 @@ class ASTBWordFiller:
 
         return None
 
-    def _fill_single_appended_table(self, word_table: Table, appended_table: AppendedTable):
+    def _fill_single_appended_table(self, word_table: Table, appended_table: AppendedTable) -> bool:
         """填充單一附表"""
         logger.info(f"  填充附表 {appended_table.table_id}: {appended_table.title[:30]}...")
 
-        # 附表通常只需要在第一行或特定位置填入 verdict
-        # 而不是清空整個表格
+        filled_any = False
+
         try:
-            # 找到 verdict 欄位並填入
+            # 1) 填入 verdict
             for row_idx, row in enumerate(word_table.rows):
                 for cell_idx, cell in enumerate(row.cells):
                     cell_text = cell.text.strip().lower()
-
-                    # 如果找到 verdict 相關欄位，填入中文判定
                     if any(v in cell_text for v in ['verdict', '判定', '結果']):
-                        # 下一行的相同位置應該是值
                         if row_idx + 1 < len(word_table.rows):
                             value_cell = word_table.rows[row_idx + 1].cells[cell_idx]
                             verdict_zh = VERDICT_MAP.get(appended_table.verdict, appended_table.verdict)
-                            if verdict_zh and not value_cell.text.strip():
+                            if verdict_zh and self._is_placeholder_text(value_cell.text):
                                 value_cell.text = verdict_zh
+                                filled_any = True
+
+            # 2) 填入表格內容
+            data_rows = appended_table.rows or []
+            if data_rows:
+                header_rows = self._detect_appended_header_rows(word_table, appended_table)
+                template_rows = word_table.rows
+                template_row = template_rows[-1] if template_rows else None
+
+                for idx, row_data in enumerate(data_rows):
+                    row_idx = header_rows + idx
+                    if row_idx < len(word_table.rows):
+                        row = word_table.rows[row_idx]
+                    else:
+                        base_row = template_row or word_table.rows[-1]
+                        row = self._append_cloned_row(word_table, base_row)
+
+                    for col_idx, value in enumerate(row_data):
+                        if col_idx >= len(row.cells):
+                            break
+                        if not value:
+                            continue
+                        row.cells[col_idx].text = value
+                        filled_any = True
+
+            # 3) 補充資訊
+            if appended_table.supplementary_info:
+                info_text = " ".join(appended_table.supplementary_info).strip()
+                if info_text:
+                    for row_idx, row in enumerate(word_table.rows):
+                        for cell_idx, cell in enumerate(row.cells):
+                            cell_text = cell.text.strip().lower()
+                            if "supplementary" in cell_text or "補充" in cell_text:
+                                if row_idx + 1 < len(word_table.rows):
+                                    target_cell = word_table.rows[row_idx + 1].cells[cell_idx]
+                                    if self._is_placeholder_text(target_cell.text):
+                                        target_cell.text = info_text
+                                        filled_any = True
 
         except Exception as e:
             logger.debug(f"  填充附表失敗 {appended_table.table_id}: {e}")
+
+        return filled_any
 
 
 def fill_word_from_pdf(
